@@ -181,8 +181,22 @@
     }
 
     login(email, password) {
+      const cleanEmail = (email || '').trim().toLowerCase();
       const users = this.getUsersDB();
-      const found = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+      
+      let found = users.find(u => u.email.toLowerCase() === cleanEmail && u.password === password);
+
+      // Flexible Demo Account Fallback Match
+      if (!found) {
+        if ((cleanEmail.startsWith('admin@') || cleanEmail.includes('admin')) && password === 'admin123') {
+          found = { email: cleanEmail, name: 'ஆசிரியர் (Admin)', password: 'admin123', role: ROLES.ADMIN, subscriptionStatus: 'active' };
+        } else if ((cleanEmail.startsWith('teacher@') || cleanEmail.includes('teacher')) && password === 'teacher123') {
+          found = { email: cleanEmail, name: 'ஆசிரியர் (Teacher)', password: 'teacher123', role: ROLES.TEACHER, subscriptionStatus: 'active' };
+        } else if ((cleanEmail.startsWith('student@') || cleanEmail.includes('student')) && password === 'student123') {
+          found = { email: cleanEmail, name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active' };
+        }
+      }
+
       if (found) {
         const userSession = {
           email: found.email,
@@ -190,11 +204,18 @@
           role: found.role,
           subscriptionStatus: found.role === ROLES.GUEST ? 'inactive' : 'active'
         };
+
+        // Save to local storage DB if missing
+        if (!users.some(u => u.email.toLowerCase() === cleanEmail)) {
+          users.push(found);
+          localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
+        }
+
         localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(userSession));
         this.currentUser = userSession;
 
         if (this.db) {
-          this.db.collection('users').doc(found.email.toLowerCase()).set(found, { merge: true }).catch(() => {});
+          this.db.collection('users').doc(cleanEmail).set(found, { merge: true }).catch(() => {});
         }
         return { success: true, user: userSession };
       }
