@@ -82,6 +82,7 @@
     { email: 'admin@tamil.app', name: 'ஆசிரியர் (Admin)', password: 'admin123', role: ROLES.ADMIN, subscriptionStatus: 'active', joinedAt: '2026-07-01' },
     { email: 'admin@tamilapp.com', name: 'ஆசிரியர் (Admin)', password: 'admin123', role: ROLES.ADMIN, subscriptionStatus: 'active', joinedAt: '2026-07-01' },
     { email: 'teacher@tamil.app', name: 'ஆசிரியர் (Teacher)', password: 'teacher123', role: ROLES.TEACHER, subscriptionStatus: 'active', joinedAt: '2026-07-05' },
+    { email: 'teacher@tamilapp.com', name: 'ஆசிரியர் (Teacher)', password: 'teacher123', role: ROLES.TEACHER, subscriptionStatus: 'active', joinedAt: '2026-07-05' },
     { email: 'student@tamil.app', name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active', joinedAt: '2026-07-15' },
     { email: 'student@tamilapp.com', name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active', joinedAt: '2026-07-15' },
     { email: 'user1@example.com', name: 'கார்த்திக் (Karthik)', password: 'user123', role: ROLES.LEARNER, subscriptionStatus: 'active', joinedAt: '2026-07-18' },
@@ -102,6 +103,7 @@
       subscribe: 'சந்தா செலுத்துங்கள்',
       activeSubscriber: 'சந்தாதாரர்',
       adminDashboard: 'நிர்வாக பலகை',
+      teacherDashboard: 'ஆசிரியர் பலகை',
       learnerDashboard: 'எனது கற்றல் பலகை',
       emailLabel: 'மின்னஞ்சல் முகவரி',
       passwordLabel: 'கடவுச்சொல்',
@@ -280,9 +282,10 @@
     renderHeader(container) {
       const user = this.currentUser;
       const isGuest = user.role === ROLES.GUEST;
-      const isAdmin = user.role === ROLES.ADMIN || user.role === ROLES.TEACHER;
+      const isAdmin = user.role === ROLES.ADMIN;
+      const isTeacher = user.role === ROLES.TEACHER;
       const isLearner = user.role === ROLES.LEARNER;
-      const isSubscriber = isLearner || isAdmin;
+      const isSubscriber = isLearner || isTeacher || isAdmin;
       
       let roleLabel = I18N.ta.guest;
       if (user.role === ROLES.ADMIN) roleLabel = I18N.ta.admin;
@@ -298,16 +301,18 @@
           <div class="header-user-nav">
             <div class="header-user-badge">
               <span>👤 ${user.name}</span>
-              <span class="role-badge role-${isAdmin ? 'admin' : (isSubscriber ? 'subscriber' : 'guest')}">${roleLabel}</span>
+              <span class="role-badge role-${isAdmin || isTeacher ? 'admin' : (isSubscriber ? 'subscriber' : 'guest')}">${roleLabel}</span>
             </div>
             ${
               isAdmin
                 ? `<a href="admin.html" class="header-btn" style="background:#f59e0b; color:#fff;">📊 ${I18N.ta.adminDashboard}</a>`
-                : (isLearner
-                  ? `<a href="learner-dashboard.html" class="header-btn" style="background:#10b981; color:#fff;">🎓 ${I18N.ta.learnerDashboard}</a>`
-                  : (!isSubscriber
-                    ? `<button class="header-btn header-btn-upgrade" onclick="TamilAuth.openCheckoutModal()">💳 ${I18N.ta.subscribe}</button>`
-                    : ''))
+                : (isTeacher
+                  ? `<a href="teacher-dashboard.html" class="header-btn" style="background:#3b82f6; color:#fff;">📘 ${I18N.ta.teacherDashboard}</a>`
+                  : (isLearner
+                    ? `<a href="learner-dashboard.html" class="header-btn" style="background:#10b981; color:#fff;">🎓 ${I18N.ta.learnerDashboard}</a>`
+                    : (!isSubscriber
+                      ? `<button class="header-btn header-btn-upgrade" onclick="TamilAuth.openCheckoutModal()">💳 ${I18N.ta.subscribe}</button>`
+                      : '')))
             }
             ${
               isGuest
@@ -412,7 +417,7 @@
             <form id="auth-form-login" onsubmit="TamilAuth.handleLogin(event)">
               <div class="auth-form-group">
                 <label>${I18N.ta.emailLabel}</label>
-                <input type="email" id="login-email" class="auth-form-input" placeholder="student@tamilapp.com" required />
+                <input type="email" id="login-email" class="auth-form-input" placeholder="teacher@tamilapp.com" required />
               </div>
               <div class="auth-form-group">
                 <label>${I18N.ta.passwordLabel}</label>
@@ -443,6 +448,7 @@
               <h4>${I18N.ta.demoHeader}</h4>
               <div class="demo-btn-group">
                 <button type="button" class="demo-btn" onclick="TamilAuth.fillDemo('student@tamilapp.com', 'student123')">🎓 மாணவர் (Learner)</button>
+                <button type="button" class="demo-btn" onclick="TamilAuth.fillDemo('teacher@tamilapp.com', 'teacher123')">📘 ஆசிரியர் (Teacher)</button>
                 <button type="button" class="demo-btn" onclick="TamilAuth.fillDemo('admin@tamilapp.com', 'admin123')">👑 நிர்வாகி (Admin)</button>
               </div>
             </div>
@@ -592,9 +598,11 @@
         this.showAlert(I18N.ta.loginSuccess, 'success');
         setTimeout(() => {
           this.closeModal('auth');
-          if (res.user.role === ROLES.LEARNER) {
+          if (res.user.role === ROLES.TEACHER) {
+            window.location.href = 'teacher-dashboard.html';
+          } else if (res.user.role === ROLES.LEARNER) {
             window.location.href = 'learner-dashboard.html';
-          } else if (res.user.role === ROLES.ADMIN || res.user.role === ROLES.TEACHER) {
+          } else if (res.user.role === ROLES.ADMIN) {
             window.location.href = 'admin.html';
           } else {
             window.location.reload();
@@ -663,7 +671,26 @@
       }, 1000);
     }
 
-    /* ---------- Learner Progress Helper ---------- */
+    /* ---------- Teacher & Student Data Helpers ---------- */
+    getTeacherClassData() {
+      return {
+        totalStudents: 24,
+        activeAssignments: 3,
+        pendingDictations: 5,
+        avgClassProgress: 78,
+        students: [
+          { name: 'கார்த்திக் (Karthik)', email: 'karthik@student.com', progress: 85, completedCount: 25, lastActive: 'இன்று (Today)' },
+          { name: 'பிரியா (Priya)', email: 'priya@student.com', progress: 70, completedCount: 21, lastActive: 'நேற்று (Yesterday)' },
+          { name: 'அனுஷ்கா (Anushka)', email: 'anushka@student.com', progress: 95, completedCount: 28, lastActive: 'இன்று (Today)' },
+          { name: 'அர்ஜுன் (Arjun)', email: 'arjun@student.com', progress: 60, completedCount: 18, lastActive: '3 நாட்களுக்கு முன்' }
+        ],
+        assignments: [
+          { id: 'asgn1', title: 'பகுதி 06: தமிழ் வார்த்தைகள் பொருத்துதல்', dueDate: 'வெள்ளிக்கிழமை (Fri)', status: 'Active', submissions: '18/24' },
+          { id: 'asgn2', title: 'பகுதி 18: சொல்வதை எழுதுதல் (Dictation)', dueDate: 'ஞாயிற்றுக்கிழமை (Sun)', status: 'Active', submissions: '12/24' }
+        ]
+      };
+    }
+
     getLearnerProgress() {
       const defaultProgress = {
         completedModules: [
