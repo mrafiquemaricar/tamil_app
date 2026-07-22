@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>வார்த்தைகள் படிப்போம்</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #00f;
+      text-align: center;
+    }
+
+    #categorySelect {
+      width: 100%;
+      max-width: 400px;
+      padding: 10px;
+      font-size: 1.1em;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .flashcard {
+      width: 90%;
+      max-width: 400px;
+      height: 250px;
+      margin: 0 auto 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: silver;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      font-size: 2em;
+      user-select: none;
+    }
+
+    .controls {
+      margin: 20px 0;
+    }
+
+    .controls button {
+      padding: 10px 15px;
+      margin: 0 8px;
+      font-size: 3em;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #0000ff;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    .controls button:hover {
+      background: #ffa500;
+    }
+
+    #home {
+      text-decoration: none;
+      background-color: #0000ff;
+      color: #ffffff;
+      padding: 10px;
+      border-radius: 15px;
+    }
+    
+  </style>
+</head>
+
+<body>
+
+  <a id="home" href="index.html"> ◀ முகப்பு</a>
+  <h1>வார்த்தைகள் படிப்போம்</h1>
+  <select id="categorySelect">
+    <option value="">-- தேர்வு செய்யவும் --</option>
+  </select>
+
+  <div class="flashcard" id="flashcard">
+    <div id="cardContent">⚡ முதலில் பிரிவைத் தேர்வு செய்யவும்</div>
+  </div>
+
+  <div class="controls">
+    <button id="prevBtn">◀ </button>
+    <button id="readBtn">🔊 </button>
+    <button id="nextBtn">▶ </button>
+  </div>
+
+  <script>
+    const sheetUrl = 'word_list.csv';
+
+    let cards = [];
+    let filteredCards = [];
+    let currentIndex = 0;
+
+    function parseCSV(text) {
+      const rows = [];
+      let cur = [];
+      let field = '';
+      let inQuotes = false;
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (ch === '"') {
+          if (inQuotes && text[i + 1] === '"') {
+            field += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (ch === ',' && !inQuotes) {
+          cur.push(field);
+          field = '';
+        } else if ((ch === '\n' || ch === '\r') && !inQuotes) {
+          if (ch === '\r' && text[i + 1] === '\n') i++;
+          cur.push(field);
+          field = '';
+          let allEmpty = true;
+          for (let j = 0; j < cur.length; j++) {
+            if ((cur[j] || '').trim() !== '') {
+              allEmpty = false;
+              break;
+            }
+          }
+          if (!allEmpty) rows.push(cur);
+          cur = [];
+        } else {
+          field += ch;
+        }
+      }
+      if (field !== '' || cur.length > 0) {
+        cur.push(field);
+        let allEmpty = true;
+        for (let j = 0; j < cur.length; j++) {
+          if ((cur[j] || '').trim() !== '') {
+            allEmpty = false;
+            break;
+          }
+        }
+        if (!allEmpty) rows.push(cur);
+      }
+      return rows;
+    }
+
+    function loadCards() {
+      fetch(sheetUrl).then(function (res) {
+        if (!res.ok) throw new Error('Network response was not ok: ' + res.status);
+        return res.text();
+      }).then(function (text) {
+        const rawRows = parseCSV(text);
+        if (rawRows.length === 0) {
+          cards = [];
+          loadCategories();
+          return;
+        }
+        const header = rawRows[0].map(function (h) { return (h || '').trim(); });
+        if (header.length > 0) header[0] = header[0].replace(/^\uFEFF/, '');
+        let catIndex = header.indexOf('Category');
+        let tamilIndex = header.indexOf('Tamil');
+        if (catIndex === -1 || tamilIndex === -1) {
+          for (let i = 0; i < header.length; i++) {
+            const h = (header[i] || '').toLowerCase();
+            if (h === 'category') catIndex = i;
+            if (h === 'tamil') tamilIndex = i;
+          }
+        }
+        if (catIndex === -1) catIndex = 0;
+        if (tamilIndex === -1) tamilIndex = 1;
+
+        cards = [];
+        for (let r = 1; r < rawRows.length; r++) {
+          const row = rawRows[r];
+          const cat = (row[catIndex] || '').trim();
+          const tam = (row[tamilIndex] || '').trim();
+          if (cat && tam) {
+            cards.push({ Category: cat, Tamil: tam });
+          }
+        }
+        loadCategories();
+      }).catch(function (err) {
+        alert("CSV படிப்பதில் பிழை: " + err);
+        console.error(err);
+      });
+    }
+
+    function loadCategories() {
+      const select = document.getElementById('categorySelect');
+      while (select.options.length > 1) select.remove(1);
+      const set = {};
+      const categories = [];
+      for (let i = 0; i < cards.length; i++) {
+        const c = cards[i].Category;
+        if (!set[c]) {
+          set[c] = true;
+          categories.push(c);
+        }
+      }
+      for (let i = 0; i < categories.length; i++) {
+        const option = document.createElement('option');
+        option.value = categories[i];
+        option.textContent = categories[i];
+        select.appendChild(option);
+      }
+      select.onchange = function () {
+        currentIndex = 0;
+        filterCards();
+        showCard();
+      };
+      // 🔹 Do not auto-show first word here
+    }
+
+    function filterCards() {
+      const selectedCategory = document.getElementById('categorySelect').value;
+      if (selectedCategory === '') {
+        filteredCards = [];
+      } else {
+        filteredCards = [];
+        for (let i = 0; i < cards.length; i++) {
+          if (cards[i].Category === selectedCategory) filteredCards.push(cards[i]);
+        }
+      }
+    }
+
+    function showCard() {
+      const cardDiv = document.getElementById('cardContent');
+      if (filteredCards.length === 0) {
+        cardDiv.textContent = '⚡ முதலில் பிரிவைத் தேர்வு செய்யவும்';
+        return;
+      }
+      const idx = currentIndex % filteredCards.length;
+      const card = filteredCards[idx];
+      cardDiv.textContent = card.Tamil;
+    }
+
+    document.getElementById('prevBtn').addEventListener('click', function () {
+      if (filteredCards.length === 0) return;
+      currentIndex = (currentIndex - 1 + filteredCards.length) % filteredCards.length;
+      showCard();
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', function () {
+      if (filteredCards.length === 0) return;
+      currentIndex = (currentIndex + 1) % filteredCards.length;
+      showCard();
+    });
+
+    document.getElementById('readBtn').addEventListener('click', function () {
+      if (filteredCards.length === 0) return;
+      const card = filteredCards[currentIndex % filteredCards.length];
+      if (!window.speechSynthesis) return;
+      const utterance = new SpeechSynthesisUtterance(card.Tamil);
+      utterance.lang = 'ta-IN';
+      speechSynthesis.speak(utterance);
+    });
+
+    loadCards();
+  </script>
+
+</body>
+
+</html>

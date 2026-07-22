@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>மரபுத் தொடர்</title>
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            padding: 20px;
+            max-width: 700px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #00f;
+            /* font-size: 1.5rem; */
+            margin-bottom: 1rem;
+        }
+
+        .question {
+            /* question area */
+            text-align: center;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            font-size: 1.5rem;
+            line-height: 2.5rem;
+            margin: 2rem 0;
+            white-space: pre-line;
+            /* 👈 ensures \n is shown as line break */
+        }
+
+        .blank {
+            display: inline-flex;
+            justify-content: center;
+            /* center horizontally */
+            align-items: center;
+            /* center vertically */
+            min-width: 6rem;
+            max-width: 100%;
+            height: 2rem;
+            border: 1px solid #555;
+            padding: 0.1rem 0.3rem;
+            text-align: center;
+            cursor: pointer;
+            word-break: break-word;
+        }
+
+
+        .blank.selected {
+            border-color: blue;
+            background: #d0e8ff;
+        }
+
+        .blank.correct {
+            border-color: green;
+            background: #d4edda;
+        }
+
+        .blank.incorrect {
+            border-color: red;
+            background: #f8d7da;
+        }
+
+        .words {
+            margin: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.3rem;
+        }
+
+        .word-chunk {
+            background: #15ff00;
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+            font-size: 1.1rem;
+        }
+
+        .word-chunk.used {
+            background: #a3c8ff;
+            cursor: default;
+        }
+
+        button {
+            margin: 1rem 0.3rem;
+            /* font-size: 1.2rem; */
+            padding: 0.5rem 1rem;
+        }
+
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .controls button {
+            padding: 10px 15px;
+            font-size: 4em;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #0000ff;
+            color: white;
+            transition: background 0.3s;
+        }
+
+        .controls button:hover {
+            background: #ffa500;
+        }
+
+        #home {
+            text-decoration: none;
+            background-color: #0000ff;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 15px;
+        }
+    </style>
+</head>
+
+
+<body>
+    <a id="home" href="index.html"> ◀ முகப்பு</a>
+    <h1>மரபுத் தொடர்</h1>
+    <hr>
+    <div id="paragraph"></div>
+    <div class="words" id="wordChunks" aria-live="polite"></div>
+    <hr>
+    <div class="controls">
+        <button id="checkBtn">✔</button>
+        <button id="nextBtn">▶</button>
+    </div>
+
+    <script>
+        const questions = [
+            "ஓட்டப்பந்தயத்தில் கண்ணன் /வெளுத்து வாங்கி/ விட்டான்.",
+            "வியாபாரம் பெருகி செல்வத்தை /அள்ளி குவித்தார்./",
+            "அப்பாவுக்கு வியாபாரம் /கையை கடித்து/ விட்டது.",
+            "/மூச்சு பிடித்தால்/ முன்னுக்கு வந்துவிடலாம்.",
+            "அவருக்கு நாம் /கை கொடுத்து/ உதவ வேண்டும்.",
+            "நண்பனுக்கு அழகு /தோள் கொடுத்தல்./",
+            "/வேண்டா வெறுப்பாக/ காரியம் செய்தால் வெற்றி வராது.",
+            "மற்றவரை /புண்படுத்தி/ பேசக்கூடாது.",
+            "/கண்ணும் கருத்துமாய்/ தேர்வுக்கு படித்தான்.",
+            "நம்பியவன் /நட்டாற்றில் விட்டு/ விட்டான்.",
+            "போட்டியில் வெற்றி பெற வேண்டும் என்று குழு /கங்கணம் கட்டியது/.",
+            "வேலையாட்களை /தட்டிக் கொடுத்து/ வேலை வாங்க வேண்டும்.",
+            "/கட்டுக்கதை/ கட்டாதே.",
+            "பேசிக்கொண்டு இருக்கும்போதே /கை நீட்டி/ விட்டான்.",
+            "எந்த ஒரு விஷயத்திலும் /குரங்கு பிடிவாதம்/ பிடிக்கக்கூடாது.",
+            "/இலவு காத்த கிளி/ போல ஏமாந்து விட்டேன்.",
+            "ஒரு குற்றத்தை மறைக்க /பூசி மெழுக/ கூடாது.",
+            "/அறக்கப் பறக்க/ பேருந்தை பிடிக்க ஓடினான்.",
+            "/எடுத்தெறிந்து/ பேசாதே.",
+            "/கண்மூடித்தனமாக/ எவரையும் பின்பற்றாதே."
+        ];
+
+        let remaining = [...questions];
+        let currentBatch = [];
+        let selectedBlank = null;
+
+        const paragraphDiv = document.getElementById('paragraph');
+        const wordChunksDiv = document.getElementById('wordChunks');
+        const nextBtn = document.getElementById('nextBtn');
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function pickBatch() {
+            if (remaining.length === 0) {
+                paragraphDiv.innerHTML = "<h2>🎉 அனைத்து கேள்விகளும் முடிந்துவிட்டது!</h2>";
+                wordChunksDiv.innerHTML = "";
+                nextBtn.style.display = "none";
+                return false;
+            }
+            const batch = remaining.splice(0, 3);
+            currentBatch = batch;
+            return true;
+        }
+
+        function prepareAndRender() {
+            if (!pickBatch()) return;
+
+            paragraphDiv.innerHTML = "";
+            wordChunksDiv.innerHTML = "";
+            selectedBlank = null;
+
+            let allMissing = [];
+
+            currentBatch.forEach(sentence => {
+                const regex = /\/(.*?)\//g;
+                let match, pos = 0;
+                let line = '';
+                const missingWords = [];
+
+                while ((match = regex.exec(sentence)) !== null) {
+                    line += sentence.slice(pos, match.index) + '__';
+                    missingWords.push(match[1]);
+                    pos = match.index + match[0].length;
+                }
+                line += sentence.slice(pos);
+
+                allMissing = allMissing.concat(missingWords);
+
+                const qDiv = document.createElement('div');
+                qDiv.className = 'question';
+                const parts = line.split('__');
+                qDiv.appendChild(document.createTextNode(parts[0]));
+
+                missingWords.forEach((word, i) => {
+                    const blank = document.createElement('span');
+                    blank.className = 'blank';
+
+                    // tap to select
+                    blank.addEventListener('click', () => {
+                        document.querySelectorAll('.blank').forEach(b => b.classList.remove('selected'));
+                        blank.classList.add('selected');
+                        selectedBlank = blank;
+                    });
+
+                    // allow drop
+                    blank.addEventListener('dragover', e => e.preventDefault());
+                    blank.addEventListener('drop', e => {
+                        e.preventDefault();
+                        const word = e.dataTransfer.getData('text/plain');
+                        if (!word) return;
+
+                        // free old word
+                        const prev = blank.textContent.trim();
+                        if (prev) {
+                            const prevChunk = document.querySelector(`.word-chunk[data-word="${prev}"]`);
+                            if (prevChunk) prevChunk.classList.remove('used');
+                        }
+
+                        blank.textContent = word;
+                        const chunk = document.querySelector(`.word-chunk[data-word="${word}"]`);
+                        if (chunk) chunk.classList.add('used');
+                    });
+
+                    qDiv.appendChild(blank);
+                    qDiv.appendChild(document.createTextNode(parts[i + 1]));
+                });
+
+                paragraphDiv.appendChild(qDiv);
+            });
+
+            // render chunks
+            shuffle(allMissing).forEach(word => {
+                const chunk = document.createElement('div');
+                chunk.className = 'word-chunk';
+                chunk.textContent = word;
+                chunk.dataset.word = word;
+                chunk.setAttribute('draggable', 'true');
+
+                // drag
+                chunk.addEventListener('dragstart', e => {
+                    e.dataTransfer.setData('text/plain', word);
+                });
+
+                // tap to fill
+                chunk.addEventListener('click', function () {
+                    if (!selectedBlank || this.classList.contains('used')) return;
+
+                    // free previous word
+                    const prev = selectedBlank.textContent.trim();
+                    if (prev) {
+                        const prevChunk = document.querySelector(`.word-chunk[data-word="${prev}"]`);
+                        if (prevChunk) prevChunk.classList.remove('used');
+                    }
+
+                    selectedBlank.textContent = this.dataset.word;
+                    this.classList.add('used');
+
+                    selectedBlank.classList.remove('selected');
+                    selectedBlank = null;
+                });
+
+                wordChunksDiv.appendChild(chunk);
+            });
+        }
+
+        function checkAnswers() {
+            let blanks = document.querySelectorAll('.blank');
+            let answerIndex = 0;
+
+            currentBatch.forEach(sentence => {
+                const regex = /\/(.*?)\//g;
+                let match;
+                while ((match = regex.exec(sentence)) !== null) {
+                    const correct = match[1];
+                    const blank = blanks[answerIndex];
+                    if ((blank.textContent || "").trim() === correct) {
+                        blank.classList.add('correct');
+                        blank.classList.remove('incorrect');
+                    } else {
+                        blank.classList.add('incorrect');
+                        blank.classList.remove('correct');
+                    }
+                    answerIndex++;
+                }
+            });
+        }
+
+        document.getElementById('checkBtn').addEventListener('click', checkAnswers);
+        nextBtn.addEventListener('click', prepareAndRender);
+
+        // first batch
+        prepareAndRender();
+    </script>
+</body>
+
+</html>

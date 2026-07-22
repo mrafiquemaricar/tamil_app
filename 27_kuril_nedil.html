@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>குறில் - நெடில்</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f4f8;
+            color: #333;
+            max-width: 700px;
+            margin: auto;
+            text-align: center;
+        }
+
+        h1 {
+            color: #00f;
+            text-align: center;
+        }
+
+        .paragraph {
+            font-size: 1.5rem;
+            line-height: 2.5rem;
+            margin-bottom: 2rem;
+            user-select: none;
+        }
+
+        .line {
+            margin-bottom: 1.2rem;
+        }
+
+        .blank-container {
+            display: inline-flex;
+            align-items: center;
+            margin: 0 0.3rem;
+        }
+
+        .blank {
+            display: inline-block;
+            min-width: 5rem;
+            height: 2rem;
+            border: 2px solid #555;
+            padding: 0.3rem 0.5rem;
+            cursor: pointer;
+            vertical-align: bottom;
+            text-align: center;
+            user-select: none;
+            transition: border-color 0.2s ease, background-color 0.2s ease;
+        }
+
+        .blank.selected {
+            border-color: #007bff;
+            background-color: #d0e8ff;
+        }
+
+        .blank.correct {
+            border-color: #28a745 !important;
+            background-color: #d4edda !important;
+            color: #155724;
+        }
+
+        .blank.incorrect {
+            border-color: #dc3545 !important;
+            background-color: #f8d7da !important;
+            color: #721c24;
+        }
+
+        .mark {
+            font-size: 1.3rem;
+            margin-left: 0.4rem;
+            user-select: none;
+        }
+
+        .words {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+
+        .word-chunk {
+            background-color: #15ff00;
+            color: black;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            user-select: none;
+            cursor: grab;
+            transition: background-color 0.2s ease;
+        }
+
+        .word-chunk:hover {
+            background-color: #0056b3;
+            color: white;
+        }
+
+        .word-chunk.used {
+            background-color: #a3c8ff;
+            color: #004085;
+            cursor: default;
+        }
+
+        #message {
+            margin-top: 1.5rem;
+            font-weight: 700;
+            font-size: 1.3rem;
+            text-align: center;
+        }
+
+        #message.success {
+            color: #28a745;
+        }
+
+        #message.fail {
+            color: #dc3545;
+        }
+
+        .buttons {
+            margin-top: 2rem;
+            text-align: center;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        button {
+            background-color: #0000ff;
+            border: none;
+            color: white;
+            font-size: 2.5rem;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #ffa500;
+        }
+
+        #home {
+            text-decoration: none;
+            background-color: #0000ff;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <a id="home" href="index.html"> ◀ முகப்பு</a>
+
+    <h1>குறில் - நெடில்</h1>
+    <hr>
+    <div class="paragraph" id="paragraph"></div>
+
+    <div class="words" id="wordChunks"></div>
+
+    <div id="message"></div>
+    <hr>
+    <div class="buttons">
+        <button id="checkBtn">✔</button>
+        <button id="answerBtn">?</button>
+        <button id="resetBtn">↩</button>
+        <button id="nextBtn">▶</button>
+    </div>
+
+    <script>
+        const sentences = [
+            "கடல் /அலை/ பெரிதாக எழுந்தது.  எங்கள் கிராமத்தில் சர்க்கரை /ஆலை/  உள்ளது.",
+            "உடல் நலத்திற்கு /அறு/ சுவையும் அவசியம். காவிரி /ஆறு/ தமிழகத்தில் ஓடுகிறது.",
+            "காலை உணவுக்கு /அவல்/ சாப்பிட்டேன்.  எனக்கு புத்தகம் படிக்க /ஆவல்/ அதிகம்.",
+            "அரசன் நிரம்பிய /அணை/யை திறக்க /ஆணை/யிட்டான்.",
+            "கல்லை குளத்தில் /எறி/யாதே.  அவன் படிக்கட்டில் /ஏறி/ சென்றான்.",
+            "/ஒலி/ தெளிவாக கேட்டது. சூரியன் /ஒளி/ வீசியது.",
+            "/ஒட்டு/ காகிதம் அழகாக இருந்தது.  அவன் தேர்தலில் /ஓட்டு/ போட்டான்.",
+            "/கல்/ தடுக்கியதால், எனக்குக் /கால்/ வலிக்கிறது.",
+            "என் /பல்/ வலிமையாக உள்ளது. ஆட்டுப் /பால்/ உடலுக்கு நல்லது.",
+            "மழை வந்தால் /குடை/ தேவை. அந்தக் /கூடை/ பெரியதாக உள்ளது.",
+            "மாடு வைக்கோலை /அசை/ போடுகிறது. உயரமான மலையின் மீது ஏற /ஆசை/.",
+            "அந்த /ஏடு/ என்னுடையது.  அதனை /எடு/.",
+            "/கவி/ பாடுகிறார், /காவி/ உடை அணிந்த மனிதர்.",
+            "/கோழி/ இடுவது முட்டை.  முதுகில் சுமப்பது /மூட்டை/.", 
+            "/சட்டை/ அணிந்த மனிதரின் கையில் இருக்கிறது /சாட்டை/.", 
+            "/பனை/ மரம் ஏறுபவரின் இடுப்பில் /பானை/.", 
+            "பாட்டி சுடும் /வடை/யின் /வாடை/ என்னை இழுக்கிறது.", 
+            "/படம்/ சொல்லும் /பாடம்/ என்ன?", 
+            "/சதம்/ என்றால் நூறு. /சாதம்/ என்றால் சோறு.", 
+            "விரலில் இருப்பது /நகம்/. விஷத்தைக் கக்குவது /நாகம்/.", 
+            "/மாலை/ நேரத்தில், /மலை/யில் ஏறினேன்.", 
+            "கேட்ட /வரம்/ கிடைத்தது அடுத்த /வாரம்/.",
+            "/வசி/க்க வீடு. /வாசி/க்க புத்தகம்.",
+            "/தாடி/ வைத்திருப்பவர் கையில் /தடி/.",
+            "மரங்களை /நடு/. /நாடு/ நலம் பெறும்.", 
+            "கெட்ட பழக்கங்களை /விடு/.  /வீடு/ வளம் பெறும்",
+            "கயிற்றால் /கட்டு/. அறையைக் /காட்டு/.",
+            "/பட்டு/ச் சேலை. இனிமையான /பாட்டு/"
+        ];
+
+
+        let currentData = null;
+        let selectedBlank = null;
+        const paragraphDiv = document.getElementById('paragraph');
+        const wordChunksDiv = document.getElementById('wordChunks');
+        const message = document.getElementById('message');
+        const checkBtn = document.getElementById('checkBtn');
+        const answerBtn = document.getElementById('answerBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        const wordUsage = new Map();
+
+        function prepareQuiz() {
+            const sentence = sentences[Math.floor(Math.random() * sentences.length)];
+            const matches = [...sentence.matchAll(/\/([^/]+)\//g)].map(m => m[1]);
+            let modified = sentence.replace(/\/([^/]+)\//g, '__');
+            currentData = { sentence: modified, answers: matches };
+        }
+
+        function renderQuiz() {
+            selectedBlank = null;
+            message.textContent = '';
+            message.className = '';
+            paragraphDiv.innerHTML = '';
+            wordChunksDiv.innerHTML = '';
+            wordUsage.clear();
+
+            const { sentence, answers } = currentData;
+
+            const parts = sentence.split('__');
+            let lineDiv = document.createElement('div');
+            lineDiv.className = 'line';
+
+            for (let i = 0; i < parts.length; i++) {
+                lineDiv.appendChild(document.createTextNode(parts[i]));
+                if (i < answers.length) {
+                    const blankContainer = document.createElement('span');
+                    blankContainer.className = 'blank-container';
+
+                    const blankSpan = document.createElement('span');
+                    blankSpan.className = 'blank';
+                    blankSpan.setAttribute('data-index', i);
+                    blankContainer.appendChild(blankSpan);
+
+                    const markSpan = document.createElement('span');
+                    markSpan.className = 'mark';
+                    blankContainer.appendChild(markSpan);
+
+                    lineDiv.appendChild(blankContainer);
+                }
+            }
+            paragraphDiv.appendChild(lineDiv);
+
+            const shuffledChunks = shuffleArray(answers.slice());
+            for (let word of shuffledChunks) {
+                const wordDiv = document.createElement('div');
+                wordDiv.className = 'word-chunk';
+                wordDiv.setAttribute('data-word', word);
+                wordDiv.textContent = word;
+                wordChunksDiv.appendChild(wordDiv);
+            }
+
+            attachListeners();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function attachListeners() {
+            const blanks = document.querySelectorAll('.blank');
+            const chunks = document.querySelectorAll('.word-chunk');
+
+            blanks.forEach(blank => {
+                blank.addEventListener('click', () => {
+                    if (blank.textContent.trim() !== '') {
+                        blank.textContent = '';
+                        const mark = blank.parentElement.querySelector('.mark');
+                        if (mark) mark.textContent = '';
+                        blank.classList.remove('correct', 'incorrect', 'selected');
+
+                        if (wordUsage.has(blank)) {
+                            const chunkElem = wordUsage.get(blank);
+                            chunkElem.classList.remove('used');
+                            chunkElem.style.pointerEvents = 'auto';
+                            wordUsage.delete(blank);
+                        }
+                        selectedBlank = null;
+                        message.textContent = '';
+                        message.className = '';
+                        return;
+                    }
+                    blanks.forEach(b => b.classList.remove('selected'));
+                    selectedBlank = blank;
+                    blank.classList.add('selected');
+                });
+
+                // 👉 Drag and drop support
+                blank.addEventListener('dragover', e => e.preventDefault());
+                blank.addEventListener('drop', e => {
+                    e.preventDefault();
+                    const word = e.dataTransfer.getData("text/plain");
+                    if (!word) return;
+                    if (wordUsage.has(blank)) {
+                        const prevChunk = wordUsage.get(blank);
+                        prevChunk.classList.remove('used');
+                        prevChunk.style.pointerEvents = 'auto';
+                        wordUsage.delete(blank);
+                    }
+                    blank.textContent = word;
+                    blank.classList.remove('correct', 'incorrect');
+                    const mark = blank.parentElement.querySelector('.mark');
+                    if (mark) mark.textContent = '';
+                    const chunkElem = [...document.querySelectorAll('.word-chunk')]
+                        .find(c => c.getAttribute('data-word') === word && !c.classList.contains('used'));
+                    if (chunkElem) {
+                        chunkElem.classList.add('used');
+                        chunkElem.style.pointerEvents = 'none';
+                        wordUsage.set(blank, chunkElem);
+                    }
+                });
+            });
+
+            chunks.forEach(chunk => {
+                chunk.style.pointerEvents = 'auto';
+                chunk.setAttribute("draggable", "true");
+                chunk.addEventListener("dragstart", e => {
+                    e.dataTransfer.setData("text/plain", chunk.getAttribute("data-word"));
+                });
+
+                chunk.addEventListener('click', () => {
+                    if (chunk.classList.contains('used')) return;
+                    if (!selectedBlank) {
+                        alert('முதலில் ஒரு இடத்தைத் தேர்ந்தெடுக்கவும்');
+                        return;
+                    }
+                    if (wordUsage.has(selectedBlank)) {
+                        const prevChunk = wordUsage.get(selectedBlank);
+                        prevChunk.classList.remove('used');
+                        prevChunk.style.pointerEvents = 'auto';
+                        wordUsage.delete(selectedBlank);
+                    }
+                    selectedBlank.textContent = chunk.getAttribute('data-word');
+                    chunk.classList.add('used');
+                    chunk.style.pointerEvents = 'none';
+                    wordUsage.set(selectedBlank, chunk);
+                    selectedBlank = null;
+                });
+            });
+        }
+
+        function checkAnswers() {
+            const blanks = document.querySelectorAll('.blank');
+            const answers = currentData.answers;
+            blanks.forEach((blank, i) => {
+                const mark = blank.parentElement.querySelector('.mark');
+                if (blank.textContent === answers[i]) {
+                    blank.classList.add('correct');
+                    blank.classList.remove('incorrect');
+                    if (mark) mark.textContent = '✅';
+                } else {
+                    blank.classList.add('incorrect');
+                    blank.classList.remove('correct');
+                    if (mark) mark.textContent = '❌';
+                }
+            });
+        }
+
+        checkBtn.addEventListener('click', checkAnswers);
+
+        answerBtn.addEventListener('click', () => {
+            const blanks = document.querySelectorAll('.blank');
+            const answers = currentData.answers;
+            blanks.forEach((blank, i) => {
+                blank.textContent = answers[i];
+                blank.classList.remove('selected', 'incorrect');
+                blank.classList.add('correct');
+                const mark = blank.parentElement.querySelector('.mark');
+                if (mark) mark.textContent = '✅';
+            });
+            document.querySelectorAll('.word-chunk').forEach(c => {
+                c.classList.add('used');
+                c.style.pointerEvents = 'none';
+            });
+            wordUsage.clear();
+            selectedBlank = null;
+            message.className = 'success';
+        });
+
+        resetBtn.addEventListener('click', () => {
+            const blanks = document.querySelectorAll('.blank');
+            blanks.forEach(blank => {
+                blank.textContent = '';
+                blank.classList.remove('selected', 'correct', 'incorrect');
+                const mark = blank.parentElement.querySelector('.mark');
+                if (mark) mark.textContent = '';
+            });
+            wordUsage.forEach(chunk => {
+                chunk.classList.remove('used');
+                chunk.style.pointerEvents = 'auto';
+            });
+            wordUsage.clear();
+            selectedBlank = null;
+            message.textContent = '';
+            message.className = '';
+        });
+
+        nextBtn.addEventListener('click', () => {
+            wordUsage.clear();
+            prepareQuiz();
+            renderQuiz();
+        });
+
+        prepareQuiz();
+        renderQuiz();
+    </script>
+</body>
+
+</html>

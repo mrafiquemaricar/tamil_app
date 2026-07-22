@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>எழுத்துப் பயிற்சி</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f9f9f9;
+            text-align: center;
+        }
+
+        #home {
+            text-decoration: none;
+            background-color: #0000ff;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 15px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .buttons {
+            margin: 10px 0;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #eee;
+        }
+
+        button.active {
+            background: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+
+        .letters-container {
+            max-height: 200px;
+            /* adjust to your preference */
+            overflow-y: auto;
+            /* shows vertical scrollbar when needed */
+            margin: 10px auto;
+            padding: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            /* keep your buttons wrapping */
+            justify-content: center;
+        }
+
+        .letter-btn {
+            padding: 10px 14px;
+            margin: 5px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            background: #f4f4f4;
+        }
+
+        .letter-btn.active {
+            background: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+
+        .color-picker {
+            margin-right: 10px;
+        }
+
+        /* 🔹 Center and make responsive */
+        .canvas-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            /* keep original max size */
+            aspect-ratio: 3/2;
+            /* maintain 600x400 ratio */
+        }
+
+        canvas {
+            border: 1px solid #ccc;
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            /* responsive width */
+            height: 100%;
+            /* responsive height */
+        }
+
+        #guidelineCanvas {
+            z-index: 0;
+        }
+
+        #drawCanvas {
+            z-index: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <a id="home" href="index.html"> ◀ முகப்பு</a>
+
+    <h1>எழுத்துப் பயிற்சி</h1>
+
+    <!-- 🔹 Toggle buttons -->
+    <div class="buttons">
+        <button id="uyirBtn" class="active">உயிர்</button>
+        <button id="meiBtn">மெய்</button>
+        <button id="uyirmeiBtn">உயிர் மெய்</button>
+    </div>
+
+    <div class="letters-container" id="letterButtons"></div>
+
+    <div class="buttons">
+        <input type="color" id="colorPicker" class="color-picker" value="#0000ff">
+        <button id="penBtn" class="active">✏️ எழுத</button>
+        <button id="eraseBtn">🧽 அழிக்க </button>
+        <button id="clearBtn">🗑️ முற்றாக அழிக்க</button>
+    </div>
+
+    <!-- 🔹 Responsive centered canvas -->
+    <div class="canvas-wrapper">
+        <div class="canvas-container">
+            <canvas id="guidelineCanvas" width="600" height="400"></canvas>
+            <canvas id="drawCanvas" width="600" height="400"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const uyirLetters = ['அ', 'ஆ', 'இ', 'ஈ', 'உ', 'ஊ', 'எ', 'ஏ', 'ஐ', 'ஒ', 'ஓ', 'ஔ'];
+        const meiLetters = ['க்', 'ங்', 'ச்', 'ஞ்', 'ட்', 'ண்', 'த்', 'ந்', 'ப்', 'ம்', 'ய்', 'ர்', 'ல்', 'வ்', 'ழ்', 'ள்', 'ற்', 'ன்'];
+        const uyirmeiLetters = ['க', 'கா', 'கி', 'கீ', 'கு', 'கூ', 'கெ', 'கே', 'கை', 'கொ', 'கோ', 'கௌ', 'ஙே', 'ச', 'சா', 'சி', 'சீ', 'சு', 'சூ', 'செ', 'சே', 'சை', 'சொ', 'சோ', 'சௌ', 'ஞ', 'ஞா', 'ஞெ', 'ஞே', 'ஞை', 'ட', 'டா', 'டி', 'டீ', 'டு', 'டூ', 'டெ', 'டே', 'டை', 'டொ', 'டோ', 'டௌ', 'ண', 'ணா', 'ணி', 'ணீ', 'ணு', 'ணூ', 'ணெ', 'ணே', 'ணை', 'ணொ', 'ணோ', 'த', 'தா', 'தி', 'தீ', 'து', 'தூ', 'தெ', 'தே', 'தை', 'தொ', 'தோ', 'ந', 'நா', 'நி', 'நீ', 'நு', 'நூ', 'நெ', 'நே', 'நை', 'நொ', 'நோ', 'ப', 'பா', 'பி', 'பீ', 'பு', 'பூ', 'பெ', 'பே', 'பை', 'பொ', 'போ', 'பௌ', 'ம', 'மா', 'மி', 'மீ', 'மு', 'மூ', 'மெ', 'மே', 'மை', 'மொ', 'மோ', 'மௌ', 'ய', 'யா', 'யி', 'யீ', 'யு', 'யூ', 'யெ', 'யே', 'யை', 'யொ', 'யோ', 'யௌ', 'ர', 'ரா', 'ரி', 'ரீ', 'ரு', 'ரூ', 'ரெ', 'ரே', 'ரை', 'ரொ', 'ரோ', 'ரௌ', 'ல', 'லா', 'லி', 'லீ', 'லு', 'லூ', 'லெ', 'லே', 'லை', 'லொ', 'லோ', 'லௌ', 'வ', 'வா', 'வி', 'வீ', 'வு', 'வூ', 'வெ', 'வே', 'வை', 'வொ', 'வோ', 'வௌ', 'ழ', 'ழா', 'ழி', 'ழீ', 'ழு', 'ழூ', 'ழெ', 'ழே', 'ழை', 'ழொ', 'ழோ', 'ள', 'ளா', 'ளி', 'ளீ', 'ளு', 'ளூ', 'ளெ', 'ளே', 'ளை', 'ளொ', 'ளோ', 'ற', 'றா', 'றி', 'றீ', 'று', 'றூ', 'றெ', 'றே', 'றை', 'றொ', 'றோ', 'ன', 'னா', 'னி', 'னீ', 'னு', 'னூ', 'னெ', 'னே', 'னை', 'னொ', 'னோ'];
+
+        let letters = uyirLetters; // default
+        const letterContainer = document.getElementById("letterButtons");
+        const drawCanvas = document.getElementById("drawCanvas");
+        const guidelineCanvas = document.getElementById("guidelineCanvas");
+        const ctx = drawCanvas.getContext("2d");
+        const gctx = guidelineCanvas.getContext("2d");
+
+        let currentLetter = letters[0];
+        let drawing = false;
+        let erasing = false;
+        let penColor = "#0000ff";
+
+        // 🔹 regenerate letter buttons
+        function loadLetters(newLetters) {
+            letters = newLetters;
+            letterContainer.innerHTML = "";
+            letters.forEach(l => {
+                const btn = document.createElement("button");
+                btn.className = "letter-btn";
+                btn.textContent = l;
+                btn.onclick = () => {
+                    document.querySelectorAll(".letter-btn").forEach(b => b.classList.remove("active"));
+                    btn.classList.add("active");
+                    currentLetter = l;
+                    ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+                    drawGuideline();
+                };
+                letterContainer.appendChild(btn);
+            });
+
+            // set first letter active
+            currentLetter = letters[0];
+            letterContainer.querySelector("button").classList.add("active");
+            ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+            drawGuideline();
+        }
+
+        // 🔹 group toggle
+        function activateSet(setName) {
+            document.getElementById("uyirBtn").classList.remove("active");
+            document.getElementById("meiBtn").classList.remove("active");
+            document.getElementById("uyirmeiBtn").classList.remove("active");
+
+            if (setName === "uyir") {
+                document.getElementById("uyirBtn").classList.add("active");
+                loadLetters(uyirLetters);
+            } else if (setName === "mei") {
+                document.getElementById("meiBtn").classList.add("active");
+                loadLetters(meiLetters);
+            } else {
+                document.getElementById("uyirmeiBtn").classList.add("active");
+                loadLetters(uyirmeiLetters);
+            }
+        }
+
+        // 🔹 guideline
+
+        function drawGuideline() {
+            gctx.clearRect(0, 0, guidelineCanvas.width, guidelineCanvas.height);
+
+            let fontSize = 300; // start large
+            gctx.font = fontSize + "px sans-serif";
+            gctx.textAlign = "center";
+            gctx.textBaseline = "middle";
+
+            // shrink until it fits inside canvas width - some padding
+            let textWidth = gctx.measureText(currentLetter).width;
+            while (textWidth > guidelineCanvas.width - 40 && fontSize > 10) {
+                fontSize -= 10;
+                gctx.font = fontSize + "px sans-serif";
+                textWidth = gctx.measureText(currentLetter).width;
+            }
+
+            gctx.fillStyle = "#ccc";
+            gctx.fillText(currentLetter, guidelineCanvas.width / 2, guidelineCanvas.height / 2);
+        }
+
+
+        function OLDdrawGuideline() {
+            gctx.clearRect(0, 0, guidelineCanvas.width, guidelineCanvas.height);
+            gctx.fillStyle = "#ccc";
+            gctx.font = "300px sans-serif";
+            gctx.textAlign = "center";
+            gctx.textBaseline = "middle";
+            gctx.fillText(currentLetter, guidelineCanvas.width / 2, guidelineCanvas.height / 2);
+        }
+
+        // init
+        activateSet("uyir");
+
+        // drawing
+        function getPos(e) {
+            const rect = drawCanvas.getBoundingClientRect();
+            let x, y;
+            if (e.touches) {
+                x = e.touches[0].clientX - rect.left;
+                y = e.touches[0].clientY - rect.top;
+            } else {
+                x = e.clientX - rect.left;
+                y = e.clientY - rect.top;
+            }
+            x *= drawCanvas.width / rect.width;
+            y *= drawCanvas.height / rect.height;
+            return { x, y };
+        }
+
+        function startDraw(e) {
+            drawing = true;
+            ctx.beginPath();
+            const pos = getPos(e);
+            ctx.moveTo(pos.x, pos.y);
+            e.preventDefault();
+        }
+
+        function draw(e) {
+            if (!drawing) return;
+            const pos = getPos(e);
+            if (erasing) {
+                ctx.clearRect(pos.x - 10, pos.y - 10, 20, 20);
+            } else {
+                ctx.lineTo(pos.x, pos.y);
+                ctx.strokeStyle = penColor;
+                ctx.lineWidth = 8;
+                ctx.lineCap = "round";
+                ctx.lineJoin = "round";
+                ctx.stroke();
+            }
+            e.preventDefault();
+        }
+
+        function stopDraw() { drawing = false; }
+
+        drawCanvas.addEventListener("mousedown", startDraw);
+        drawCanvas.addEventListener("mousemove", draw);
+        drawCanvas.addEventListener("mouseup", stopDraw);
+        drawCanvas.addEventListener("mouseout", stopDraw);
+        drawCanvas.addEventListener("touchstart", startDraw);
+        drawCanvas.addEventListener("touchmove", draw);
+        drawCanvas.addEventListener("touchend", stopDraw);
+
+        // tools
+        document.getElementById("penBtn").addEventListener("click", () => {
+            erasing = false;
+            document.getElementById("penBtn").classList.add("active");
+            document.getElementById("eraseBtn").classList.remove("active");
+        });
+
+        document.getElementById("eraseBtn").addEventListener("click", () => {
+            erasing = true;
+            document.getElementById("eraseBtn").classList.add("active");
+            document.getElementById("penBtn").classList.remove("active");
+        });
+
+        document.getElementById("clearBtn").addEventListener("click", () => {
+            ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        });
+
+        document.getElementById("colorPicker").addEventListener("change", (e) => {
+            penColor = e.target.value;
+        });
+
+        // set buttons
+        document.getElementById("uyirBtn").onclick = () => activateSet("uyir");
+        document.getElementById("meiBtn").onclick = () => activateSet("mei");
+        document.getElementById("uyirmeiBtn").onclick = () => activateSet("uyirmei");
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>வேற்றுமைகள்</title>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      padding: 20px;
+      max-width: 700px;
+      margin: auto;
+    }
+
+    h1 {
+      color: #00f;
+      margin-bottom: 0.5rem;
+    }
+
+    #score {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      color: #333;
+    }
+
+    #paragraph {
+      text-align: center;
+      font-size: 1.5rem;
+      line-height: 2.5rem;
+      margin: 2rem 0;
+      white-space: pre-line;
+    }
+
+    .word-chunk {
+      background: #15ff00;
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      user-select: none;
+      font-size: 1.1rem;
+      margin: 5px;
+    }
+
+    .word-chunk.correct {
+      background: #28a745 !important;
+      color: white;
+    }
+
+    .word-chunk.incorrect {
+      background: #dc3545 !important;
+      color: white;
+    }
+
+    .words {
+      margin-top: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.3rem;
+    }
+
+    #home {
+      text-decoration: none;
+      background-color: #0000ff;
+      color: #ffffff;
+      padding: 10px;
+      border-radius: 15px;
+    }
+  </style>
+</head>
+
+<body>
+  <a id="home" href="index.html"> ◀ முகப்பு</a>
+  <h1>வேற்றுமைகள்</h1>
+
+
+  <h3> சரியான வேற்றுமை உருபைத் தேர்ந்தெடு</h3>
+<div id="score"></div>
+  <hr>
+  <div id="paragraph"></div>
+  <hr>
+  
+  <div class="words" id="wordChunks"></div>
+
+  <script>
+    const choices = ["ஐ", "ஆல்", "ஆன்", "ஒடு", "ஓடு", "கு", "இன்", "இல்", "அது", "ஆது", "அ", "கண்"];
+    const questions = [
+      //2
+      "செல்வத்தை அள்ளி குவித்தார்./ஐ",
+      "புத்தகத்தை வாசித்தார்./ஐ",
+      "பாடத்தை மனனம் செய்தார்./ஐ",
+      "உணவை உண்டு முடித்தார்./ஐ",
+      "மரத்தை நட்டு வளர்த்தார்./ஐ",
+      "கதையை இனிமையாகச் சொன்னார்./ஐ",
+      "கடிதத்தை எழுதினார்./ஐ",
+      "வேலையை முடித்தார்./ஐ",
+      "நண்பனை அழைத்தார்./ஐ",
+      "பாடலைப் பாடினார்./ஐ",
+      "விளையாட்டில் வென்றார்./ஐ",
+      //3
+      "முயன்றால் முன்னேறலாம்./ஆல்",
+      "அன்பால் அனைவரையும் வெல்லலாம்./ஆல்",
+      "அறிவால் உலகை ஆளலாம்./ஆல்",
+      "உழைப்பால் உயர முடியும்./ஆல்",
+      "நேர்மையால் நம்பிக்கை பெறலாம்./ஆல்",
+      "துணிவால் தடையைக் கடக்கலாம்./ஆல்",
+      "நட்பால் நலம் பெறலாம்./ஆல்",
+      "அருளால் வாழ்க்கை அழகாகும்./ஆல்",
+      "பொறுமையால் பெரும் சாதனை செய்யலாம்./ஆல்",
+      "ஒற்றுமையால் பலம் பெருகும்./ஆல்",
+      "கல்வியால் கண்ணோட்டம் விரியும்./ஆல்",
+      //4
+      "அவளுக்கு புத்தகம் கொடுத்தார்./கு",
+      "மாணவர்களுக்கு அறிவுரை வழங்கினார்./கு",
+      "நண்பனுக்கு உதவி செய்தார்./கு",
+      "பெரியவர்களுக்கு மரியாதை செலுத்தினார்./கு",
+      "அம்மாவுக்கு பரிசு வாங்கினார்./கு",
+      "குழந்தைக்கு உணவு கொடுத்தார்./கு",
+      "ஆசிரியருக்கு கடிதம் அனுப்பினார்./கு",
+      "சகோதரிக்கு பாசம் காட்டினார்./கு",
+      "தேவைக்கு பணம் கொடுத்தார்./கு",
+      "சமூகத்திற்கு சேவை செய்தார்./கு",
+      //5
+      "வீட்டில் ஓய்வெடுத்தார்./இல்",
+      "பள்ளியில் பாடம் கற்றார்./இல்",
+      "வாசலில் காத்திருந்தார்./இல்",
+      "தோட்டத்தில் மலர்கள் மலர்ந்தன./இல்",
+      "களத்தில் வீரர்கள் விளையாடினர்./இல்",
+      "அரங்கில் பேச்சு நிகழ்ந்தது./இல்",
+      "கடையில் பொருள் வாங்கினார்./இல்",
+      "நதியில் மீன்கள் நீந்தின./இல்",
+      "மரத்தில் பறவைகள் கூடின./இல்",
+      "காலையில் பனி விழுந்தது./இல்",
+      //5
+      "ராமாவின் புத்தகம்/இன்",
+      "சீதாவின் பையன்/இன்",
+      "பிரியாவின் நண்பர்/இன்",
+      "அரவிந்தின் தோழி/இன்",
+      "மோகனின் கார்/இன்",
+      "லலிதாவின் மரம்/இன்",
+      "விஜயின் பையன்/இன்",
+      "நடராஜனின் வண்ணம்/இன்",
+      "கௌதமின் அலுவலகம்/இன்",
+      "சுந்தராவின் பாடம்/இன்",
+      //6
+      "ராமனது புத்தகம்/அது",
+      "அவளது தையல்/அது",
+      "அவனது கார்/அது",
+      "அவளது பையன்/அது",
+      "மோகனது வீடு/அது",
+      "அவளது பை/அது",
+      "அவனது தோழன்/அது",
+      "அவளது தோழி/அது",
+      "அவனது வேலை/அது",
+      "அவளது மரம்/அது",
+      //7
+      "எங்கள் ஊரின்கண் மழை பெய்தது./கண்",
+      "அவர்களின் வீட்டின்கண் தீ ஏற்பட்டது./கண்",
+      "நமது தோட்டத்தின்கண் பூக்கள் மலர்ந்தன./கண்",
+      "அவளுடைய வீட்டின்கண் சமையல் செய்தனர்./கண்",
+      "நம் ஊரின்கண் குளிர்ச்சி அதிகமானது./கண்",
+      "அவர்களின் தோட்டத்தின்கண் மரங்கள் வளர்ந்தன./கண்",
+      "எங்கள் வீட்டின்கண் ஜன்னல்களை  சுத்தம் செய்தோம்./கண்",
+      "தெருவின்கண் விளக்குகள் அணைந்தன./கண்"
+
+    ];
+
+    let remaining = [...questions];
+    remaining = shuffle(remaining);  // <-- shuffle questions before starting
+    let total = questions.length;
+    let correctCount = 0;
+    let correctAnswer = "";
+
+    const paragraphDiv = document.getElementById('paragraph');
+    const wordChunksDiv = document.getElementById('wordChunks');
+    const scoreDiv = document.getElementById('score');
+
+    function updateScore() {
+      scoreDiv.textContent = `மதிப்பெண்: ${correctCount} / ${total}`;
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function showQuestion() {
+      if (remaining.length === 0) {
+        paragraphDiv.innerHTML = "<h2>🎉 அனைத்து கேள்விகளும் முடிந்துவிட்டது!</h2>";
+        wordChunksDiv.innerHTML = "";
+        updateScore();
+        return;
+      }
+
+      let currentQuestion = remaining.shift();
+      const [sentence, answer] = currentQuestion.split('/');
+      correctAnswer = answer.trim();
+
+      paragraphDiv.innerHTML = sentence;
+      wordChunksDiv.innerHTML = "";
+
+      // prepare options: correct + 2 random
+      let options = [correctAnswer];
+      let wrongs = choices.filter(c => c !== correctAnswer);
+      shuffle(wrongs);
+      options.push(wrongs[0], wrongs[1]);
+      shuffle(options);
+
+      options.forEach(word => {
+        const chunk = document.createElement('div');
+        chunk.className = 'word-chunk';
+        chunk.textContent = word;
+        chunk.dataset.word = word;
+
+        chunk.addEventListener('click', function () {
+          // prevent multiple clicks
+          if (this.classList.contains('correct') || this.classList.contains('incorrect')) return;
+
+          if (this.dataset.word === correctAnswer) {
+            this.classList.add('correct');
+            this.textContent = this.textContent + " ✔";  // show tick
+            correctCount++;
+          } else {
+            this.classList.add('incorrect');
+            this.textContent = this.textContent + " ✖";  // show cross
+
+            // also show the correct one
+            const correctChunk = wordChunksDiv.querySelector(`[data-word="${correctAnswer}"]`);
+            if (correctChunk) {
+              correctChunk.classList.add('correct');
+              correctChunk.textContent = correctChunk.textContent + " ✔";
+            }
+          }
+          updateScore();
+          setTimeout(showQuestion, 1000);
+        });
+        wordChunksDiv.appendChild(chunk);
+      });
+
+      updateScore();
+    }
+
+    showQuestion();
+  </script>
+</body>
+
+</html>

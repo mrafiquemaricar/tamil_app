@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>உயிர் + மெய் = உயிர் மெய்</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 10px;
+            margin: 0;
+            background: #fdfdfd;
+        }
+
+        .home {
+            display: flex;
+            justify-content: center;
+            /* Horizontal center */
+            margin-top: 20px;
+            /* Add space from top if needed */
+        }
+
+        h1 {
+            color: #00f;
+            text-align: center;
+            font-size: 1.8rem;
+        }
+
+        h2 {
+            color: #4b0082;
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+
+        .group-box {
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+
+        /* Home link */
+        #home {
+            text-decoration: none;
+            background-color: #0000ff;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        /* Buttons */
+        button {
+            padding: 8px;
+            font-size: 48px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 100%;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+
+        /* Button types */
+        .uyir-button {
+            background-color: #ffcccb;
+            color: #b30000;
+        }
+
+        .mei-button {
+            background-color: #cce5ff;
+            color: #003366;
+        }
+
+        .uyirmei-button {
+            background-color: #0000ff;
+            color: #ffffff;
+        }
+
+        .selected {
+            border: 2px solid #000;
+            box-shadow: 0 0 5px #888;
+        }
+
+        /* Containers */
+        .buttons {
+            display: grid;
+            gap: 6px;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        }
+
+        .uyirmei-buttons {
+            display: grid;
+            gap: 6px;
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+            /* wider for desktop */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+            .buttons {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .uyirmei-buttons {
+                grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            h2 {
+                font-size: 1rem;
+            }
+
+            button {
+                font-size: 30px;
+                padding: 6px;
+            }
+
+            .buttons {
+                grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+            }
+
+            .uyirmei-buttons {
+                grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
+            button {
+                font-size: 24px;
+                padding: 5px;
+            }
+
+            .buttons {
+                grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            }
+
+            .uyirmei-buttons {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="home">
+        <a id="home" href="index.html"> ◀ முகப்பு</a>
+    </div>
+
+    <h1>உயிர் + மெய் = உயிர் மெய்</h1>
+
+    <div class="group-box">
+        <h2 class="group-title">மெய் எழுத்தை தேர்ந்தெடுக்கவும் </h2>
+        <div class="buttons" id="meiButtons"></div>
+    </div>
+
+    <div class="group-box">
+        <h2 class="group-title">உயிர் எழுத்தை தேர்ந்தெடுக்கவும் </h2>
+        <div class="buttons" id="uyirButtons"></div>
+    </div>
+
+    <div class="group-box">
+        <h2 class="group-title">இரண்டும் சேர்ந்தால்</h2>
+        <div class="uyirmei-buttons" id="uyirmeiButtons"></div>
+    </div>
+
+
+    <script>
+        const uyirLetters = ['அ', 'ஆ', 'இ', 'ஈ', 'உ', 'ஊ', 'எ', 'ஏ', 'ஐ', 'ஒ', 'ஓ', 'ஔ'];
+        const meiLetters = ['க்', 'ங்', 'ச்', 'ஞ்', 'ட்', 'ண்', 'த்', 'ந்', 'ப்', 'ம்', 'ய்', 'ர்', 'ல்', 'வ்', 'ழ்', 'ள்', 'ற்', 'ன்'];
+        const uyirmeiMap = {
+            'க்': ['க', 'கா', 'கி', 'கீ', 'கு', 'கூ', 'கெ', 'கே', 'கை', 'கொ', 'கோ', 'கௌ'],
+            'ங்': ['ங', 'ஙா', 'ஙி', 'ஙீ', 'ஙு', 'ஙூ', 'ஙெ', 'ஙே', 'ஙை', 'ஙொ', 'ஙோ', 'ஙௌ'],
+            'ச்': ['ச', 'சா', 'சி', 'சீ', 'சு', 'சூ', 'செ', 'சே', 'சை', 'சொ', 'சோ', 'சௌ'],
+            'ஞ்': ['ஞ', 'ஞா', 'ஞி', 'ஞீ', 'ஞு', 'ஞூ', 'ஞெ', 'ஞே', 'ஞை', 'ஞொ', 'ஞோ', 'ஞௌ'],
+            'ட்': ['ட', 'டா', 'டி', 'டீ', 'டு', 'டூ', 'டெ', 'டே', 'டை', 'டொ', 'டோ', 'டௌ'],
+            'ண்': ['ண', 'ணா', 'ணி', 'ணீ', 'ணு', 'ணூ', 'ணெ', 'ணே', 'ணை', 'ணொ', 'ணோ', 'ணௌ'],
+            'த்': ['த', 'தா', 'தி', 'தீ', 'து', 'தூ', 'தெ', 'தே', 'தை', 'தொ', 'தோ', 'தௌ'],
+            'ந்': ['ந', 'நா', 'நி', 'நீ', 'நு', 'நூ', 'நெ', 'நே', 'நை', 'நொ', 'நோ', 'நௌ'],
+            'ப்': ['ப', 'பா', 'பி', 'பீ', 'பு', 'பூ', 'பெ', 'பே', 'பை', 'பொ', 'போ', 'பௌ'],
+            'ம்': ['ம', 'மா', 'மி', 'மீ', 'மு', 'மூ', 'மெ', 'மே', 'மை', 'மொ', 'மோ', 'மௌ'],
+            'ய்': ['ய', 'யா', 'யி', 'யீ', 'யு', 'யூ', 'யெ', 'யே', 'யை', 'யொ', 'யோ', 'யௌ'],
+            'ர்': ['ர', 'ரா', 'ரி', 'ரீ', 'ரு', 'ரூ', 'ரெ', 'ரே', 'ரை', 'ரொ', 'ரோ', 'ரௌ'],
+            'ல்': ['ல', 'லா', 'லி', 'லீ', 'லு', 'லூ', 'லெ', 'லே', 'லை', 'லொ', 'லோ', 'லௌ'],
+            'வ்': ['வ', 'வா', 'வி', 'வீ', 'வு', 'வூ', 'வெ', 'வே', 'வை', 'வொ', 'வோ', 'வௌ'],
+            'ழ்': ['ழ', 'ழா', 'ழி', 'ழீ', 'ழு', 'ழூ', 'ழெ', 'ழே', 'ழை', 'ழொ', 'ழோ', 'ழௌ'],
+            'ள்': ['ள', 'ளா', 'ளி', 'ளீ', 'ளு', 'ளூ', 'ளெ', 'ளே', 'ளை', 'ளொ', 'ளோ', 'ளௌ'],
+            'ற்': ['ற', 'றா', 'றி', 'றீ', 'று', 'றூ', 'றெ', 'றே', 'றை', 'றொ', 'றோ', 'றௌ'],
+            'ன்': ['ன', 'னா', 'னி', 'னீ', 'னு', 'னூ', 'னெ', 'னே', 'னை', 'னொ', 'னோ', 'னௌ']
+        };
+
+        let selectedUyir = null;
+        let selectedMei = null;
+
+        const uyirButtons = document.getElementById('uyirButtons');
+        const meiButtons = document.getElementById('meiButtons');
+        const uyirmeiButtons = document.getElementById('uyirmeiButtons');
+
+        function updateUyirmeiDisplay() {
+            uyirmeiButtons.innerHTML = '';
+
+            if (selectedUyir && selectedMei) {
+                const uyirIndex = uyirLetters.indexOf(selectedUyir);
+                const candidates = uyirmeiMap[selectedMei];
+
+                if (candidates && candidates[uyirIndex]) {
+                    const letter = candidates[uyirIndex];
+                    const btn = document.createElement('button');
+                    btn.className = 'uyirmei-button';
+                    btn.textContent = selectedMei + " + " + selectedUyir + " = " + letter;
+                    //btn.textContent = letter;
+                    btn.onclick = () => {
+                        appendLetter(letter);
+
+                    };
+                    uyirmeiButtons.appendChild(btn);
+                }
+            }
+        }
+
+        function selectButton(letter, group, isUyir) {
+            // Clear all previous selections
+            const buttons = document.querySelectorAll(`.${group}-button`);
+            buttons.forEach(btn => btn.classList.remove('selected'));
+
+            // Update selected letter and highlight
+            if (isUyir) {
+                selectedUyir = letter;
+            } else {
+                selectedMei = letter;
+            }
+
+            // Highlight clicked button
+            const clicked = Array.from(buttons).find(btn => btn.textContent === letter);
+            if (clicked) {
+                clicked.classList.add('selected');
+            }
+
+
+            updateUyirmeiDisplay();
+        }
+
+        uyirLetters.forEach(l => {
+            const btn = document.createElement('button');
+            btn.className = 'uyir-button';
+            btn.textContent = l;
+            btn.onclick = () => selectButton(l, 'uyir', true);
+            uyirButtons.appendChild(btn);
+        });
+
+        meiLetters.forEach(m => {
+            const btn = document.createElement('button');
+            btn.className = 'mei-button';
+            btn.textContent = m;
+            btn.onclick = () => selectButton(m, 'mei', false);
+            meiButtons.appendChild(btn);
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>எத்தனை சரியான வார்த்தைகள் அமைக்க முடியும்? </title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f9f9f9;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        .home {
+            display: flex;
+            justify-content: center;
+            /* Horizontal center */
+            margin-top: 20px;
+            /* Add space from top if needed */
+        }
+
+        h1 {
+            color: #00f;
+            text-align: center;
+        }
+
+        #selectionContainer {
+            margin-bottom: 15px;
+            border: 1px solid #888;
+            padding: 10px;
+            background-color: #f0f0ff;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        #selectionContainer button {
+            background-color: #4287f5;
+            color: white;
+            border: 1px solid #2c6ae0;
+            border-radius: 8px;
+            font-size: 24px;
+            padding: 12px 18px;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.3s ease;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        #selectionContainer button:hover {
+            background-color: #2c6ae0;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: row;
+            gap: 2%;
+            flex-wrap: wrap;
+        }
+
+        #leftBox,
+        #rightWrapper {
+            width: 100%;
+        }
+
+        #leftBox,
+        #rightBox {
+            border: 1px solid #ccc;
+            background: white;
+            min-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            box-sizing: border-box;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-content: flex-start;
+        }
+
+        #rightWrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        button.uyirMei {
+            font-size: 24px;
+            padding: 12px 16px;
+            cursor: pointer;
+            user-select: none;
+            border-radius: 8px;
+            border: 1px solid #888;
+            background-color: #e8e8ff;
+            transition: background-color 0.3s ease;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        button.uyirMei:hover {
+            background-color: #ffa500;
+            color: white;
+        }
+
+        #rightBox button {
+            font-size: 24px;
+            padding: 10px 14px;
+            border-radius: 6px;
+            border: 1px solid #888;
+            background-color: #f5f5f5;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.3s ease;
+            min-width: 60px;
+        }
+
+        #rightBox button:hover {
+            background-color: #ffa500;
+            color: white;
+        }
+
+        #wordCount {
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 18px;
+            text-align: left;
+        }
+
+        #home {
+            text-decoration: none;
+            background-color: #0000ff;
+            color: #ffffff;
+            padding: 10px 15px;
+            border-radius: 15px;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 600px) {
+            #container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            #leftBox,
+            #rightWrapper {
+                width: 100%;
+            }
+
+            #leftBox,
+            #rightBox {
+                min-height: 250px;
+            }
+
+            button.uyirMei,
+            #selectionContainer button,
+            #rightBox button {
+                font-size: 18px;
+                padding: 10px 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="home">
+        <a id="home" href="index.html"> ◀ முகப்பு</a>
+    </div>
+
+    <h1>எத்தனை சரியான வார்த்தைகள் அமைக்க முடியும்?</h1>
+
+    <div id="selectionContainer" aria-label="Preset Words">
+        <!-- Preset word buttons will be injected here -->
+    </div>
+
+    <div id="container">
+        <div id="leftBox" aria-label="Uyir-Mei Letters">
+            <!-- Buttons for uyir_mei_letters will go here -->
+        </div>
+        <div id="rightWrapper">
+            <h2> நீங்கள் அமைத்த வார்த்தைகள் - சரியான பொருளை தருகின்றனவா?</h2>
+            <div id="rightBox" aria-label="Selected Chunks">
+                <!-- Selected chunks will appear here -->
+            </div>
+            <div id="wordCount">எண்ணிக்கை : 0</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const presetWords = ['ண்', 'ம்', 'ய்', 'ர்', 'ல்', 'ழ்', 'ள்', 'ன்',
+                'டி', 'து', 'டு', 'டை', 'ளி', 'லி', 'ழி', 'ழை', 'மை', 'தை', 'ட்டை', 'ம்பம்'];
+
+            const uyir_mei_letters = ['அ', 'ஆ', 'இ', 'ஈ', 'உ', 'ஊ', 'எ', 'ஏ', 'ஒ', 'ஓ',
+                'க', 'கா', 'கி', 'கீ', 'கு', 'கூ', 'கெ', 'கே', 'கொ', 'கோ', 
+                'ச', 'சா', 'சி', 'சீ', 'சு', 'சூ', 'செ', 'சே', 'சொ', 'சோ',
+                'த', 'தா', 'தி', 'தீ', 'து', 'தூ', 'தெ', 'தே', 'தொ', 'தோ',
+                'ந', 'நா', 'நி', 'நீ', 'நு', 'நூ', 'நெ', 'நே', 'நொ', 'நோ',
+                'ப', 'பா', 'பி', 'பீ', 'பு', 'பூ', 'பெ', 'பே', 'பொ', 'போ', 
+                'ம', 'மா', 'மி', 'மீ', 'மு', 'மூ', 'மெ', 'மே', 'மொ', 'மோ', 
+                'வ', 'வா', 'வி', 'வீ', 'வு', 'வூ', 'வெ', 'வே', 'வொ', 'வோ'];
+
+            const selectionContainer = document.getElementById('selectionContainer');
+            const leftBox = document.getElementById('leftBox');
+            const rightBox = document.getElementById('rightBox');
+            const wordCount = document.getElementById('wordCount');
+
+            let selectedPresetWord = null;
+
+            function updateWordCount() {
+                const count = rightBox.children.length;
+                wordCount.textContent = "எண்ணிக்கை: " + count;
+            }
+
+            // Create preset word buttons
+            presetWords.forEach(word => {
+                const btn = document.createElement('button');
+                btn.textContent = word;
+
+                btn.addEventListener('click', () => {
+                    Array.from(selectionContainer.children).forEach(b => {
+                        b.style.backgroundColor = '#4287f5';
+                        b.style.color = 'white';
+                    });
+                    btn.style.backgroundColor = '#ffa500';
+                    btn.style.color = 'white';
+
+                    selectedPresetWord = word;
+                });
+
+                selectionContainer.appendChild(btn);
+            });
+
+            function createUyirMeiButton(letter) {
+                const btn = document.createElement('button');
+                btn.textContent = letter;
+                btn.classList.add('uyirMei');
+
+                btn.addEventListener('click', () => {
+                    if (!selectedPresetWord) {
+                        alert("மேலே உள்ள ஒரு சொல் பாகத்தை தேர்ந்தெடுக்கவும்.");
+                        return;
+                    }
+
+                    const chunkText = letter + selectedPresetWord;
+                    const chunkBtn = document.createElement('button');
+                    chunkBtn.textContent = chunkText;
+
+                    chunkBtn.addEventListener('click', () => {
+                        chunkBtn.remove();
+                        updateWordCount();
+                    });
+
+                    rightBox.appendChild(chunkBtn);
+                    const utterance = new SpeechSynthesisUtterance(chunkBtn.textContent);
+                    utterance.lang = 'ta-IN';
+                    speechSynthesis.speak(utterance);
+                    updateWordCount();
+                });
+
+                return btn;
+            }
+
+            // Initialize left box buttons
+            uyir_mei_letters.forEach(letter => {
+                const btn = createUyirMeiButton(letter);
+                leftBox.appendChild(btn);
+            });
+        });
+    </script>
+</body>
+
+</html>

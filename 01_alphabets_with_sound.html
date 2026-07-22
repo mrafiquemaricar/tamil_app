@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>தமிழ் எழுத்துக்கள் - கணினி ஒலியுடன்</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 10px;
+            margin: 0;
+            background: #fdfdfd;
+        }
+
+        h1 {
+            color: #00f;
+            text-align: center;
+            font-size: 1.8rem;
+        }
+
+        h2 {
+            color: #4b0082;
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+
+        .section {
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+
+        .home {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        #home {
+            text-decoration: none;
+            background-color: #0000ff;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 15px;
+        }
+
+        /* Voice toggle */
+        .voice-toggle {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 6px;
+            font-size: 1rem;
+        }
+
+        /* All button containers use grid for uniform width */
+        .buttons,
+        .uyirmei-buttons,
+        .kirantha-buttons {
+            display: grid;
+            gap: 5px;
+        }
+
+        /* Grid setup for each section */
+        .uyir-buttons,
+        .mei-buttons,
+        .uyirmei-buttons,
+        .kirantha-buttons {
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        }
+
+        /* Remove scrollable behavior */
+        .uyirmei-buttons,
+        .kirantha-buttons {
+            max-height: none;
+            overflow-y: visible;
+        }
+
+        /* Buttons */
+        button {
+            padding: 8px 4px;
+            font-size: 48px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 100%;
+            text-align: center;
+            height: 120px;
+        }
+
+        button:hover {
+            opacity: 0.85;
+            border: solid;
+        }
+
+        .uyir-button {
+            background-color: #ffcccb;
+            color: #b30000;
+        }
+
+        .mei-button {
+            background-color: #cce5ff;
+            color: #003366;
+        }
+
+        .uyirmei-button {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .aytha-button {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .kirantha-button {
+            background-color: #e6e6fa;
+            color: #333;
+        }
+
+        /* Greyed-out but keep bg colour */
+        .disabled-btn {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            button {
+                font-size: 30px;
+                padding: 6px;
+            }
+
+            .uyir-buttons,
+            .mei-buttons,
+            .uyirmei-buttons,
+            .kirantha-buttons {
+                grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
+            button {
+                font-size: 24px;
+                padding: 4px;
+            }
+
+            .uyir-buttons,
+            .mei-buttons,
+            .uyirmei-buttons,
+            .kirantha-buttons {
+                grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="home">
+        <a id="home" href="index.html"> ◀ முகப்பு</a>
+    </div>
+    <h1>தமிழ் எழுத்துக்கள்</h1>
+
+    <div class="voice-toggle">
+        <input type="checkbox" id="voiceToggle" checked>
+        <label for="voiceToggle">🔊 கணினி ஒலி</label>
+    </div>
+
+    <div class="section">
+        <h2>உயிர் எழுத்துக்கள் - 12</h2>
+        <div class="buttons uyir-buttons" id="uyirButtons"></div>
+    </div>
+
+    <div class="section">
+        <h2>ஆய்த எழுத்து - 1</h2>
+        <div class="buttons" id="aythaButtons"></div>
+    </div>
+
+    <div class="section">
+        <h2>மெய் எழுத்துக்கள் - 18</h2>
+        <div class="buttons mei-buttons" id="meiButtons"></div>
+    </div>
+
+    <div class="section">
+        <h2>உயிர் மெய் எழுத்துக்கள் - 12 x 18 = 216</h2>
+        <div class="uyirmei-buttons" id="uyirmeiButtons"></div>
+    </div>
+
+    <div class="section">
+        <h2>கிரந்த எழுத்துக்கள் - 66</h2>
+        <div class="kirantha-buttons" id="kiranthaButtons"></div>
+    </div>
+
+    <script>
+        const uyirLetters = ['அ', 'ஆ', 'இ', 'ஈ', 'உ', 'ஊ', 'எ', 'ஏ', 'ஐ', 'ஒ', 'ஓ', 'ஔ'];
+        const meiLetters = ['க்', 'ங்', 'ச்', 'ஞ்', 'ட்', 'ண்', 'த்', 'ந்', 'ப்', 'ம்', 'ய்', 'ர்', 'ல்', 'வ்', 'ழ்', 'ள்', 'ற்', 'ன்'];
+        const uyirmeiLetters = ['க', 'கா', 'கி', 'கீ', 'கு', 'கூ', 'கெ', 'கே', 'கை', 'கொ', 'கோ', 'கௌ', '-ங', '-ஙா', '-ஙி', '-ஙீ', '-ஙு', '-ஙூ', '-ஙெ', 'ஙே', '-ஙை', '-ஙொ', '-ஙோ', '-ஙௌ', 'ச', 'சா', 'சி', 'சீ', 'சு', 'சூ', 'செ', 'சே', 'சை', 'சொ', 'சோ', 'சௌ', 'ஞ', 'ஞா', 'ஞி', 'ஞீ', 'ஞு', 'ஞூ', 'ஞெ', 'ஞே', 'ஞை', '-ஞொ', '-ஞோ', '-ஞௌ', 'ட', 'டா', 'டி', 'டீ', 'டு', 'டூ', 'டெ', 'டே', 'டை', 'டொ', 'டோ', '-டௌ', 'ண', 'ணா', 'ணி', 'ணீ', 'ணு', 'ணூ', 'ணெ', 'ணே', 'ணை', 'ணொ', 'ணோ', '-ணௌ', 'த', 'தா', 'தி', 'தீ', 'து', 'தூ', 'தெ', 'தே', 'தை', 'தொ', 'தோ', '-தௌ', 'ந', 'நா', 'நி', 'நீ', 'நு', 'நூ', 'நெ', 'நே', 'நை', 'நொ', 'நோ', '-நௌ', 'ப', 'பா', 'பி', 'பீ', 'பு', 'பூ', 'பெ', 'பே', 'பை', 'பொ', 'போ', 'பௌ', 'ம', 'மா', 'மி', 'மீ', 'மு', 'மூ', 'மெ', 'மே', 'மை', 'மொ', 'மோ', 'மௌ', 'ய', 'யா', 'யி', 'யீ', 'யு', 'யூ', 'யெ', 'யே', 'யை', 'யொ', 'யோ', '-யௌ', 'ர', 'ரா', 'ரி', 'ரீ', 'ரு', 'ரூ', 'ரெ', 'ரே', 'ரை', 'ரொ', 'ரோ', 'ரௌ', 'ல', 'லா', 'லி', 'லீ', 'லு', 'லூ', 'லெ', 'லே', 'லை', 'லொ', 'லோ', 'லௌ', 'வ', 'வா', 'வி', 'வீ', 'வு', 'வூ', 'வெ', 'வே', 'வை', 'வொ', 'வோ', 'வௌ', 'ழ', 'ழா', 'ழி', 'ழீ', 'ழு', 'ழூ', 'ழெ', 'ழே', 'ழை', 'ழொ', 'ழோ', '-ழௌ', 'ள', 'ளா', 'ளி', 'ளீ', 'ளு', 'ளூ', 'ளெ', 'ளே', 'ளை', 'ளொ', 'ளோ', '-ளௌ', 'ற', 'றா', 'றி', 'றீ', 'று', 'றூ', 'றெ', 'றே', 'றை', 'றொ', 'றோ', '-றௌ', 'ன', 'னா', 'னி', 'னீ', 'னு', 'னூ', 'னெ', 'னே', 'னை', 'னொ', 'னோ', '-னௌ'];
+        const aythaLetter = ["ஃ"];
+        const kiranthaLetters = ['ஜ்', 'ஜ', 'ஜா', 'ஜி', 'ஜீ', 'ஜு', 'ஜூ', 'ஜெ', 'ஜே', 'ஜை', '-ஜொ', 'ஜோ', '-ஜௌ', 'ஷ்', 'ஷ', 'ஷா', 'ஷி', 'ஷீ', 'ஷு', 'ஷூ', '-ஷெ', '-ஷே', 'ஷை', '-ஷொ', '-ஷோ', '-ஷௌ', 'ஸ்', 'ஸ', 'ஸா', 'ஸி', 'ஸீ', 'ஸு', 'ஸூ', '-ஸெ', '-ஸே', '-ஸை', '-ஸொ', '-ஸோ', '-ஸௌ', 'ஹ்', 'ஹ', 'ஹா', 'ஹி', 'ஹீ', 'ஹு', 'ஹூ', 'ஹெ', 'ஹே', 'ஹை', '-ஹொ', '-ஹோ', '-ஹௌ', '-க்ஷ்', '-க்ஷ', 'க்ஷா', '-க்ஷி', '-க்ஷீ', '-க்ஷு', '-க்ஷூ', '-க்ஷெ', '-க்ஷே', '-க்ஷை', '-க்ஷொ', '-க்ஷோ', '-க்ஷெள', 'ஸ்ரீ'];
+
+        const voiceToggle = document.getElementById('voiceToggle');
+
+        function createButtons(containerId, letters, className) {
+            const container = document.getElementById(containerId);
+            letters.forEach(l => {
+                const btn = document.createElement('button');
+                btn.className = className;
+
+                if (l.startsWith("-")) {
+                    btn.textContent = l.substring(1); // remove hyphen
+                    btn.disabled = true;
+                    btn.classList.add("disabled-btn");
+                } else {
+                    btn.textContent = l;
+                    btn.onclick = () => {
+                        if (voiceToggle.checked) {
+                            window.speechSynthesis.cancel();
+                            const utterance = new SpeechSynthesisUtterance(l);
+                            utterance.lang = 'ta-IN';
+                            window.speechSynthesis.speak(utterance);
+                        }
+                    };
+                }
+
+                container.appendChild(btn);
+            });
+        }
+
+        createButtons('uyirButtons', uyirLetters, 'uyir-button');
+        createButtons('meiButtons', meiLetters, 'mei-button');
+        createButtons('uyirmeiButtons', uyirmeiLetters, 'uyirmei-button');
+        createButtons('aythaButtons', aythaLetter, 'aytha-button');
+        createButtons('kiranthaButtons', kiranthaLetters, 'kirantha-button');
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>தொடர்பில்லா வார்த்தையை தேர்ந்தெடுப்போம்</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f4f8;
+            color: #333;
+            max-width: 700px;
+            margin: auto;
+            text-align: center;
+        }
+
+        #home {
+            text-decoration: none;
+            background-color: #0000ff;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 15px;
+        }
+
+        h1 {
+            color: #00f;
+            text-align: center;
+        }
+
+        #scoreDisplay {
+            margin-top: 0.5rem;
+            font-size: 1rem;
+            color: #495057;
+        }
+
+        .paragraph {
+            font-size: 1.5rem;
+            line-height: 2.5rem;
+            margin: 2rem 0;
+            user-select: none;
+        }
+
+        .blank {
+            display: inline-block;
+            min-width: 5rem;
+            height: 2.5rem;
+            border: 2px solid #555;
+            padding: 0.2rem 0.5rem;
+            vertical-align: bottom;
+            text-align: center;
+            user-select: none;
+            cursor: default;
+        }
+
+        .blank.correct {
+            border-color: #28a745 !important;
+            background-color: #d4edda !important;
+            color: #155724;
+            animation: correctFlash 0.5s ease;
+        }
+
+        .blank.incorrect {
+            border-color: #dc3545 !important;
+            background-color: #f8d7da !important;
+            color: #721c24;
+            animation: incorrectFlash 0.5s ease;
+        }
+
+        @keyframes correctFlash {
+            0% {
+                transform: scale(1);
+                background-color: #d4edda;
+            }
+
+            50% {
+                transform: scale(1.2);
+                background-color: #a8f0b0;
+            }
+
+            100% {
+                transform: scale(1);
+                background-color: #d4edda;
+            }
+        }
+
+        @keyframes incorrectFlash {
+            0% {
+                transform: scale(1);
+                background-color: #f8d7da;
+            }
+
+            50% {
+                transform: scale(1.2);
+                background-color: #f5a1a1;
+            }
+
+            100% {
+                transform: scale(1);
+                background-color: #f8d7da;
+            }
+        }
+
+
+        .words {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            /* 2 items per line */
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .word-chunk {
+            background-color: #15ff00;
+            color: black;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            user-select: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .word-chunk:hover {
+            background-color: #0056b3;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        #message {
+            margin-top: 1.5rem;
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <a id="home" href="index.html"> ◀ முகப்பு</a>
+
+    <h1>தொடர்பில்லா வார்த்தையை தேர்ந்தெடுப்போம்</h1>
+    <div id="scoreDisplay">சரி : 0 / 0 | நேரம்: 0 வினாடிகள்</div>
+    <div class="paragraph" id="paragraph"></div>
+    <div class="words" id="wordChunks"></div>
+    <div id="message"></div>
+
+    <script>
+        const sentences = ["மரம்/இலை/கிளை/கடிகாரம்",
+            "ஆறு/நீர்/கரை/கத்தரி",
+            "சூரியன்/வெயில்/ஒளி/கணினி",
+            "பறவை/சிறகு/கூடு/பட்டம்",
+            "நிலா/இரவு/நட்சத்திரம்/கத்தரி",
+            "மழை/மேகம்/வானம்/செருப்பு",
+            "கடல்/அலை/கரை/பேனா",
+            "பள்ளி/மாணவர்/ஆசிரியர்/தோசை",
+            "வீடு/கதவு/ஜன்னல்/விமானம்",
+            "நூல்/எழுத்து/வாசிப்பு/கத்திரிக்காய்",
+            "மலர்/வாசனை/மொட்டு/கணினி",
+            "வண்டி/சக்கரம்/சாலை/பால்",
+            "பழம்/சுவை/விதை/மேசை",
+            "மலை/சிகரம்/குகை/பட்டம்",
+            "மணி/நேரம்/நாள்/மீன்",
+            "பசு/பால்/கன்று/தொலைபேசி",
+            "நாய்/வால்/குரல்/ரயில்",
+            "ஆடு/மடி/பால்/பூட்டு",
+            "யானை/தும்பிக்கை/தடிமன்/மெழுகுவர்த்தி",
+            "சிங்கம்/காடு/வலிமை/புத்தகம்",
+            "புலி/சிங்கம்/வேட்டை/பந்து",
+            "மீன்/நீர்/திமிங்கலம்/மோட்டார்",
+            "கோழி/முட்டை/சிறகு/விளக்கு",
+            "வானம்/மேகம்/நட்சத்திரம்/பேனா",
+            "காற்று/சூடு/குளிர்/வானொலி",
+            "நெருப்பு/வெப்பம்/ஒளி/சாவி",
+            "மண்/மலை/சரிவு/தொலைபேசி",
+            "விளக்கு/ஒளி/மின்சாரம்/மீன்",
+            "அரிசி/சோறு/வறுவல்/கணினி",
+            "பால்/தேன்/பாயசம்/ரயில்",
+            "தேன்/வண்டு/இனிப்பு/செருப்பு",
+            "உப்பு/சுவை/சமையல்/பட்டம்",
+            "எண்ணெய்/வறுவல்/சமையல்/விமானம்",
+            "மிளகு/காரம்/மசாலா/சாவி",
+            "வாழை/மரம்/பழம்/சக்கரம்",
+            "மாம்பழம்/இனிப்பு/விதை/மேசை",
+            "ஆப்பிள்/பழம்/சுவை/ரயில்",
+            "பேரிக்காய்/பழம்/மரம்/பேனா",
+            "எலுமிச்சை/புளிப்பு/பழம்/கணினி",
+            "பேரீச்சம்/இனிப்பு/பழம்/செருப்பு",
+            "முருங்கை/பூ/காய்/கணினி",
+            "வெங்காயம்/காய்/சமையல்/பட்டம்",
+            "தக்காளி/சாறு/பச்சை/கதவு",
+            "கத்தரிக்காய்/சமையல்/பருப்பு/கடிகாரம்",
+            "வெள்ளரி/சாறு/பச்சை/மெழுகுவர்த்தி",
+            "பூண்டு/வாசனை/சமையல்/ரயில்",
+            "இஞ்சி/காரம்/மூலிகை/சக்கரம்",
+            "மல்லி/வாசனை/இலை/விமானம்",
+            "கொத்தமல்லி/இலை/வாசனை/கடிகாரம்",
+            "கீரை/பச்சை/இலை/படுக்கை",
+            "பருப்பு/சாறு/சமையல்/விளக்கு",
+            "சோளம்/வயல்/தானியம்/பேனா",
+            "கோதுமை/ரொட்டி/மாவு/செருப்பு",
+            "புல்/பசுமை/வயல்/புத்தகம்",
+            "நெல்லு/அரிசி/வயல்/கணினி",
+            "வயல்/உழவு/மண்/ரயில்",
+            "தேங்காய்/நீர்/மரம்/விளக்கு",
+            "எலுமிச்சை/புளிப்பு/விதை/புத்தகம்",
+            "வெள்ளம்/ஆறு/நீர்/செருப்பு",
+            "மழலை/குழந்தை/பிள்ளை/மோட்டார்",
+            "தாய்/அன்பு/பெண்/ரயில்",
+            "அப்பா/ஆண்/குடும்பம்/சக்கரம்",
+            "அண்ணன்/உறவு/சகோதரன்/விமானம்",
+            "பாட்டி/அன்பு/உறவு/மீன்",
+            "தாத்தா/முதுமை/அன்பு/செருப்பு",
+            "மாமா/உறவு/ஆண்/பேனா",
+            "மாமி/உறவு/பெண்/கத்தரி",
+            "சித்தி/உறவு/பெண்/வானொலி",
+            "சித்தப்பா/உறவு/ஆண்/விளக்கு",
+            "வயது/முதுமை/இளமை/கணினி",
+            "நகரம்/சாலை/வீடு/மீன்",
+            "விமானம்/சக்கரம்/வானம்/கத்திரிக்காய்",
+            "மோட்டார்/வண்டி/எந்திரம்/செருப்பு",
+            "மிதிவண்டி/சக்கரம்/சாலை/மிளகாய்",
+            "தொலைபேசி/அழைப்பு/ஒலி/மீன்",
+            "வானொலி/ஒலி/செய்தி/மாம்பழம்",
+            "தொலைக்காட்சி/படம்/செய்தி/சக்கரம்",
+            "மடிக்கணினி/மின்சாரம்/விசைப்பலகை/அரிசி",
+            "மின்விளக்கு/ஒளி/மின்சாரம்/பால்",
+            "பேனா/எழுது/மை/கடிகாரம்",
+            "காகிதம்/புத்தகம்/எழுது/தயிர்",
+            "புத்தகம்/அறிவு/வாசிப்பு/மோட்டார்"
+        ];
+
+        const paragraphDiv = document.getElementById('paragraph');
+        const wordChunksDiv = document.getElementById('wordChunks');
+        const messageDiv = document.getElementById('message');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+
+        let usedIndexes = new Set();
+        let currentIndex = null;
+        let currentCorrect = '';
+        let timer = 0;
+        let timerInterval = null;
+        let started = false;
+        let score = 0;
+        let answered = 0;
+
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                const tmp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = tmp;
+            }
+            return arr;
+        }
+
+        function updateScoreAndTimerDisplay() {
+            scoreDisplay.textContent = 'சரி: ' + score + ' / ' + answered + ' | நேரம்: ' + timer + ' வினாடிகள்';
+        }
+
+        function startTimerIfNeeded() {
+            if (started) return;
+            started = true;
+            timer = 0;
+            updateScoreAndTimerDisplay();
+            timerInterval = setInterval(() => {
+                timer++;
+                updateScoreAndTimerDisplay();
+            }, 1000);
+        }
+
+        function pickNextIndex() {
+            if (usedIndexes.size === sentences.length) return null;
+            let idx;
+            do {
+                idx = Math.floor(Math.random() * sentences.length);
+            } while (usedIndexes.has(idx));
+            usedIndexes.add(idx);
+            return idx;
+        }
+
+        function renderNextQuestion() {
+            // start timer on first question
+            startTimerIfNeeded();
+
+            const idx = pickNextIndex();
+            if (idx === null) {
+                endQuiz();
+                return;
+            }
+            currentIndex = idx;
+            messageDiv.textContent = '';
+            wordChunksDiv.innerHTML = '';
+            paragraphDiv.innerHTML = '';
+
+            const raw = sentences[idx] || '';
+            const parts = raw.split('/').map(function (p) { return (p || '').trim(); });
+
+            // ensure there are 4 parts; if not, skip to next
+            if (parts.length < 4) {
+                renderNextQuestion();
+                return;
+            }
+
+            currentCorrect = parts[3];
+
+            // Instruction: show the first three (topic-related) as sentence-like text (optional)
+            // const instruction = document.createElement('div');
+            // const firstThree = parts.slice(0, 3).join(' / ');
+            // instruction.textContent = firstThree;
+            // paragraphDiv.appendChild(instruction);
+
+            // Build options (shuffle their display order)
+            const options = shuffleArray(parts.slice(0, 4));
+
+            // create word-chunk buttons
+            for (let i = 0; i < options.length; i++) {
+                const w = options[i];
+                const div = document.createElement('div');
+                div.className = 'word-chunk';
+                div.textContent = w;
+                div.setAttribute('data-word', w);
+                div.style.pointerEvents = 'auto';
+                wordChunksDiv.appendChild(div);
+
+                div.addEventListener('click', function () {
+                    // disable all options immediately
+                    const all = document.querySelectorAll('.word-chunk');
+                    for (let k = 0; k < all.length; k++) {
+                        all[k].style.pointerEvents = 'none';
+                    }
+
+                    const selected = this.getAttribute('data-word');
+
+                    if (selected === currentCorrect) {
+                        // correct visual feedback
+                        this.style.backgroundColor = '#d4edda';
+                        this.style.color = '#155724';
+                        messageDiv.textContent = 'சரி ✅';
+                        score++;
+                    } else {
+                        // incorrect visual feedback
+                        this.style.backgroundColor = '#f8d7da';
+                        this.style.color = '#721c24';
+                        messageDiv.textContent = 'தவறு ❌';
+
+                        // also highlight the correct answer so user sees it
+                        for (let k = 0; k < all.length; k++) {
+                            if (all[k].getAttribute('data-word') === currentCorrect) {
+                                all[k].style.backgroundColor = '#d4edda';
+                                all[k].style.color = '#155724';
+                                break;
+                            }
+                        }
+                    }
+
+                    answered++;
+                    updateScoreAndTimerDisplay();
+
+                    // proceed to next after a short delay
+                    setTimeout(function () {
+                        // small fade/clear message first
+                        messageDiv.textContent = '';
+                        renderNextQuestion();
+                    }, 1000);
+                });
+            }
+        }
+
+        function endQuiz() {
+            // stop timer
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            paragraphDiv.innerHTML = '';
+            wordChunksDiv.innerHTML = '';
+            messageDiv.textContent = 'பாராட்டுக்கள்! மதிபெண்: ' + score + ' / ' + answered + ' | நேரம்: ' + timer + ' வினாடிகள்';
+            scoreDisplay.textContent = 'சரி: ' + score + '/' + answered + ' | நேரம்: ' + timer + ' வினாடிகள் ';
+        }
+
+        // start the first question
+        renderNextQuestion();
+    </script>
+</body>
+
+</html>

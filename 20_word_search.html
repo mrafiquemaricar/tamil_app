@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5 நிமிட வார்த்தை தேடல்</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 10px;
+        }
+
+        h1 {
+            color: #00f;
+            margin-bottom: 1rem;
+        }
+
+        #controls {
+            margin-bottom: 15px;
+        }
+
+        select {
+            font-size: 18px;
+            padding: 5px;
+            margin: 5px;
+        }
+
+        #timer {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        #grid {
+            display: grid;
+            grid-auto-rows: 40px;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .cell {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 5px;
+            background: #f0f0f0;
+            font-size: 14px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .cell.highlight {
+            background: yellow;
+        }
+
+        #wordList {
+            margin: 20px 0px;
+            font-size: 20px;
+            background-color: #f0f0f0;
+        }
+
+        .found-word {
+            color: #fff;
+        }
+
+        #home {
+            text-decoration: none;
+            background-color: #0000ff;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <a id="home" href="index.html"> ◀ முகப்பு</a>
+    <h1>5 நிமிட வார்த்தை தேடல்</h1>
+
+    <div id="controls">
+        <select id="categoryFilter"></select>
+    </div>
+    <div id="timer">05:00</div>
+    <div id="wordList"></div>
+    <div id="grid"></div>
+
+    <script>
+        const uyirLetters = ['அ', 'ஆ', 'இ', 'ஈ', 'உ', 'ஊ', 'எ', 'ஏ', 'ஐ', 'ஒ', 'ஓ', 'ஔ'];
+        const meiLetters = ['க்', 'ங்', 'ச்', 'ஞ்', 'ட்', 'ண்', 'த்', 'ந்', 'ப்', 'ம்', 'ய்', 'ர்', 'ல்', 'வ்', 'ழ்', 'ள்', 'ற்', 'ன்'];
+        const uyirmeiLetters = [
+            'க', 'கா', 'கி', 'கீ', 'கு', 'கூ', 'கெ', 'கே', 'கை', 'கொ', 'கோ', 'கௌ',
+            'ங', 'ஙா', 'ஙி', 'ஙீ', 'ஙு', 'ஙூ', 'ஙெ', 'ஙே', 'ஙை', 'ஙொ', 'ஙோ', 'ஙௌ',
+            'ச', 'சா', 'சி', 'சீ', 'சு', 'சூ', 'செ', 'சே', 'சை', 'சொ', 'சோ', 'சௌ',
+            'ஞ', 'ஞா', 'ஞி', 'ஞீ', 'ஞு', 'ஞூ', 'ஞெ', 'ஞே', 'ஞை', 'ஞொ', 'ஞோ', 'ஞௌ',
+            'ட', 'டா', 'டி', 'டீ', 'டு', 'டூ', 'டெ', 'டே', 'டை', 'டொ', 'டோ', 'டௌ',
+            'ண', 'ணா', 'ணி', 'ணீ', 'ணு', 'ணூ', 'ணெ', 'ணே', 'ணை', 'ணொ', 'ணோ', 'ணௌ',
+            'த', 'தா', 'தி', 'தீ', 'து', 'தூ', 'தெ', 'தே', 'தை', 'தொ', 'தோ', 'தௌ',
+            'ந', 'நா', 'நி', 'நீ', 'நு', 'நூ', 'நெ', 'நே', 'நை', 'நொ', 'நோ', 'நௌ',
+            'ப', 'பா', 'பி', 'பீ', 'பு', 'பூ', 'பெ', 'பே', 'பை', 'பொ', 'போ', 'பௌ',
+            'ம', 'மா', 'மி', 'மீ', 'மு', 'மூ', 'மெ', 'மே', 'மை', 'மொ', 'மோ', 'மௌ',
+            'ய', 'யா', 'யி', 'யீ', 'யு', 'யூ', 'யெ', 'யே', 'யை', 'யொ', 'யோ', 'யௌ',
+            'ர', 'ரா', 'ரி', 'ரீ', 'ரு', 'ரூ', 'ரெ', 'ரே', 'ரை', 'ரொ', 'ரோ', 'ரௌ',
+            'ல', 'லா', 'லி', 'லீ', 'லு', 'லூ', 'லெ', 'லே', 'லை', 'லொ', 'லோ', 'லௌ',
+            'வ', 'வா', 'வி', 'வீ', 'வு', 'வூ', 'வெ', 'வே', 'வை', 'வொ', 'வோ', 'வௌ',
+            'ழ', 'ழா', 'ழி', 'ழீ', 'ழு', 'ழூ', 'ழெ', 'ழே', 'ழை', 'ழொ', 'ழோ', 'ழௌ',
+            'ள', 'ளா', 'ளி', 'ளீ', 'ளு', 'ளூ', 'ளெ', 'ளே', 'ளை', 'ளொ', 'ளோ', 'ளௌ',
+            'ற', 'றா', 'றி', 'றீ', 'று', 'றூ', 'றெ', 'றே', 'றை', 'றொ', 'றோ', 'றௌ',
+            'ன', 'னா', 'னி', 'னீ', 'னு', 'னூ', 'னெ', 'னே', 'னை', 'னொ', 'னோ', 'னௌ'
+        ];
+        const aytham = ['ஃ'];
+        const grantha = ['ஜ', 'ஷ', 'ஸ', 'ஹ', 'க்ஷ'];
+        const space = [' '];
+        const allLetters = uyirLetters.concat(meiLetters, uyirmeiLetters, aytham, grantha, space);
+
+        function splitWord(word) {
+            const result = [];
+            let i = 0;
+            while (i < word.length) {
+                let found = false;
+                for (let l of allLetters.sort((a, b) => b.length - a.length)) {
+                    if (word.startsWith(l, i)) {
+                        result.push(l);
+                        i += l.length;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) i++;
+            }
+            return result;
+        }
+
+        let words = [];
+        let gridSize = 12;
+        let grid = [];
+        let wordData = [];
+        let timerInterval;
+        let timeLeft;
+        let wordColors = [];
+        let usedColors = [];
+
+        fetch("word_list.csv")
+            .then(res => res.text())
+            .then(text => {
+                const rows = text.trim().split("\n").map(r => r.split(","));
+                const header = rows[0];
+                const catIndex = header.indexOf("Category");
+                const tamilIndex = header.indexOf("Tamil");
+                wordData = rows.slice(1).map(r => ({ category: r[catIndex], word: r[tamilIndex] }));
+                const categories = [...new Set(wordData.map(w => w.category))];
+                const categoryFilter = document.getElementById("categoryFilter");
+                categoryFilter.innerHTML = '<option value="" selected disabled>-- தேர்வு செய்யவும் --</option>';
+                categoryFilter.innerHTML += categories.map(c => `<option>${c}</option>`).join("");
+                categoryFilter.onchange = function () { if (this.value) startGame(); };
+            });
+
+        function startGame() {
+            clearInterval(timerInterval);
+            const category = document.getElementById("categoryFilter").value;
+            const filtered = wordData.filter(w => w.category === category);
+            shuffle(filtered);
+            words = filtered.slice(0, 7).map(w => splitWord(w.word));
+            wordColors = words.map(() => getUniqueColor());
+            buildGrid();
+            renderGrid();
+            renderWordList();
+            timeLeft = 300; // 5 minutes
+            startTimer();
+        }
+
+        function getUniqueColor() {
+            const colors = [
+                "#FFD700",  // Gold
+                "#ADFF2F",  // Green Yellow
+                "#87CEFA",  // Light Sky Blue
+                "#FFB6C1",  // Light Pink
+                "#FFA07A",  // Light Salmon
+                "#98FB98",  // Pale Green
+                "#E0FFFF",  // Light Cyan
+                "#FFE4B5",  // Moccasin
+                "#F5DEB3",  // Wheat
+                "#D8BFD8"   // Thistle
+            ];
+
+            let available = colors.filter(c => !usedColors.includes(c));
+            const color = available[Math.floor(Math.random() * available.length)];
+            usedColors.push(color);
+            return color;
+        }
+
+        function startTimer() {
+            const timerDiv = document.getElementById("timer");
+            function update() {
+                const min = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+                const sec = (timeLeft % 60).toString().padStart(2, '0');
+                timerDiv.textContent = `${min}:${sec}`;
+                if (timeLeft === 0) {
+                    clearInterval(timerInterval);
+                    alert("⏰ 5 நிமிடங்கள் முடிந்து விட்டது!");
+                }
+                timeLeft--;
+            }
+            update();
+            timerInterval = setInterval(update, 1000);
+        }
+
+        function buildGrid() {
+            grid = Array.from({ length: gridSize }, () => Array(gridSize).fill(""));
+            words.forEach(wordArr => {
+                const len = wordArr.length;
+                let placed = false;
+                while (!placed) {
+                    const directions = [
+                        [0, 1], [0, -1], [1, 0], [-1, 0],
+                        [1, 1], [1, -1], [-1, 1], [-1, -1]
+                    ];
+                    const [dr, dc] = directions[Math.floor(Math.random() * directions.length)];
+                    const row = Math.floor(Math.random() * gridSize);
+                    const col = Math.floor(Math.random() * gridSize);
+                    const positions = [];
+                    for (let i = 0; i < len; i++) {
+                        const r = row + dr * i;
+                        const c = col + dc * i;
+                        if (r < 0 || r >= gridSize || c < 0 || c >= gridSize) break;
+                        positions.push([r, c]);
+                    }
+                    if (positions.length === len && positions.every(([r, c], i) => grid[r][c] === "" || grid[r][c] === wordArr[i])) {
+                        positions.forEach(([r, c], i) => grid[r][c] = wordArr[i]);
+                        placed = true;
+                    }
+                }
+            });
+            for (let r = 0; r < gridSize; r++)
+                for (let c = 0; c < gridSize; c++)
+                    if (grid[r][c] === "") grid[r][c] = allLetters[Math.floor(Math.random() * allLetters.length)];
+        }
+
+        function renderGrid() {
+            const gridDiv = document.getElementById("grid");
+            gridDiv.style.gridTemplateColumns = `repeat(${gridSize}, 40px)`;
+            gridDiv.innerHTML = "";
+            grid.forEach((row, r) => {
+                row.forEach((letter, c) => {
+                    const cell = document.createElement("div");
+                    cell.className = "cell";
+                    cell.textContent = letter;
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    cell.addEventListener("mousedown", startSelect);
+                    cell.addEventListener("mouseenter", dragSelect);
+                    cell.addEventListener("mouseup", endSelect);
+                    cell.addEventListener("touchstart", startSelect);
+                    cell.addEventListener("touchmove", dragSelect);
+                    cell.addEventListener("touchend", endSelect);
+                    gridDiv.appendChild(cell);
+                });
+            });
+        }
+
+        function renderWordList() {
+            const listDiv = document.getElementById("wordList");
+            listDiv.innerHTML = words.map(w => `<div>${w.join("")}</div>`).join("");
+        }
+
+        let selectedCells = [];
+        let isDragging = false;
+
+        function startSelect(e) {
+            e.preventDefault();
+            isDragging = true;
+            selectedCells = [];
+            highlightCell(e.target);
+        }
+
+        function dragSelect(e) {
+            if (!isDragging) return;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const target = document.elementFromPoint(clientX, clientY);
+
+            if (target && target.classList.contains("cell")) {
+                const r = parseInt(target.dataset.row);
+                const c = parseInt(target.dataset.col);
+                if (selectedCells.length === 0) highlightCell(target);
+                else {
+                    const start = selectedCells[0];
+                    const sr = parseInt(start.dataset.row);
+                    const sc = parseInt(start.dataset.col);
+                    const dr = r - sr;
+                    const dc = c - sc;
+                    const norm = Math.max(Math.abs(dr), Math.abs(dc));
+                    const stepR = dr === 0 ? 0 : dr / norm;
+                    const stepC = dc === 0 ? 0 : dc / norm;
+
+                    const lineCells = [];
+                    for (let i = 0; i <= norm; i++) {
+                        const rr = sr + stepR * i;
+                        const cc = sc + stepC * i;
+                        const cell = document.querySelector(`.cell[data-row="${rr}"][data-col="${cc}"]`);
+                        if (cell) lineCells.push(cell);
+                    }
+                    selectedCells.forEach(c => c.classList.remove("highlight"));
+                    selectedCells = [];
+                    lineCells.forEach(highlightCell);
+                }
+            }
+            e.preventDefault();
+        }
+
+        function endSelect() {
+            if (!isDragging) return;
+            isDragging = false;
+            checkWord();
+            selectedCells.forEach(c => c.classList.remove("highlight"));
+            selectedCells = [];
+        }
+
+        function highlightCell(cell) {
+            if (!selectedCells.includes(cell)) {
+                cell.classList.add("highlight");
+                selectedCells.push(cell);
+            }
+        }
+
+        function checkWord() {
+            const letters = selectedCells.map(c => c.textContent).join("");
+            const listDiv = document.getElementById("wordList");
+            let allFound = true;
+
+            words.forEach((w, idx) => {
+                const wordStr = w.join("");
+                const reversed = w.slice().reverse().join("");
+                if ((letters === wordStr || letters === reversed) && !listDiv.children[idx].classList.contains("found-word")) {
+                    selectedCells.forEach(c => c.style.backgroundColor = wordColors[idx]);
+                    listDiv.children[idx].classList.add("found-word");
+                    listDiv.children[idx].style.backgroundColor = wordColors[idx];
+                }
+                if (!listDiv.children[idx].classList.contains("found-word")) allFound = false;
+            });
+
+            if (allFound) {
+                clearInterval(timerInterval);
+                const timeTaken = 300 - timeLeft;
+                const min = Math.floor(timeTaken / 60).toString().padStart(2, '0');
+                const sec = (timeTaken % 60).toString().padStart(2, '0');
+                alert(`🎉 பாராட்டுக்கள்! நேரம் - ${min}:${sec}`);
+            }
+        }
+
+        function shuffle(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+        }
+    </script>
+</body>
+
+</html>

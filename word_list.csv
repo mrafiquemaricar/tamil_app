@@ -1,0 +1,327 @@
+Category,Tamil,English
+செயல் - Action,படி,Read
+செயல் - Action,ஓடு,Run
+செயல் - Action,நட,Walk
+செயல் - Action,நீந்து,Swim
+செயல் - Action,தூக்கு,Lift
+செயல் - Action,எறி,Throw
+செயல் - Action,எடு,Take
+செயல் - Action,போடு,Put
+செயல் - Action,தூக்கு,Lift
+செயல் - Action,கத்து,Shout
+செயல் - Action,பாடு,Sing
+செயல் - Action,தாவு,Jump
+செயல் - Action,சாப்பிடு,Eat
+செயல் - Action,குடி,Drink
+செயல் - Action,தூங்கு,Sleep
+செயல் - Action,வா,Come
+செயல் - Action,போ,Go
+செயல் - Action,விளையாடு,Play
+செயல் - Action,எழுது,Write
+செயல் - Action,சிரி,Smile
+செயல் - Action,அழு,Cry
+செயல் - Action,உட்கார்,Sit
+செயல் - Action,நில்,Stand
+செயல் - Action,பிடி,Catch
+செயல் - Action,விடு,Release
+செயல் - Action,திற,Open
+செயல் - Action,மூடு,Close
+உடல் - Body,கை,Hand
+உடல் - Body,உள்ளங்கை,Palm
+உடல் - Body,கை விரல்,Finger
+உடல் - Body,நகம்,Nail 
+உடல் - Body,கால்,Leg
+உடல் - Body,பாதம்,Foot
+உடல் - Body,தொடை,Thigh
+உடல் - Body,முகம்,Face
+உடல் - Body,மூக்கு,Nose
+உடல் - Body,காது,Ear
+உடல் - Body,பல்,Tooth
+உடல் - Body,கன்னம்,Cheek
+உடல் - Body,நாக்கு,Tongue
+உடல் - Body,வாய்,Mouth
+உடல் - Body,முடி,Hair
+உடல் - Body,மார்பு,Chest
+உடல் - Body,தோள்பட்டை,Shoulder
+உடல் - Body,வயிறு,Stomach
+உடல் - Body,இடுப்பு,Hip
+உடல் - Body,கால் விரல்,Toe
+உடல் - Body,கண்,Eye
+உடல் - Body,புருவம்,Eyebrow
+உடல் - Body,தலைமுடி,Hair
+உடல் - Body,கழுத்து,Neck
+உடல் - Body,முதுகு,Back
+உடல் - Body,இதயம்,Heart
+உடல் - Body,இரத்தம்,Blood
+உடல் - Body,எலும்பு,Bone
+வேலை - Career,ஓட்டுநர்,Driver
+வேலை - Career,தச்சர்,Carpentor
+வேலை - Career,தையல்காரர்,Tailor
+வேலை - Career,ஓவியர்,Painter
+வேலை - Career,நடிகர்,Actor
+வேலை - Career,பயிற்சியாளர்,Coach
+வேலை - Career,ஆசிரியர்,Teacher
+வேலை - Career,மருத்துவர்,Doctor
+வேலை - Career,செவிலியர்,Nurse
+வேலை - Career,பேருந்து ஓட்டுநர்,Bus Driver
+வேலை - Career,விவசாயி,Farmer
+வேலை - Career,பொறியாளர்,Engineer
+வேலை - Career,கணக்காளர்,Accountant
+வேலை - Career,விமானி,Pilot
+வேலை - Career,விமான பணிப்பெண்,Air Hostess
+வேலை - Career,சமையல்காரர்,Chef
+வேலை - Career,தீயணைப்பு வீரர்,Firefighter
+வேலை - Career,வழக்கறிஞர்,Lawyer
+வேலை - Career,பாடகர்,Singer
+வேலை - Career,இசைக் கலைஞர்,Musician
+வேலை - Career,ஆராய்ச்சியாளர்,Researcher
+வேலை - Career,புகைப்படக் கலைஞர்,Photographer
+வேலை - Career,மாலுமி,Sailor
+வேலை - Career,மீனவர்,Fisherman
+வேலை - Career,தபால்காரர்,Postman
+வேலை - Career,பத்திரிகையாளர்,Journalist
+வேலை - Career,நூலகர்,Librarian
+வேலை - Career,தோட்டக்காரர்,Gardener
+வேலை - Career,விளையாட்டு வீரர்,Athlete
+வேலை - Career,நடனக் கலைஞர்,Dancer
+வேலை - Career,சுற்றுலா வழிகாட்டி,Tour Guide
+தட்ப வெப்பம் - Climate,சூரியன்,Sun
+தட்ப வெப்பம் - Climate,சந்திரன்,Moon
+தட்ப வெப்பம் - Climate,காற்று,Wind
+தட்ப வெப்பம் - Climate,வானம்,Sky
+தட்ப வெப்பம் - Climate,பூமி,Earth
+தட்ப வெப்பம் - Climate,தண்ணீர்,Water
+தட்ப வெப்பம் - Climate,சூறாவளி,Cyclone
+தட்ப வெப்பம் - Climate,பூமியதிர்ச்சி,Earthquake
+தட்ப வெப்பம் - Climate,மழை,Rain
+தட்ப வெப்பம் - Climate,மேகமூட்டம்,Cloudy
+தட்ப வெப்பம் - Climate,மழை பெய்யும்,Rainy
+தட்ப வெப்பம் - Climate,தூறல்,Drizzle
+தட்ப வெப்பம் - Climate,கனமழை,Heavy Rain
+தட்ப வெப்பம் - Climate,வெள்ளம்,Flood
+வண்ணம் - Colour,சிவப்பு,Red
+வண்ணம் - Colour,பச்சை,Green
+வண்ணம் - Colour,நீலம்,Blue
+வண்ணம் - Colour,கருப்பு,Black
+வண்ணம் - Colour,வெள்ளை,White
+வண்ணம் - Colour,ஆரஞ்சு,Orange
+வண்ணம் - Colour,மஞ்சள்,Yellow
+வண்ணம் - Colour,ஊதா,Purple
+வண்ணம் - Colour,பழுப்பு,Brown
+வார நாள் - Week Day,ஞாயிற்றுக்கிழமை,Sunday
+வார நாள் - Week Day,திங்கட்கிழமை,Monday
+வார நாள் - Week Day,செவ்வாய்க்கிழமை,Tuesday
+வார நாள் - Week Day,புதன் கிழமை,Wednesday
+வார நாள் - Week Day,வியாழக்கிழமை,Thursday
+வார நாள் - Week Day,வெள்ளிக்கிழமை,Friday
+வார நாள் - Week Day,சனிக்கிழமை,Saturday
+திசை - Direction,கிழக்கு,East
+திசை - Direction,மேற்கு,West
+திசை - Direction,வடக்கு,North
+திசை - Direction,தெற்கு,South
+திசை - Direction,வடகிழக்கு,North-East
+திசை - Direction,வடமேற்கு,North-West
+திசை - Direction,தென்கிழக்கு,South-East
+திசை - Direction,தென்மேற்கு,South-West
+ஆடை - Dress,சட்டை,Shirt
+ஆடை - Dress,கால் சட்டை,Pant
+ஆடை - Dress,அரைக் கால் சட்டை,Shorts
+ஆடை - Dress,ரவிக்கை,Blouse
+ஆடை - Dress,பாவாடை,Skirt
+ஆடை - Dress,கால் உறை,Socks
+ஆடை - Dress,கை உறை,Gloves
+ஆடை - Dress,காலணி,Shoe
+ஆடை - Dress,செருப்பு,Slipper
+குடும்பம் - Family,அப்பா,Father
+குடும்பம் - Family,அம்மா,Mother
+குடும்பம் - Family,அண்ணன்,Elder Brother
+குடும்பம் - Family,அக்கா,Elder Sister
+குடும்பம் - Family,தம்பி,Younger Brother
+குடும்பம் - Family,தங்கை,Younger Sister
+குடும்பம் - Family,தாத்தா,Grand Father
+குடும்பம் - Family,பாட்டி,Grand Mother
+குடும்பம் - Family,மாமா,Uncle
+குடும்பம் - Family,அத்தை,Aunty
+குடும்பம் - Family,மருமகன்,Nephew
+குடும்பம் - Family,மருமகள்,Niece
+குடும்பம் - Family,நண்பர்,Friend
+குடும்பம் - Family,பக்கத்து வீட்டுக்காரர்,Neighbour
+உணவு - Food,காலை உணவு,Breakfast
+உணவு - Food,மதிய உணவு,Lunch
+உணவு - Food,இரவு உணவு,Dinner
+உணவு - Food,இரவு உணவு,Supper
+உணவு - Food,சோறு,Cooked Rice
+உணவு - Food,கறி,Curry
+உணவு - Food,காய்கறி குழம்பு,Vegetable Curry
+உணவு - Food,மீன்,Fish
+உணவு - Food,ஆட்டிறைச்சி,Mutton
+உணவு - Food,கோழி,Chicken
+உணவு - Food,முட்டை,Egg
+உணவு - Food,வாத்து,Duck
+உணவு - Food,இறால்,Prawn
+உணவு - Food,நண்டு,Crab
+உணவு - Food,பழச்சாறு,Fruit Juice
+உணவு - Food,ஐஸ்கிரீம்,Ice Cream
+உணவு - Food,கேக்,Cake
+உணவு - Food,முறுக்கு,Murukku
+உணவு - Food,லட்டு,Laddu
+உணவு - Food,ஜாங்கிரி,Jangiri
+உணவு - Food,ஜிலேபி,Jilabi
+உணவு - Food,அல்வா,Halwa
+உணவு - Food,இட்லி,Idly
+உணவு - Food,தோசை,Thosai
+உணவு - Food,பூரி,Poori
+உணவு - Food,சப்பாத்தி,Chappathi
+உணவு - Food,சட்னி,Satni
+உணவு - Food,சாம்பார்,Sambar
+உணவு - Food,ரசம்,Rasam
+உணவு - Food,மோர்,Butter Milk
+உணவு - Food,தயிர்,Yogurt
+உணவு - Food,காபி,Coffee
+உணவு - Food,தேநீர்,Tea
+உணவு - Food,பால்,Milk
+உணவு - Food,வடை,vadai
+உணவு - Food,பஜ்ஜி,bajji
+உணவு - Food,போண்டா,Bonda
+உணவு - Food,சமோசா,Samosa
+உணவு - Food,பராட்டா,Paraatta
+பழம் - Fruit,மாம்பழம்,Mango
+பழம் - Fruit,வாழைப்பழம்,Banana
+பழம் - Fruit,ஆப்பிள்,Apple
+பழம் - Fruit,ஆரஞ்சு,Orange
+பழம் - Fruit,மாதுளம் பழம் ,Pomogranade
+பழம் - Fruit,கொய்யாப் பழம்,Guava
+பழம் - Fruit,திராட்சை,Grapes
+வீடு - House,மேசை,Table
+வீடு - House,நாற்காலி,Chair
+வீடு - House,படுக்கை,Bed
+வீடு - House,மெத்தை,Mattress
+வீடு - House,சாப்பாட்டு மேசை,Dining Table
+வீடு - House,தலையணை,Pillow
+வீடு - House,தலையணை உறை,Pillow Cover
+வீடு - House,படுக்கை விரிப்பு,Bed Sheet
+வீடு - House,திரைச்சீலை,Curtain
+வீடு - House,ஜன்னல்,Window
+வீடு - House,கதவு,Door
+வீடு - House,மின் விசிறி,Fan
+வீடு - House,படுக்கை அறை,Bed Room
+வீடு - House,சமையலறை,Kitchen
+வீடு - House,கழிப்பறை,Toilet
+வீடு - House,முற்றம்,Yard
+வீடு - House,வரவேற்பு அறை,Living Room
+வீடு - House,குளிர்சாதனப் பெட்டி,Refrigerator
+வீடு - House,சலவை இயந்திரம்,Washing Machine
+வீடு - House,புகைப்படம்,Photo
+வீடு - House,கடிகாரம்,Clock
+வீடு - House,நாட்காட்டி,Calendar
+வீடு - House,கோப்பை,Cup
+வீடு - House,தட்டு,Plate
+வீடு - House,கரண்டி,Spoon
+வீடு - House,முட்கரண்டி,Fork
+வீடு - House,கிண்ணம்,Bowl
+வீடு - House,கத்தி,Knife
+வீடு - House,கத்தரிக்கோல்,Scissor
+வீடு - House,தொலைக்காட்சி,Television
+வீடு - House,வானொலி,Radio
+வீடு - House,கணினி,Computer
+வீடு - House,கைபேசி,Hand phone
+வீடு - House,தொலைபேசி,Phone
+வீடு - House,ஜன்னல் திரை,Curtian
+வீடு - House,கூடை,Basket
+இடம் - Place,பள்ளி,School
+இடம் - Place,மசூதி,Mosque
+இடம் - Place,கோவில்,Temple
+இடம் - Place,விளையாட்டு மைதானம்,Playground
+இடம் - Place,தேவாலயம்,Church
+இடம் - Place,அரங்கம்,Stadium
+இடம் - Place,நீச்சல் குளம்,Swimming Pool
+இடம் - Place,உடற்பயிற்சி கூடம்,Gym
+இடம் - Place,பேருந்து நிறுத்தம்,Bus Stop
+இடம் - Place,காவல் நிலையம்,Police Station
+இடம் - Place,தீயணைப்பு நிலையம்,Fire Station
+இடம் - Place,டாக்ஸி நிறுத்தம்,Taxi Stand
+இடம் - Place,பேருந்து நிலையம்,Bus Stand
+இடம் - Place,பட்டறை,Workshop
+இடம் - Place,தோட்டம்,Garden
+இடம் - Place,சந்தை,Market
+இடம் - Place,மருத்துவமனை,Hospital
+இடம் - Place,விமான நிலையம்,Airport
+இடம் - Place,நூலகம்,Library
+இடம் - Place,அருங்காட்சியகம்,Museum
+எண் - Number,ஒன்று,One
+எண் - Number,இரண்டு,Two
+எண் - Number,மூன்று,Three
+எண் - Number,நான்கு,Four
+எண் - Number,ஐந்து,Five
+எண் - Number,ஆறு,Six
+எண் - Number,ஏழு,Seven
+எண் - Number,எட்டு,Eight
+எண் - Number,ஒன்பது,Nine
+எண் - Number,பத்து,Ten
+எண் - Number,பதினொன்று,Eleven
+எண் - Number,பன்னிரண்டு,Tweleve
+எண் - Number,பதின்மூன்று,Thirteen
+எண் - Number,பதினான்கு,Fourteen
+எண் - Number,பதினைந்து,Fifteeen
+எண் - Number,பதினாறு,Sixteen
+எண் - Number,பதினேழு,Seventeen
+எண் - Number,பதினெட்டு,Eighteen
+எண் - Number,பத்தொன்பது,Nineteen
+எண் - Number,இருபது,Twenty
+எண் - Number,முப்பது,Thirty
+எண் - Number,நாற்பது,Fourty
+எண் - Number,ஐம்பது,Fifty
+எண் - Number,அறுபது,Sixty
+எண் - Number,எழுபது,Seventy
+எண் - Number,எண்பது,Eighty
+எண் - Number,தொண்ணூறு,Ninety
+எண் - Number,நூறு,Hundered
+எண் - Number,ஆயிரம்,Thousand
+எழுது பொருட்கள் - Stationary,புத்தகம்,Book
+எழுது பொருட்கள் - Stationary,பேனா,Pen
+எழுது பொருட்கள் - Stationary,பென்சில்,Pencil
+எழுது பொருட்கள் - Stationary,அழிப்பான்,Eraser
+எழுது பொருட்கள் - Stationary,மை,Ink
+எழுது பொருட்கள் - Stationary,வண்ணப் பென்சில்,Colour Pencil
+பாடம் - Subject,ஆங்கிலம்,English
+பாடம் - Subject,தமிழ்,Tamil
+பாடம் - Subject,அறிவியல்,Science
+பாடம் - Subject,வரலாறு,History
+பாடம் - Subject,புவியியல்,Geography
+பாடம் - Subject,சமூக அறிவியல்,Social Science
+பாடம் - Subject,கணினி அறிவியல்,Computer Science
+பாடம் - Subject,வேதியியல்,Chemistry
+பாடம் - Subject,இயற்பியல்,Physics
+பாடம் - Subject,உயிரியல்,Biology
+பாடம் - Subject,உளவியல்,Pshycology
+பாடம் - Subject,விளையாட்டு அறிவியல்,Sport Science
+பாடம் - Subject,மருந்து,Medicine
+பாடம் - Subject,பொறியியல்,Engineering
+நேரம் - Time of the day,காலை,Morning
+நேரம் - Time of the day,நண்பகல்,Noon
+நேரம் - Time of the day,மதியம்,Afternoon
+நேரம் - Time of the day,மாலை,Evening
+நேரம் - Time of the day,இரவு,Night
+நேரம் - Time of the day,நள்ளிரவு,Mid-night
+காய்கறி - Vegetable,தக்காளி,Tomato
+காய்கறி - Vegetable,உருளைக்கிழங்கு,Potato
+காய்கறி - Vegetable,கத்தரிக்காய்,Brinjal
+காய்கறி - Vegetable,வெண்டைக்காய் ,Ladies Finger
+காய்கறி - Vegetable,வெங்காயம்,Onion
+காய்கறி - Vegetable,பச்சை மிளகாய்,Green Chilli
+காய்கறி - Vegetable,சிகப்பு மிளகாய்,Red Chilli
+காய்கறி - Vegetable,கொத்தமல்லி,Coriander
+காய்கறி - Vegetable,புதினா,Puthina
+காய்கறி - Vegetable,இஞ்சி,Ginger
+காய்கறி - Vegetable,பூண்டு,Garlic
+காய்கறி - Vegetable,பீட்ரூட்,Beetroot
+காய்கறி - Vegetable,கேரட்,Carrot
+காய்கறி - Vegetable,முள்ளங்கி,Raddish
+காய்கறி - Vegetable,வெள்ளரிக்காய்,Cucumber
+வாகனம் - Vehicle,பேருந்து,Bus
+வாகனம் - Vehicle,கார்,Car
+வாகனம் - Vehicle,மிதிவண்டி,Bicycle
+வாகனம் - Vehicle,ரயில்,Train
+வாகனம் - Vehicle,படகு,Boat
+வாகனம் - Vehicle,கப்பல்,Ship
+வாகனம் - Vehicle,விமானம்,Aeroplane

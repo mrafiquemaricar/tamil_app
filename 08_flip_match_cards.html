@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>நினைவில் நிற்பவை</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      background: #f4f4f4;
+      padding: 10px;
+    }
+
+    h1 {
+      color: #00f;
+      text-align: center;
+      font-size: 1.8em;
+      margin-bottom: 10px;
+    }
+
+    #controls {
+      margin: 10px 0;
+    }
+
+    #categorySelect {
+      width: 90%;
+      max-width: 400px;
+      padding: 12px;
+      font-size: 1.1em;
+      margin-bottom: 10px;
+      text-align: center;
+      border-radius: 5px;
+    }
+
+    #timer {
+      font-size: 1.2em;
+      margin-top: 5px;
+    }
+
+    #game-board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-gap: 10px;
+      justify-content: center;
+      margin: 15px auto;
+    }
+
+    .card {
+      background: #2196F3;
+      color: #2196F3;
+      height: 90px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-size: 18px;
+      border-radius: 8px;
+      user-select: none;
+      transition: color 0.3s ease, background-color 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      word-break: break-word;
+    }
+
+    .card.revealed {
+      color: #fff;
+    }
+
+    /* Matched card colors for 8 pairs */
+    .card.matched[data-pair="0"] { background-color: #08b834 !important; color: #fff !important; }
+    .card.matched[data-pair="1"] { background-color: #6B5B95 !important; color: #fff !important; }
+    .card.matched[data-pair="2"] { background-color: #88B04B !important; color: #fff !important; }
+    .card.matched[data-pair="3"] { background-color: #F7CAC9 !important; color: #000 !important; }
+    .card.matched[data-pair="4"] { background-color: #92A8D1 !important; color: #fff !important; }
+    .card.matched[data-pair="5"] { background-color: #FFA500 !important; color: #000 !important; }
+    .card.matched[data-pair="6"] { background-color: #20B2AA !important; color: #fff !important; }
+    .card.matched[data-pair="7"] { background-color: #FFB347 !important; color: #000 !important; }
+
+    .card.matched {
+      transition: background-color 0.4s ease, color 0.4s ease;
+      cursor: default;
+    }
+
+    #home {
+      text-decoration: none;
+      background-color: #0000ff;
+      color: #ffffff;
+      padding: 10px;
+      border-radius: 15px;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 480px) {
+      #game-board {
+        grid-template-columns: repeat(2, 1fr);
+        grid-gap: 8px;
+      }
+
+      .card {
+        height: 80px;
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <a id="home" href="index.html"> ◀ முகப்பு</a>
+
+  <h1>நினைவில் நிற்பவை</h1>
+  <div id="controls">
+    <select id="categorySelect">
+      <option value="">-- தேர்வு செய்யவும் --</option>
+    </select>
+    <div id="timer">00:00</div>
+  </div>
+
+  <div id="game-board"></div>
+
+  <script>
+    const csvUrl = 'word_list.csv'
+    let allPairs = [];
+    let selectedCategoryPairs = [];
+    let usedPairsIndices = [];
+    let revealedCards = [];
+    let matchedCount = 0;
+    let timerInterval;
+    let secondsElapsed = 0;
+
+    // Simple CSV parser (assumes header row: Category,Tamil,English)
+    function parseCSV(text) {
+      const lines = text.trim().split("\n");
+      const headers = lines[0].split(",");
+      const rows = [];
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(",");
+        const row = {};
+        headers.forEach((h, idx) => {
+          row[h.trim()] = values[idx] ? values[idx].trim() : "";
+        });
+        rows.push(row);
+      }
+      return rows;
+    }
+
+    fetch(csvUrl)
+      .then(res => res.text())
+      .then(text => {
+        allPairs = parseCSV(text).filter(row =>
+          row.Category && row.Tamil && row.English
+        );
+
+        const categories = [...new Set(allPairs.map(p => p.Category))];
+        const select = document.getElementById("categorySelect");
+        categories.forEach(cat => {
+          const option = document.createElement("option");
+          option.value = cat;
+          option.textContent = cat;
+          select.appendChild(option);
+        });
+
+        select.addEventListener("change", () => {
+          usedPairsIndices = [];
+          startGame();
+        });
+      })
+      .catch(err => {
+        alert("CSV load error: " + err);
+      });
+
+    function startGame() {
+      clearInterval(timerInterval);
+      secondsElapsed = 0;
+      document.getElementById("timer").textContent = "00:00";
+
+      const selectedCategory = document.getElementById("categorySelect").value;
+      if (!selectedCategory) {
+        document.getElementById("game-board").innerHTML = "";
+        return;
+      }
+
+      selectedCategoryPairs = allPairs.filter(p => p.Category === selectedCategory);
+
+      loadNextRound();
+
+      timerInterval = setInterval(() => {
+        secondsElapsed++;
+        const minutes = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+        const seconds = String(secondsElapsed % 60).padStart(2, '0');
+        document.getElementById("timer").textContent = `${minutes}:${seconds}`;
+      }, 1000);
+    }
+
+    function loadNextRound() {
+      const availableIndices = [];
+      for (let i = 0; i < selectedCategoryPairs.length; i++) {
+        if (!usedPairsIndices.includes(i)) {
+          availableIndices.push(i);
+        }
+      }
+
+      if (availableIndices.length < 8) {
+        const categories = [...new Set(allPairs.map(p => p.Category))];
+        const currentCat = document.getElementById("categorySelect").value;
+        let currentIndex = categories.indexOf(currentCat);
+        currentIndex++;
+        if (currentIndex >= categories.length) {
+          clearInterval(timerInterval);
+          alert("Congratulations! You have completed all categories.");
+          return;
+        }
+        document.getElementById("categorySelect").value = categories[currentIndex];
+        usedPairsIndices = [];
+        startGame();
+        return;
+      }
+
+      const roundIndices = [];
+      while (roundIndices.length < 8) {
+        const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+        if (!roundIndices.includes(randomIndex)) {
+          roundIndices.push(randomIndex);
+        }
+      }
+
+      usedPairsIndices = usedPairsIndices.concat(roundIndices);
+
+      const gamePairs = [];
+      roundIndices.forEach((i, pairIndex) => {
+        const pair = selectedCategoryPairs[i];
+        gamePairs.push({ text: pair.Tamil, matchId: pair.Tamil, pairIndex: pairIndex });
+        gamePairs.push({ text: pair.English, matchId: pair.Tamil, pairIndex: pairIndex });
+      });
+
+      const shuffledCards = gamePairs.sort(() => 0.5 - Math.random());
+
+      const board = document.getElementById("game-board");
+      board.innerHTML = "";
+      shuffledCards.forEach(card => {
+        const div = document.createElement("div");
+        div.classList.add("card");
+        div.dataset.matchId = card.matchId;
+        div.dataset.pair = card.pairIndex; // assign same color to both tiles
+        div.textContent = ""; // hidden
+        div.addEventListener("click", () => revealCard(div, card.text));
+        board.appendChild(div);
+      });
+
+      matchedCount = 0;
+      revealedCards = [];
+    }
+
+    function revealCard(card, text) {
+      if (card.classList.contains("revealed") || card.classList.contains("matched") || revealedCards.length === 2) return;
+
+      card.textContent = text;
+      card.classList.add("revealed");
+      revealedCards.push(card);
+
+      if (revealedCards.length === 2) {
+        setTimeout(checkMatch, 700);
+      }
+    }
+
+    function checkMatch() {
+      const [card1, card2] = revealedCards;
+      if (card1.dataset.matchId === card2.dataset.matchId) {
+        matchedCount += 2;
+        card1.classList.add("matched");
+        card2.classList.add("matched");
+        if (matchedCount === 16) {
+          setTimeout(() => {
+            loadNextRound();
+          }, 1000);
+        }
+      } else {
+        card1.textContent = "";
+        card2.textContent = "";
+        card1.classList.remove("revealed");
+        card2.classList.remove("revealed");
+      }
+      revealedCards = [];
+    }
+  </script>
+
+</body>
+
+</html>

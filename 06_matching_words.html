@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>தமிழ் - ஆங்கில வார்த்தைகளைப் பொருத்துவோம்</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #00f;
+      text-align: center;
+    }
+
+    #categorySelect {
+      width: 100%;
+      max-width: 400px;
+      padding: 14px;
+      font-size: 1.2em;
+      margin-bottom: 20px;
+     text-align: center;  
+    }
+
+    .flashcard {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto 20px;
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      width: 45%;
+      text-align: center;
+    }
+
+    li {
+      margin: 14px 0;
+      /* increased line spacing */
+      font-size: 1.3em;
+    }
+
+    .english-word,
+    .tamil-word {
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 8px;
+      display: inline-block;
+      width: 100%;
+      box-sizing: border-box;
+      transition: background 0.3s;
+    }
+
+    .controls {
+      margin: 20px 0;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .controls button {
+      padding: 10px 15px;
+      font-size: 4em;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #0000ff;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    .controls button:hover {
+      background: #ffa500;
+    }
+
+    #home {
+      text-decoration: none;
+      background-color: #0000ff;
+      color: #ffffff;
+      padding: 12px;
+      border-radius: 15px;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+
+    .selected {
+      background-color: #ffeeba;
+      /* light yellow highlight */
+      border: 2px solid #000;
+      /* optional black border */
+    }
+
+    /* Matched pair colors */
+    .color1 {
+      background-color: #ffd700 !important;
+      color: #000;
+    }
+
+    .color2 {
+      background-color: #90ee90 !important;
+      color: #000;
+    }
+
+    .color3 {
+      background-color: #ff7f50 !important;
+      color: #fff;
+    }
+
+    .color4 {
+      background-color: #87cefa !important;
+      color: #000;
+    }
+
+    .color5 {
+      background-color: #dda0dd !important;
+      color: #000;
+    }
+
+    .tick-cross {
+      margin-left: 8px;
+      font-weight: bold;
+      font-size: 1.3em;
+      user-select: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <a id="home" href="index.html"> ◀ முகப்பு</a>
+
+  <h1>தமிழ் - ஆங்கில வார்த்தைகளைப் பொருத்துவோம்</h1>
+
+  <select id="categorySelect" aria-label="Category select">
+    <option value="">-- தேர்வு செய்யவும் --</option>
+  </select>
+
+  <div class="flashcard" id="flashcard" aria-live="polite" aria-atomic="true" aria-relevant="additions">
+    <ul id="frontList" aria-label="English words list"></ul>
+    <ul id="backList" aria-label="Tamil words list"></ul>
+  </div>
+
+  <div class="controls">
+    <button id="showAnswerBtn">✔</button>
+    <button id="resetBtn">↩</button>
+    <button id="nextBtn">▶</button>
+  </div>
+
+  <script>
+    const sheetUrl = 'word_list.csv';
+    let cards = [];
+    let filteredCards = [];
+    let currentSet = [];
+    let currentIndex = 0;
+    let selectedEnglish = null;
+    let selectedTamil = null;
+    let categories = [];
+    let currentCategoryIndex = 0;
+    let userMatches = []; // {english: ..., tamil: ...} 
+    const matchColors = ['color1', 'color2', 'color3', 'color4', 'color5'];
+
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+
+    function parseCSV(text) {
+      const lines = text.trim().split('\n');
+      const header = lines[0].split(',');
+      const result = [];
+      for (let i = 1; i < lines.length; i++) {
+        const row = {};
+        let values = [];
+        let current = '';
+        let insideQuotes = false;
+        for (let charIndex = 0; charIndex < lines[i].length; charIndex++) {
+          const char = lines[i][charIndex];
+          if (char === '"') insideQuotes = !insideQuotes;
+          else if (char === ',' && !insideQuotes) { values.push(current); current = ''; }
+          else current += char;
+        }
+        values.push(current);
+        for (let j = 0; j < header.length; j++) row[header[j].trim()] = values[j] ? values[j].trim() : '';
+        result.push(row);
+      }
+      return result;
+    }
+
+    function loadCards() {
+      fetch(sheetUrl)
+        .then(res => res.text())
+        .then(text => {
+          const data = parseCSV(text);
+          cards = data.filter(c =>
+            c.Category &&
+            c.Tamil && c.Tamil.trim() !== "" &&
+            c.English && c.English.trim() !== "");
+          loadCategories();
+        })
+        .catch(err => {
+          alert("CSV படிப்பதில் பிழை: " + err);
+          console.error(err);
+        });
+    }
+
+    function loadCategories() {
+      const select = document.getElementById('categorySelect');
+      while (select.options.length > 1) select.remove(1);
+      categories = [...new Set(cards.map(c => c.Category))].sort();
+      categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        select.appendChild(option);
+      });
+      currentCategoryIndex = 0;
+      if (categories.length) {
+        select.value = categories[0];
+        filterCards(categories[0]);
+        loadSet();
+      }
+      select.onchange = () => {
+        currentCategoryIndex = categories.indexOf(select.value);
+        currentIndex = 0;
+        userMatches = [];
+        filterCards(select.value);
+        loadSet();
+      };
+    }
+
+    function filterCards(category) {
+      filteredCards = category === "" ? cards.slice() : cards.filter(c => c.Category === category);
+    }
+
+    function clearSelection() {
+      if (selectedEnglish) selectedEnglish.classList.remove('selected');
+      if (selectedTamil) selectedTamil.classList.remove('selected');
+      selectedEnglish = null;
+      selectedTamil = null;
+    }
+
+    function loadSet() {
+      if (filteredCards.length < 5) {
+        alert("தேர்ந்தெடுத்த பிரிவில் குறைந்தது 5 கார்டுகள் இருக்க வேண்டும்.");
+        clearCard();
+        return;
+      }
+      currentSet = [];
+      userMatches = [];
+      clearSelection();
+      for (let i = 0; i < 5; i++) currentSet.push(filteredCards[(currentIndex + i) % filteredCards.length]);
+      showCard();
+    }
+
+    function clearCard() {
+      document.getElementById('frontList').innerHTML = "";
+      document.getElementById('backList').innerHTML = "";
+      clearSelection();
+    }
+
+    function showCard() {
+      const frontListEl = document.getElementById('frontList');
+      const backListEl = document.getElementById('backList');
+      frontListEl.innerHTML = "";
+      backListEl.innerHTML = "";
+      clearSelection();
+
+      let tamilWords = currentSet.map(c => c.Tamil);
+      shuffleArray(tamilWords);
+
+      currentSet.forEach(c => {
+        const li = document.createElement('li');
+        const engSpan = document.createElement('span');
+        engSpan.className = "english-word";
+        engSpan.textContent = c.English;
+        engSpan.dataset.english = c.English;
+        engSpan.tabIndex = 0;
+
+        engSpan.addEventListener('click', () => {
+          if (engSpan.classList.contains('matched')) return;
+          if (selectedEnglish === engSpan) { engSpan.classList.remove('selected'); selectedEnglish = null; return; }
+          if (selectedEnglish) selectedEnglish.classList.remove('selected');
+          selectedEnglish = engSpan;
+          engSpan.classList.add('selected');
+          attemptMatch();
+        });
+        li.appendChild(engSpan);
+        frontListEl.appendChild(li);
+      });
+
+      tamilWords.forEach(tam => {
+        const li = document.createElement('li');
+        const tamSpan = document.createElement('span');
+        tamSpan.className = "tamil-word";
+        tamSpan.textContent = tam;
+        tamSpan.dataset.tamil = tam;
+        tamSpan.tabIndex = 0;
+
+        tamSpan.addEventListener('click', () => {
+          if (tamSpan.classList.contains('matched')) return;
+          if (selectedTamil === tamSpan) { tamSpan.classList.remove('selected'); selectedTamil = null; return; }
+          if (selectedTamil) selectedTamil.classList.remove('selected');
+          selectedTamil = tamSpan;
+          tamSpan.classList.add('selected');
+          attemptMatch();
+        });
+        li.appendChild(tamSpan);
+        backListEl.appendChild(li);
+      });
+    }
+
+    function attemptMatch() {
+      if (selectedEnglish && selectedTamil) {
+        userMatches = userMatches.filter(m => m.english !== selectedEnglish.dataset.english && m.tamil !== selectedTamil.dataset.tamil);
+        userMatches.push({ english: selectedEnglish.dataset.english, tamil: selectedTamil.dataset.tamil });
+        clearSelection();
+        renderMatches(false);
+      }
+    }
+
+    function renderMatches(showAnswer) {
+      document.querySelectorAll('.english-word, .tamil-word').forEach(el => {
+        el.classList.remove(...matchColors, 'matched', 'selected');
+        el.style.cursor = 'pointer';
+        el.querySelector('.tick-cross')?.remove();
+      });
+
+      userMatches.forEach((match, index) => {
+        const engEl = Array.from(document.querySelectorAll('.english-word')).find(e => e.dataset.english === match.english);
+        const tamEl = Array.from(document.querySelectorAll('.tamil-word')).find(t => t.dataset.tamil === match.tamil);
+        if (!engEl || !tamEl) return;
+
+        const colorClass = matchColors[index % matchColors.length];
+        engEl.classList.add('matched', colorClass);
+        tamEl.classList.add('matched', colorClass);
+
+        if (showAnswer) {
+          const correctPair = currentSet.find(c => c.English === match.english);
+          const isCorrect = correctPair && correctPair.Tamil === match.tamil;
+
+          const mark = document.createElement('span');
+          mark.className = 'tick-cross';
+          mark.textContent = isCorrect ? '✔' : '✖';
+          mark.style.marginLeft = '8px';
+          mark.style.fontWeight = 'bold';
+          mark.style.fontSize = '1.2em';
+          mark.style.color = isCorrect ? 'green' : 'red';
+
+          engEl.appendChild(mark.cloneNode(true));
+          tamEl.appendChild(mark.cloneNode(true));
+
+          if (!isCorrect) tamEl.style.cursor = 'pointer';
+        }
+      });
+    }
+
+    document.getElementById('showAnswerBtn').addEventListener('click', () => renderMatches(true));
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      currentIndex = (currentIndex + 5) % filteredCards.length;
+      userMatches = [];
+      loadSet();
+    });
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      userMatches = [];
+      clearSelection();
+      renderMatches(false);
+    });
+
+    loadCards();
+  </script>
+
+</body>
+
+</html>

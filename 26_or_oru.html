@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ஓர் - ஒரு</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f4f8;
+            color: #333;
+            max-width: 700px;
+            margin: auto;
+            text-align: center;
+        }
+
+        #home {
+            text-decoration: none;
+            background-color: #0000ff;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 15px;
+        }
+
+        h1 {
+            color: #00f;
+            text-align: center;
+        }
+
+        #scoreDisplay {
+            margin-top: 0.5rem;
+            font-size: 1rem;
+            color: #495057;
+        }
+
+        .paragraph {
+            font-size: 1.5rem;
+            line-height: 2.5rem;
+            margin: 2rem 0;
+            user-select: none;
+        }
+
+        .blank {
+            display: inline-block;
+            min-width: 5rem;
+            height: 2.5rem;
+            border: 2px solid #555;
+            padding: 0.2rem 0.5rem;
+            vertical-align: bottom;
+            text-align: center;
+            user-select: none;
+            cursor: default;
+        }
+
+        .blank.correct {
+            border-color: #28a745 !important;
+            background-color: #d4edda !important;
+            color: #155724;
+            animation: correctFlash 0.5s ease;
+        }
+
+        .blank.incorrect {
+            border-color: #dc3545 !important;
+            background-color: #f8d7da !important;
+            color: #721c24;
+            animation: incorrectFlash 0.5s ease;
+        }
+
+        @keyframes correctFlash {
+            0% {
+                transform: scale(1);
+                background-color: #d4edda;
+            }
+
+            50% {
+                transform: scale(1.2);
+                background-color: #a8f0b0;
+            }
+
+            100% {
+                transform: scale(1);
+                background-color: #d4edda;
+            }
+        }
+
+        @keyframes incorrectFlash {
+            0% {
+                transform: scale(1);
+                background-color: #f8d7da;
+            }
+
+            50% {
+                transform: scale(1.2);
+                background-color: #f5a1a1;
+            }
+
+            100% {
+                transform: scale(1);
+                background-color: #f8d7da;
+            }
+        }
+
+        .words {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .word-chunk {
+            background-color: #15ff00;
+            color: black;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            user-select: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .word-chunk:hover {
+            background-color: #0056b3;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        #message {
+            margin-top: 1.5rem;
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <a id="home" href="index.html"> ◀ முகப்பு</a>
+
+    <h1>ஓர் - ஒரு</h1>
+    <div id="scoreDisplay">சரி: 0 / 0</div>
+    <hr>
+    <div class="paragraph" id="paragraph"></div>
+    <hr>
+    
+    <div class="words" id="wordChunks"></div>
+    <div id="message"></div>
+
+    <script>
+
+        // format /CORRECT, wrong/
+        const sentences = [
+            "/ஒரு, ஓர்/ பள்ளி",
+            "/ஒரு, ஓர்/ புத்தகம்",
+            "/ஒரு, ஓர்/ குழந்தை",
+            "/ஒரு, ஓர்/ தோப்பு",
+            "/ஒரு, ஓர்/ மரம்",
+            "/ஒரு, ஓர்/ மேடு",
+            "/ஒரு, ஓர்/ கடல்",
+            "/ஒரு, ஓர்/ நிலம்",
+            "/ஒரு, ஓர்/ கணக்கு",
+            "/ஒரு, ஓர்/ குளம்",
+            "/ஒரு, ஓர்/ பத்திரிக்கை",
+            "/ஒரு, ஓர்/ மடல்",
+            "/ஒரு, ஓர்/ வனம்",
+            "/ஒரு, ஓர்/ கல்",
+            "/ஒரு, ஓர்/ சாலை",
+            "/ஒரு, ஓர்/ பல்",
+            "/ஒரு, ஓர்/ கோவில்",
+            "/ஒரு, ஓர்/ தோணி",
+            "/ஒரு, ஓர்/ மணி",
+            "/ஒரு, ஓர்/ மான்",
+            "/ஒரு, ஓர்/ காகம்",
+            "/ஒரு, ஓர்/ மண்",
+            "/ஒரு, ஓர்/ நடனம்",
+            "/ஒரு, ஓர்/ கையெழுத்து",
+            "/ஒரு, ஓர்/ கதை",
+            "/ஒரு, ஓர்/ பறவை",
+            "/ஒரு, ஓர்/ மாடம்",
+            "/ஒரு, ஓர்/ கண்ணாடி",
+            "/ஒரு, ஓர்/ பழம்",
+            "/ஒரு, ஓர்/ மின்னல்",
+            "/ஒரு, ஓர்/ பூங்கா",
+            "/ஒரு, ஓர்/ மயில்",
+            "/ஒரு, ஓர்/ கடிகாரம்",
+            "/ஒரு, ஓர்/ குரல்",
+            "/ஒரு, ஓர்/ மேகம்",
+            "/ஒரு, ஓர்/ கிணறு",
+            "/ஒரு, ஓர்/ பக்கம்",
+            "/ஒரு, ஓர்/ மேடை",
+            "/ஒரு, ஓர்/ கிழங்கு",
+            "/ஓர், ஒரு/ அணில்",
+            "/ஓர், ஒரு/ ஆமை",
+            "/ஓர், ஒரு/ எலி",
+            "/ஓர், ஒரு/ ஏணி",
+            "/ஓர், ஒரு/ ஓவியம்",
+            "/ஓர், ஒரு/ அருவி",
+            "/ஓர், ஒரு/ ஆண்",
+            "/ஓர், ஒரு/ இலை",
+            "/ஓர், ஒரு/ உழவர்",
+            "/ஓர், ஒரு/ எருமை",
+            "/ஓர், ஒரு/ அரிசி",
+            "/ஓர், ஒரு/ ஆடை",
+            "/ஓர், ஒரு/ இரவு",
+            "/ஓர், ஒரு/ உதயம்",
+            "/ஓர், ஒரு/ எண்",
+            "/ஓர், ஒரு/ அம்மா",
+            "/ஓர், ஒரு/ ஆட்சி",
+            "/ஓர், ஒரு/ ஆட்சி",
+            "/ஓர், ஒரு/ இசை",
+            "/ஓர், ஒரு/ உரை",
+            "/ஓர், ஒரு/ எழுத்து",
+            "/ஓர், ஒரு/ ஏக்கம்",
+            "/ஓர், ஒரு/ ஓசை",
+            "/ஓர், ஒரு/ அந்தி",
+            "/ஓர், ஒரு/ ஆசை",
+            "/ஓர், ஒரு/ உதவி"
+        ];
+
+
+        let currentData = null;
+        let score = 0;
+        let total = 0;
+        let usedIndexes = new Set();
+
+        const paragraphDiv = document.getElementById('paragraph');
+        const wordChunksDiv = document.getElementById('wordChunks');
+        const message = document.getElementById('message');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+
+        function getRandomSentenceIndex() {
+            if (usedIndexes.size === sentences.length) return null;
+            let idx;
+            do {
+                idx = Math.floor(Math.random() * sentences.length);
+            } while (usedIndexes.has(idx));
+            usedIndexes.add(idx);
+            return idx;
+        }
+
+        function prepareQuiz() {
+            const idx = getRandomSentenceIndex();
+            if (idx === null) return false;
+            const sentence = sentences[idx];
+            const match = sentence.match(/\/(.+?),\s*(.+?)\//);
+            if (!match) return false;
+            const correct = match[1].trim();
+            const distractor = match[2].trim();
+            const sentenceText = sentence.replace(/\/.+?,\s*.+?\//, '__');
+
+            currentData = {
+                sentenceText,
+                correctWord: correct,
+                options: shuffleArray([correct, distractor])
+            };
+            total++;
+            return true;
+        }
+
+        function renderQuiz() {
+            message.textContent = '';
+            paragraphDiv.innerHTML = '';
+            wordChunksDiv.innerHTML = '';
+            scoreDisplay.textContent = `மதிப்பெண்: ${score}`;
+
+            if (!currentData) return;
+
+            const lineDiv = document.createElement('div');
+            const parts = currentData.sentenceText.split('__');
+            lineDiv.appendChild(document.createTextNode(parts[0]));
+
+            const blankSpan = document.createElement('span');
+            blankSpan.className = 'blank';
+            lineDiv.appendChild(blankSpan);
+
+            if (parts.length > 1) lineDiv.appendChild(document.createTextNode(parts[1]));
+            paragraphDiv.appendChild(lineDiv);
+
+            currentData.options.forEach(word => {
+                const wordDiv = document.createElement('div');
+                wordDiv.className = 'word-chunk';
+                wordDiv.setAttribute('data-word', word);
+                wordDiv.textContent = word;
+                wordChunksDiv.appendChild(wordDiv);
+
+                wordDiv.addEventListener('click', () => {
+                    blankSpan.textContent = word;
+
+                    // Auto mark with animation
+                    blankSpan.classList.remove('correct', 'incorrect');
+                    if (word === currentData.correctWord) {
+                        blankSpan.classList.add('correct');
+                        message.textContent = 'சரி ✅';
+                        message.className = 'success';
+                        score++;
+                    } else {
+                        blankSpan.classList.add('incorrect');
+                        message.textContent = 'தவறு ❌';
+                        message.className = 'fail';
+                    }
+
+                    // Disable other chunks
+                    document.querySelectorAll('.word-chunk').forEach(c => c.style.pointerEvents = 'none');
+                    scoreDisplay.textContent = `மதிப்பெண்: ${score}`;
+
+                    // Wait 2 seconds and go to next question or end quiz
+                    setTimeout(() => {
+                        const hasNext = prepareQuiz();
+                        if (!hasNext) {
+                            alert(`பாராட்டுக்கள்! மதிப்பெண்: ${score} / ${total}`);
+                        } else {
+                            renderQuiz();
+                        }
+                    }, 2000);
+                });
+            });
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Initialize first question
+        prepareQuiz();
+        renderQuiz();
+    </script>
+</body>
+
+</html>

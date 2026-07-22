@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>எத்தனை சரியான வாக்கியம் அமைக்க முடியும்? </title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f7f9fc;
+            color: #222;
+        }
+
+        .home {
+            display: flex;
+            justify-content: center;
+            /* Horizontal center */
+            margin-top: 20px;
+            /* Add space from top if needed */
+        }
+
+        h1 {
+            color: #00f;
+            text-align: center;
+        }
+
+        #container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        #leftBox,
+        #rightContainer {
+            min-height: 200px;
+            box-sizing: border-box;
+        }
+
+        #leftBox {
+            background: white;
+            border: 2px solid #007bff;
+            border-radius: 6px;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .wordChunk {
+            background-color: #007bff;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 12px;
+            user-select: none;
+            transition: background-color 0.2s ease;
+        }
+
+        .wordChunk:hover {
+            background-color: #0056b3;
+        }
+
+        #rightContainer {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #rightBox {
+            background: white;
+            border: 2px dashed #007bff;
+            display: flex;
+            flex-wrap: wrap;
+            /* keep row-wise layout */
+            align-items: flex-start;
+            gap: 8px 8px;
+            /* 4px vertical gap, 8px horizontal gap */
+            font-size: 1.25rem;
+            min-height: 50px;
+            overflow-y: auto;
+        }
+
+        #rightBox .wordChunk {
+            background-color: #28a745;
+            cursor: grab;
+        }
+
+        #rightBox .wordChunk:active {
+            cursor: grabbing;
+        }
+
+        #confirmBtn {
+            margin-top: 12px;
+            background-color: #28a745;
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            user-select: none;
+        }
+
+        #confirmBtn:hover {
+            background-color: #ffa500;
+        }
+
+        #bottomBox {
+            margin-top: 20px;
+            min-height: 120px;
+            background: white;
+            border: 2px solid #6c757d;
+            border-radius: 6px;
+            padding: 15px;
+            box-sizing: border-box;
+            font-size: 1.15rem;
+            overflow-y: auto;
+        }
+
+        .sentence {
+            margin-bottom: 10px;
+            padding: 6px 10px;
+            background: #e9ecef;
+            border-radius: 8px;
+        }
+
+        #sentenceCount {
+            margin-top: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #495057;
+        }
+
+        /* Scrollbar styling */
+        #leftBox::-webkit-scrollbar,
+        #rightBox::-webkit-scrollbar,
+        #bottomBox::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #leftBox::-webkit-scrollbar-thumb,
+        #rightBox::-webkit-scrollbar-thumb,
+        #bottomBox::-webkit-scrollbar-thumb {
+            background: #007bff;
+            border-radius: 4px;
+        }
+
+        #home {
+            text-decoration: none;
+            background-color: #0000ff;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 15px;
+        }
+
+        /* -------- Responsive Layout -------- */
+        @media (min-width: 768px) {
+
+            #leftBox,
+            #rightContainer {
+                width: 49%;
+            }
+        }
+
+        @media (max-width: 767px) {
+            #container {
+                flex-direction: column;
+            }
+
+            #leftBox,
+            #rightContainer {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="home">
+        <a id="home" href="index.html"> ◀ முகப்பு</a>
+    </div>
+
+    <h1>எத்தனை சரியான வாக்கியம் அமைக்க முடியும்?</h1>
+
+    <div id="container">
+        <div id="leftBox" aria-label="Word chunks list" role="list"></div>
+        <div id="rightContainer">
+            <p>நீங்கள் அமைத்த வாக்கியம் - சரியான பொருளை தருகிறதா?</p>
+            <div id="rightBox" aria-label="Formed sentence" role="textbox" tabindex="0"></div>
+            <button id="confirmBtn" aria-label="Confirm sentence">வாக்கியத்தை சேமிக்க</button>
+            <div id="bottomBox" aria-live="polite" aria-atomic="true" aria-relevant="additions"></div>
+            <div id="sentenceCount">வாக்கியங்கள்: 0</div>
+        </div>
+    </div>
+    <script>
+        const uniqueWords = [
+            "நான்", "நீ", "அவர்கள்", "நீங்கள்", "நாங்கள்", "அவர்",
+            "அவள்", "நாளை", "இன்று", "நேற்று", "பள்ளிக்கு", "சென்று", "கற்கிறேன்",
+            "வீட்டில்", "புத்தகம்", "வாசித்து", "இருக்கிறாள்",
+            "அப்பா", "வேலை", "முடிந்து", "வீடு", "வந்தார்", "சந்தோஷமாக",
+            "நண்பர்களுடன்", "விளையாடுகிறேன்", "அவன்", "பள்ளியில்",
+            "நல்ல", "மதிப்பெண்", "பெற்றான்", "வாசல்", "அழகாக", "பூச்சி",
+            "செய்தாள்", "காலை", "உணவு", "சாப்பிட்டு",
+            "வருகிறேன்", "புத்தகத்தை", "அக்கா", "கொடுத்து", "விட்டான்",
+            "தோழிகளுடன்", "பார்க்கிறாள்", "காகிதத்தில்", "கவிதை",
+            "எழுதுகிறேன்", "பூமியில்", "மலர்கள்", "வளர்க்க", "விரும்புகிறான்",
+            "விரும்புகிறாள்", "சந்திரனை", "பார்த்து", "கவலைப்பட்டாள்",
+            "நடனம்", "கற்றுக்கொள்ள", "விரும்புகிறேன்", "பாடம்", "மனதில்",
+            "நன்றாக", "இருக்கிறது", "இன்று", "நேரமாக", "சென்றாள்",
+            "வேலை", "செய்து", "முடித்தேன்", "சுறுசுறுப்பாக", "தமிழ்",
+            "மொழி", "சோம்பல்", "கணினி", "சென்றான்", "சென்றார்", "பார்க்கிறான்",
+            "குருவி", "பூனை", "நூலகத்திற்குச்", "கடைக்குச்", "கடற்கரைக்குச்",
+            "விளையாட்டு மைதானத்துக்குச்", "தொலைக்காட்சி", "பார்க்கிறார்",
+            "பார்க்கிறாள்", "அம்மா", "தாத்தா", "பாட்டி", "மாமா", "அத்தை",
+            "சித்தப்பா", "சித்தி"
+        ];
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                const temp = array[i];
+                array[i] = array[j];
+                array[j] = temp;
+            }
+            return array;
+        }
+
+        const leftBox = document.getElementById('leftBox');
+        const rightBox = document.getElementById('rightBox');
+        const confirmBtn = document.getElementById('confirmBtn');
+        const bottomBox = document.getElementById('bottomBox');
+        const sentenceCount = document.getElementById('sentenceCount');
+
+        // Shuffle words before displaying
+        shuffleArray(uniqueWords);
+
+        // Populate left box with word chunks
+        function renderLeftBox() {
+            leftBox.innerHTML = '';
+            uniqueWords.forEach(word => {
+                const span = document.createElement('span');
+                span.className = 'wordChunk';
+                span.textContent = word;
+                span.setAttribute('tabindex', '0');
+                span.setAttribute('role', 'button');
+                span.setAttribute('aria-label', `Add word ${word} to sentence`);
+                leftBox.appendChild(span);
+            });
+        }
+
+        // Add word chunk to right box sentence
+        function addWordToSentence(word) {
+            const span = document.createElement('span');
+            span.className = 'wordChunk';
+            span.textContent = word;
+            span.setAttribute('tabindex', '0');
+            span.setAttribute('role', 'button');
+            span.setAttribute('aria-label', `Remove word ${word} from sentence`);
+            span.setAttribute('draggable', 'true');
+            rightBox.appendChild(span);
+        }
+
+        // Remove word chunk from right box sentence on click
+        rightBox.addEventListener('click', e => {
+            if (e.target.classList.contains('wordChunk')) {
+                rightBox.removeChild(e.target);
+            }
+        });
+
+        // Keyboard support for removing word (Enter or Space)
+        rightBox.addEventListener('keydown', e => {
+            if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('wordChunk')) {
+                e.preventDefault();
+                rightBox.removeChild(e.target);
+                rightBox.focus();
+            }
+        });
+
+        // Click handler for left box words
+        leftBox.addEventListener('click', e => {
+            if (e.target.classList.contains('wordChunk')) {
+                addWordToSentence(e.target.textContent);
+            }
+        });
+        // Keyboard handler for left box words (Enter or Space)
+        leftBox.addEventListener('keydown', e => {
+            if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('wordChunk')) {
+                e.preventDefault();
+                addWordToSentence(e.target.textContent);
+            }
+        });
+
+        // Drag and drop handlers for rightBox word chunks
+        let dragged = null;
+
+        rightBox.addEventListener('dragstart', e => {
+            if (e.target.classList.contains('wordChunk')) {
+                dragged = e.target;
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', '');
+                setTimeout(() => {
+                    e.target.style.opacity = '0.5';
+                }, 0);
+            }
+        });
+
+        rightBox.addEventListener('dragend', e => {
+            if (e.target.classList.contains('wordChunk')) {
+                e.target.style.opacity = '1';
+                dragged = null;
+            }
+        });
+
+        rightBox.addEventListener('dragover', e => {
+            e.preventDefault();
+            if (e.target.classList.contains('wordChunk')) {
+                e.target.style.borderLeft = '2px solid #007bff';
+            }
+        });
+
+        rightBox.addEventListener('dragleave', e => {
+            if (e.target.classList.contains('wordChunk')) {
+                e.target.style.borderLeft = '';
+            }
+        });
+
+        rightBox.addEventListener('drop', e => {
+            e.preventDefault();
+            if (e.target.classList.contains('wordChunk')) {
+                e.target.style.borderLeft = '';
+                if (dragged && dragged !== e.target) {
+                    const children = Array.from(rightBox.children);
+                    const draggedIndex = children.indexOf(dragged);
+                    const targetIndex = children.indexOf(e.target);
+                    if (draggedIndex < targetIndex) {
+                        rightBox.insertBefore(dragged, e.target.nextSibling);
+                    } else {
+                        rightBox.insertBefore(dragged, e.target);
+                    }
+                }
+            }
+        });
+
+        // Confirm sentence and move to bottom box
+        confirmBtn.addEventListener('click', () => {
+            if (rightBox.children.length === 0) {
+                alert('Please add words to form a sentence first.');
+                return;
+            }
+            const words = [];
+            for (let i = 0; i < rightBox.children.length; i++) {
+                words.push(rightBox.children[i].textContent);
+            }
+            let sentenceText = words.join(' ');
+            if (!sentenceText.endsWith('।') && !sentenceText.endsWith('.') && !sentenceText.endsWith('!') && !sentenceText.endsWith('?')) {
+                sentenceText += '.';
+            }
+            const p = document.createElement('div');
+            p.className = 'sentence';
+            p.textContent = sentenceText;
+            bottomBox.appendChild(p);
+
+            rightBox.innerHTML = '';
+
+            sentenceCount.textContent = 'வாக்கியங்கள்: ' + bottomBox.children.length;
+        });
+
+        renderLeftBox();
+    </script>
+
+</body>
+
+</html>

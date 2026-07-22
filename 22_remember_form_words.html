@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ஞாபகம் வருதே</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 10px;
+        }
+
+        h1 {
+            color: #00f;
+            margin-bottom: 1rem;
+        }
+
+        #controls {
+            margin-bottom: 10px;
+        }
+
+        select {
+            font-size: 18px;
+            padding: 5px;
+            margin: 5px;
+        }
+
+        #tileContainer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border: 2px dashed #aaa;
+            min-height: 60px;
+        }
+
+        .tile {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #d0e0ff;
+            border: 1px solid #666;
+            font-size: 18px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .tile.used {
+            background: #ccc;
+            pointer-events: none;
+        }
+
+        #wordList,
+        #selectedWord {
+            margin: 20px 0;
+            font-size: 20px;
+        }
+
+        #checkBtn {
+            background: green;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        #scoreboard {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+        #home {
+            text-decoration: none;
+            background-color: #0000ff;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <a id="home" href="index.html"> ◀ முகப்பு</a>
+    <h1>ஞாபகம் வருதே</h1>
+    <div id="controls">
+        <select id="categoryFilter"></select>
+    </div>
+
+    <div id="wordList"></div>
+    <div id="tileContainer"></div>
+    <div id="selectedWord"></div>
+    <button id="checkBtn" style="display:none;">சரி பார்</button>
+    <div id="scoreboard">⏱ நேரம்: <span id="timer">0</span> வினாடி | ✅ மதிப்பெண்: <span id="score">0</span></div>
+
+    <script>
+        const uyirLetters = ['அ', 'ஆ', 'இ', 'ஈ', 'உ', 'ஊ', 'எ', 'ஏ', 'ஐ', 'ஒ', 'ஓ', 'ஔ'];
+        const meiLetters = ['க்', 'ங்', 'ச்', 'ஞ்', 'ட்', 'ண்', 'த்', 'ந்', 'ப்', 'ம்', 'ய்', 'ர்', 'ல்', 'வ்', 'ழ்', 'ள்', 'ற்', 'ன்'];
+        const uyirmeiLetters = ['க', 'கா', 'கி', 'கீ', 'கு', 'கூ', 'கெ', 'கே', 'கை', 'கொ', 'கோ', 'கௌ', 'ங', 'ஙா', 'ஙி', 'ஙீ', 'ஙு', 'ஙூ', 'ஙெ', 'ஙே', 'ஙை', 'ஙொ', 'ஙோ', 'ஙௌ', 'ச', 'சா', 'சி', 'சீ', 'சு', 'சூ', 'செ', 'சே', 'சை', 'சொ', 'சோ', 'சௌ', 'ஞ', 'ஞா', 'ஞி', 'ஞீ', 'ஞு', 'ஞூ', 'ஞெ', 'ஞே', 'ஞை', 'ஞொ', 'ஞோ', 'ஞௌ', 'ட', 'டா', 'டி', 'டீ', 'டு', 'டூ', 'டெ', 'டே', 'டை', 'டொ', 'டோ', 'டௌ', 'ண', 'ணா', 'ணி', 'ணீ', 'ணு', 'ணூ', 'ணெ', 'ணே', 'ணை', 'ணொ', 'ணோ', 'ணௌ', 'த', 'தா', 'தி', 'தீ', 'து', 'தூ', 'தெ', 'தே', 'தை', 'தொ', 'தோ', 'தௌ', 'ந', 'நா', 'நி', 'நீ', 'நு', 'நூ', 'நெ', 'நே', 'நை', 'நொ', 'நோ', 'நௌ', 'ப', 'பா', 'பி', 'பீ', 'பு', 'பூ', 'பெ', 'பே', 'பை', 'பொ', 'போ', 'பௌ', 'ம', 'மா', 'மி', 'மீ', 'மு', 'மூ', 'மெ', 'மே', 'மை', 'மொ', 'மோ', 'மௌ', 'ய', 'யா', 'யி', 'யீ', 'யு', 'யூ', 'யெ', 'யே', 'யை', 'யொ', 'யோ', 'யௌ', 'ர', 'ரா', 'ரி', 'ரீ', 'ரு', 'ரூ', 'ரெ', 'ரே', 'ரை', 'ரொ', 'ரோ', 'ரௌ', 'ல', 'லா', 'லி', 'லீ', 'லு', 'லூ', 'லெ', 'லே', 'லை', 'லொ', 'லோ', 'லௌ', 'வ', 'வா', 'வி', 'வீ', 'வு', 'வூ', 'வெ', 'வே', 'வை', 'வொ', 'வோ', 'வௌ', 'ழ', 'ழா', 'ழி', 'ழீ', 'ழு', 'ழூ', 'ழெ', 'ழே', 'ழை', 'ழொ', 'ழோ', 'ழௌ', 'ள', 'ளா', 'ளி', 'ளீ', 'ளு', 'ளூ', 'ளெ', 'ளே', 'ளை', 'ளொ', 'ளோ', 'ளௌ', 'ற', 'றா', 'றி', 'றீ', 'று', 'றூ', 'றெ', 'றே', 'றை', 'றொ', 'றோ', 'றௌ', 'ன', 'னா', 'னி', 'னீ', 'னு', 'னூ', 'னெ', 'னே', 'னை', 'னொ', 'னோ', 'னௌ'];
+        const aytham = ['ஃ']; const grantha = ['ஜ', 'ஷ', 'ஸ', 'ஹ', 'க்ஷ']; const space = [' '];
+        const allLetters = uyirLetters.concat(meiLetters, uyirmeiLetters, aytham, grantha, space);
+
+        function splitWord(word) {
+            const result = []; let i = 0;
+            while (i < word.length) {
+                let found = false;
+                for (let l of allLetters.sort((a, b) => b.length - a.length)) {
+                    if (word.startsWith(l, i)) {
+                        result.push(l); i += l.length; found = true; break;
+                    }
+                }
+                if (!found) i++;
+            }
+            return result;
+        }
+
+        let wordData = [], words = [], selected = [], score = 0, timer = 0, timerInterval;
+
+        fetch("word_list.csv")
+            .then(res => res.text())
+            .then(text => {
+                const rows = text.trim().split("\n").map(r => r.split(","));
+                const header = rows[0];
+                const catIndex = header.indexOf("Category");
+                const tamilIndex = header.indexOf("Tamil");
+                wordData = rows.slice(1).map(r => ({ category: r[catIndex], word: r[tamilIndex] }));
+                const categories = [...new Set(wordData.map(w => w.category))];
+                const categoryFilter = document.getElementById("categoryFilter");
+                categoryFilter.innerHTML = '<option value="" disabled selected>-- தேர்வு செய்யவும் --</option>';
+                categoryFilter.innerHTML += categories.map(c => `<option>${c}</option>`).join("");
+                categoryFilter.onchange = startGame;
+            });
+
+        function startGame() {
+            score = 0; timer = 0;
+            document.getElementById("score").textContent = score;
+            document.getElementById("timer").textContent = timer;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => { timer++; document.getElementById("timer").textContent = timer; }, 1000);
+
+            const category = document.getElementById("categoryFilter").value;
+            const filtered = wordData.filter(w => w.category === category);
+            words = filtered.sort(() => 0.5 - Math.random()).slice(0, 5).map(w => w.word);
+
+            const listDiv = document.getElementById("wordList");
+            listDiv.innerHTML = "<b>10 வினாடிகள்! வார்த்தைகளை ஞாபகம் வைத்துக் கொள்க...<b> <br>" 
+            listDiv.innerHTML += words.join(", ");
+            setTimeout(() => { listDiv.innerHTML = ""; showTiles(); }, 10000);
+        }
+
+        function showTiles() {
+            const listDiv = document.getElementById("wordList");
+            listDiv.innerHTML = "<b> வார்த்தைகளை ஒவ்வொன்றாக அமைத்து சரி பார் <b>"; 
+            const tileContainer = document.getElementById("tileContainer");
+            tileContainer.innerHTML = "";
+            let tiles = words.map(w => splitWord(w)).flat();
+            // shuffle
+            for (let i = tiles.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));[tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+            }
+            tiles.forEach((letter, idx) => {
+                const t = document.createElement("div");
+                t.className = "tile"; t.textContent = letter;
+                t.addEventListener("click", () => selectTile(t));
+                tileContainer.appendChild(t);
+            });
+            document.getElementById("checkBtn").style.display = "inline-block";
+        }
+
+        function selectTile(tile) {
+            if (tile.classList.contains("used")) return;
+            selected.push(tile); tile.classList.add("used");
+            document.getElementById("selectedWord").textContent = selected.map(t => t.textContent).join("");
+        }
+
+        document.getElementById("checkBtn").onclick = () => {
+            const formed = selected.map(t => t.textContent).join("");
+            if (words.includes(formed)) {
+                score++; document.getElementById("score").textContent = score;
+                selected.forEach(t => t.style.display = "none"); // hide used tiles
+                words = words.filter(w => w !== formed);
+                if (words.length === 0) {
+                    clearInterval(timerInterval);
+                    alert("🎉 பாராட்டுக்கள்! எடுத்துக் கொண்ட நேரம்: " + timer + " வினாடி");
+                }
+            } else {
+                alert("❌ தவறான வார்த்தை!");
+                selected.forEach(t => t.classList.remove("used"));
+            }
+            selected = []; document.getElementById("selectedWord").textContent = "";
+        };
+    </script>
+</body>
+
+</html>

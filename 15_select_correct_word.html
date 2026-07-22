@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>பிழையில்லா வார்த்தையை தேர்ந்தெடுப்போம்</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f4f8;
+            color: #333;
+            max-width: 700px;
+            margin: auto;
+            text-align: center;
+        }
+
+        #home {
+            text-decoration: none;
+            background-color: #0000ff;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 15px;
+        }
+
+        h1 {
+            color: #00f;
+            text-align: center;
+        }
+
+        #scoreDisplay {
+            margin-top: 0.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .paragraph {
+            font-size: 1.5rem;
+            line-height: 2.5rem;
+            margin: 2rem 0;
+            user-select: none;
+        }
+
+        .blank {
+            display: inline-block;
+            min-width: 5rem;
+            height: 2.5rem;
+            border: 2px solid #555;
+            padding: 0.2rem 0.5rem;
+            vertical-align: bottom;
+            text-align: center;
+            user-select: none;
+            cursor: default;
+        }
+
+        .blank.correct {
+            border-color: #28a745 !important;
+            background-color: #d4edda !important;
+            color: #155724;
+            animation: correctFlash 0.5s ease;
+        }
+
+        .blank.incorrect {
+            border-color: #dc3545 !important;
+            background-color: #f8d7da !important;
+            color: #721c24;
+            animation: incorrectFlash 0.5s ease;
+        }
+
+        @keyframes correctFlash {
+            0% {
+                transform: scale(1);
+                background-color: #d4edda;
+            }
+
+            50% {
+                transform: scale(1.2);
+                background-color: #a8f0b0;
+            }
+
+            100% {
+                transform: scale(1);
+                background-color: #d4edda;
+            }
+        }
+
+        @keyframes incorrectFlash {
+            0% {
+                transform: scale(1);
+                background-color: #f8d7da;
+            }
+
+            50% {
+                transform: scale(1.2);
+                background-color: #f5a1a1;
+            }
+
+            100% {
+                transform: scale(1);
+                background-color: #f8d7da;
+            }
+        }
+
+        .words {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .word-chunk {
+            background-color: #15ff00;
+            color: black;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            user-select: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .word-chunk:hover {
+            background-color: #0056b3;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        #message {
+            margin-top: 1.5rem;
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <a id="home" href="index.html"> ◀ முகப்பு</a>
+
+    <h1>பிழையில்லா வார்த்தையை தேர்ந்தெடுப்போம்</h1>
+    <div id="scoreDisplay">சரி: 0 / 0</div>
+    <hr>
+    <div class="paragraph" id="paragraph"></div>
+    <hr>
+    <div class="words" id="wordChunks"></div>
+    <div id="message"></div>
+
+    <script>
+
+        // format /CORRECT, wrong/
+        const sentences = [
+            "நான் /பள்ளிக்கு, பல்லிக்கு/ செல்கிறேன்",
+            "/நான், நாண்/ பள்ளிக்கு செல்கிறேன்",
+            "நான் பள்ளிக்கு /செல்கிறேன், செல்கிறேண்/",
+            "நான் பள்ளிக்கு /செல்கிறேன், செல்கிரேன்/",
+            "அவன் பள்ளிக்கு /செல்கிறான், செல்கிறாள்/",
+            "அவள் பள்ளிக்கு /செல்கிறாள், செல்கிறான்/",
+            "/அவன், அவள்/ புத்தகம் வாசிக்கிறான்",
+            "/அவள், அவன்/ புத்தகம் வாசிக்கிறாள் ",
+            "அவன் /வேலை, வேளை/ செய்கிறான்",
+            "நாங்கள் /விளையாடுகிறோம், விலையாடுகிறோம்/",
+            "அவன் /விளையாடுகிறான், விளையாடுகிறோம்/",
+            "அவள் /விளையாடுகிறாள், விளையாடுகிறோம்/",
+            "அவர்கள் பாடம் /கற்கிறார்கள், கற்கிறாற்கள்/",
+            "அப்பா /வண்டி, வன்டி/ ஓட்டுகிறார்",
+            "அம்மா /உணவு, உனவு/ சமைக்கிறார்",
+            "சித்தப்பா /நூல், நூள்/ வாசிக்கிறார்",
+            "சித்தி /பாடல், பாடள்/ பாடுகிறாள்",
+            "நான் புத்தகம்  /படிக்கிறேன், படிக்கிறேண்/",
+            "அவள் பாடம் /எழுதுகிறாள், எழுதுகிராள்/ ",
+            "நாங்கள் சந்தைக்கு /செல்கிறோம், செள்கிறோம்/",
+            "அவர்கள்  பூங்காவில் /நடக்கிறார்கள், நடக்கிரார்கள்/",
+            "இது தாத்தாவின் /கிராமம், கிறாமம்/ ",
+            "நான் பூங்காவில் /நடக்கிறேன், நடக்கிரேன்/",
+            "அவன் வீட்டை /அலங்கரிக்கிறான், அழங்கரிக்கிறான்/ ",
+            "அவர்கள் மைதானத்தில் /விளையாடுகிறார்கள், விழையாடுகிறார்கள்/ ",
+            "அவர்கள் /மைதானத்தில், மைதாணத்தில்/ விளையாடுகிறார்கள்",
+            "நாங்கள் வேலை /செய்கிறோம், செய்கிரோம்/",
+            "நாங்கள் வேலை /செய்கிறோம், செய்கிறேன்/",
+            "அவன் வேலை /செய்கிறான், செய்கிறோம்/",
+            "அவன் வேலை /செய்கிறான், செய்கிறாள்/",
+            "அவள் வேலை /செய்கிறாள், செய்கிறான்/",
+            "அவன் /மனம், மணம்/ திருந்தினான்",
+            "மலர் /மணம், மனம்/ வீசுகிறது",
+            "/புலி, புளி/ காட்டில் வசிக்கும்",
+            "/புளி, புலி/ சமையலுக்குப் பயன்படும்",
+            "இன்று எனக்கு சரியான /தலைவலி, தலைவழி/.",
+            "இந்த /வழியாகத், வலியாகத்/ தான் நான் பள்ளிக்கு செல்ல வேண்டும்.",
+            "இன்று ஒரு சிறப்பான /நாள், நால்/ ",
+            "புத்தகத்தை /எடு, ஏடு/.",
+            "வருட இறுதியில் இங்கே /பனிக், பணிக்/ காலம்.",
+            "அப்பா /பணி, பனி/ செய்ய புறப்பட்டு விட்டார்.",
+            "இது /என், ஏன்/  புத்தகம்.",
+            "/ஏன், என்/ இங்கே வருகிறாய்."
+        ];
+
+        let currentData = null;
+        let score = 0;
+        let total = 0;
+        let usedIndexes = new Set();
+
+        const paragraphDiv = document.getElementById('paragraph');
+        const wordChunksDiv = document.getElementById('wordChunks');
+        const message = document.getElementById('message');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+
+        function getRandomSentenceIndex() {
+            if (usedIndexes.size === sentences.length) return null;
+            let idx;
+            do {
+                idx = Math.floor(Math.random() * sentences.length);
+            } while (usedIndexes.has(idx));
+            usedIndexes.add(idx);
+            return idx;
+        }
+
+        function prepareQuiz() {
+            const idx = getRandomSentenceIndex();
+            if (idx === null) return false;
+            const sentence = sentences[idx];
+            const match = sentence.match(/\/(.+?),\s*(.+?)\//);
+            if (!match) return false;
+            const correct = match[1].trim();
+            const distractor = match[2].trim();
+            const sentenceText = sentence.replace(/\/.+?,\s*.+?\//, '__');
+
+            currentData = {
+                sentenceText,
+                correctWord: correct,
+                options: shuffleArray([correct, distractor])
+            };
+            total++;
+            return true;
+        }
+
+        function renderQuiz() {
+            message.textContent = '';
+            paragraphDiv.innerHTML = '';
+            wordChunksDiv.innerHTML = '';
+            scoreDisplay.textContent = `சரி: ${score} / ${total - 1}`;
+
+            if (!currentData) return;
+
+            const lineDiv = document.createElement('div');
+            const parts = currentData.sentenceText.split('__');
+            lineDiv.appendChild(document.createTextNode(parts[0]));
+
+            const blankSpan = document.createElement('span');
+            blankSpan.className = 'blank';
+            lineDiv.appendChild(blankSpan);
+
+            if (parts.length > 1) lineDiv.appendChild(document.createTextNode(parts[1]));
+            paragraphDiv.appendChild(lineDiv);
+
+            currentData.options.forEach(word => {
+                const wordDiv = document.createElement('div');
+                wordDiv.className = 'word-chunk';
+                wordDiv.setAttribute('data-word', word);
+                wordDiv.textContent = word;
+                wordChunksDiv.appendChild(wordDiv);
+
+                wordDiv.addEventListener('click', () => {
+                    blankSpan.textContent = word;
+
+                    // Auto mark with animation
+                    blankSpan.classList.remove('correct', 'incorrect');
+                    if (word === currentData.correctWord) {
+                        blankSpan.classList.add('correct');
+                        message.textContent = 'சரி ✅';
+                        message.className = 'success';
+                        score++;
+                    } else {
+                        blankSpan.classList.add('incorrect');
+                        message.textContent = 'தவறு ❌';
+                        message.className = 'fail';
+                    }
+
+                    // Disable other chunks
+                    document.querySelectorAll('.word-chunk').forEach(c => c.style.pointerEvents = 'none');
+                    scoreDisplay.textContent = `சரி: ${score} / ${total}`;
+
+                    // Wait 2 seconds and go to next question or end quiz
+                    setTimeout(() => {
+                        const hasNext = prepareQuiz();
+                        if (!hasNext) {
+                            alert(`பாராட்டுக்கள்! மதிப்பெண்: ${score} / ${total}`);
+                        } else {
+                            renderQuiz();
+                        }
+                    }, 2000);
+                });
+            });
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Initialize first question
+        prepareQuiz();
+        renderQuiz();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>கலைந்த வார்த்தையை சரி செய்வோம்</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #fdfdfd;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      color: #00f;
+      text-align: center;
+    }
+
+
+    select,
+    button {
+      font-size: 1.1em;
+      padding: 10px 15px;
+      margin: 10px 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background-color: white;
+      cursor: pointer;
+    }
+
+    button {
+      background-color: #0000ff;
+      color: #ffffff;
+      font-size: 2.5em;
+    }
+
+    button:hover {
+      background: #ffa500;
+    }
+
+    select:disabled {
+      background-color: #eee;
+      cursor: not-allowed;
+    }
+
+    #tilesContainer,
+    #answerBox {
+      min-height: 100px;
+      /* increase base height */
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin: 10px 0;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      /* allow multiple rows */
+      justify-content: center;
+      width: 90%;
+      height: auto;
+      /* expand with content */
+      box-sizing: border-box;
+      overflow: visible;
+      /* show everything */
+    }
+
+    .tile {
+      background-color: #9c27b0;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: grab;
+      font-size: 20px;
+      user-select: none;
+      flex: 0 0 auto;
+      width: 36px;
+      height: 36px;
+      line-height: 36px;
+      text-align: center;
+    }
+
+    .tile.dragging {
+      opacity: 0.5;
+    }
+
+    #buttonsContainer {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-top: 10px;
+    }
+
+    #successMessage {
+      background-color: #ffa500;
+      color: #000;
+      padding: 6px 14px;
+      border-radius: 5px;
+      font-weight: bold;
+      display: none;
+      min-width: 180px;
+      width: 100%;
+      text-align: center;
+    }
+
+    #categoryFilter {
+      text-align: center;
+      width: 90%;
+    }
+
+
+    #home {
+      text-decoration: none;
+      background-color: #0000ff;
+      color: #ffffff;
+      padding: 10px;
+      border-radius: 15px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <a id="home" href="index.html"> ◀ முகப்பு</a>
+
+  <h1>கலைந்த வார்த்தையை சரி செய்வோம் </h1>
+
+  <select id="categoryFilter">
+    <option value="">-- தேர்வு செய்யவும் --</option>
+  </select>
+
+  <div id="tilesContainer" title="செயல்பாட்டிலிருந்து எழுத்துகளை இங்கே இடுக"></div>
+  <div id="dragArrow" style="font-size: 30px; font-weight: bold; color: #0000ff; user-select: none; margin: 8px 0;">⬇
+  </div>
+  <div id="answerBox" title="பதிலில் எழுத்துக்களை இங்கே பொருத்தவும்"></div>
+  <div id="successMessage">✅சரியான பதில் </div>
+  <div id="buttonsContainer">
+    <button id="showAnswerBtn">?</button>
+    <button id="nextWordBtn">▶</button>
+  </div>
+
+  <script>
+    const uyirLetters = ['அ', 'ஆ', 'இ', 'ஈ', 'உ', 'ஊ', 'எ', 'ஏ', 'ஐ', 'ஒ', 'ஓ', 'ஔ'];
+    const meiLetters = ['க்', 'ங்', 'ச்', 'ஞ்', 'ட்', 'ண்', 'த்', 'ந்', 'ப்', 'ம்', 'ய்', 'ர்', 'ல்', 'வ்', 'ழ்', 'ள்', 'ற்', 'ன்'];
+    const uyirmeiLetters = ['க', 'கா', 'கி', 'கீ', 'கு', 'கூ', 'கெ', 'கே', 'கை', 'கொ', 'கோ', 'கௌ',
+      'ங', 'ஙா', 'ஙி', 'ஙீ', 'ஙு', 'ஙூ', 'ஙெ', 'ஙே', 'ஙை', 'ஙொ', 'ஙோ', 'ஙௌ',
+      'ச', 'சா', 'சி', 'சீ', 'சு', 'சூ', 'செ', 'சே', 'சை', 'சொ', 'சோ', 'சௌ',
+      'ஞ', 'ஞா', 'ஞி', 'ஞீ', 'ஞு', 'ஞூ', 'ஞெ', 'ஞே', 'ஞை', 'ஞொ', 'ஞோ', 'ஞௌ',
+      'ட', 'டா', 'டி', 'டீ', 'டு', 'டூ', 'டெ', 'டே', 'டை', 'டொ', 'டோ', 'டௌ',
+      'ண', 'ணா', 'ணி', 'ணீ', 'ணு', 'ணூ', 'ணெ', 'ணே', 'ணை', 'ணொ', 'ணோ', 'ணௌ',
+      'த', 'தா', 'தி', 'தீ', 'து', 'தூ', 'தெ', 'தே', 'தை', 'தொ', 'தோ', 'தௌ',
+      'ந', 'நா', 'நி', 'நீ', 'நு', 'நூ', 'நெ', 'நே', 'நை', 'நொ', 'நோ', 'நௌ',
+      'ப', 'பா', 'பி', 'பீ', 'பு', 'பூ', 'பெ', 'பே', 'பை', 'பொ', 'போ', 'பௌ',
+      'ம', 'மா', 'மி', 'மீ', 'மு', 'மூ', 'மெ', 'மே', 'மை', 'மொ', 'மோ', 'மௌ',
+      'ய', 'யா', 'யி', 'யீ', 'யு', 'யூ', 'யெ', 'யே', 'யை', 'யொ', 'யோ', 'யௌ',
+      'ர', 'ரா', 'ரி', 'ரீ', 'ரு', 'ரூ', 'ரெ', 'ரே', 'ரை', 'ரொ', 'ரோ', 'ரௌ',
+      'ல', 'லா', 'லி', 'லீ', 'லு', 'லூ', 'லெ', 'லே', 'லை', 'லொ', 'லோ', 'லௌ',
+      'வ', 'வா', 'வி', 'வீ', 'வு', 'வூ', 'வெ', 'வே', 'வை', 'வொ', 'வோ', 'வௌ',
+      'ழ', 'ழா', 'ழி', 'ழீ', 'ழு', 'ழூ', 'ழெ', 'ழே', 'ழை', 'ழொ', 'ழோ', 'ழௌ',
+      'ள', 'ளா', 'ளி', 'ளீ', 'ளு', 'ளூ', 'ளெ', 'ளே', 'ளை', 'ளொ', 'ளோ', 'ளௌ',
+      'ற', 'றா', 'றி', 'றீ', 'று', 'றூ', 'றெ', 'றே', 'றை', 'றொ', 'றோ', 'றௌ',
+      'ன', 'னா', 'னி', 'னீ', 'னு', 'னூ', 'னெ', 'னே', 'னை', 'னொ', 'னோ', 'னௌ'];
+    const aythaLetter = ["ஃ"];
+    const kiranthaLetters = ['ஜ்', 'ஜ', 'ஜா', 'ஜி', 'ஜீ', 'ஜு', 'ஜூ', 'ஜெ', 'ஜே', 'ஜை', 'ஜொ', 'ஜோ', 'ஜௌ',
+      'ஷ்', 'ஷ', 'ஷா', 'ஷி', 'ஷீ', 'ஷு', 'ஷூ', 'ஷெ', 'ஷே', 'ஷை', 'ஷொ', 'ஷோ', 'ஷௌ',
+      'ஸ்', 'ஸ', 'ஸா', 'ஸி', 'ஸீ', 'ஸு', 'ஸூ', 'ஸெ', 'ஸே', 'ஸை', 'ஸொ', 'ஸோ', 'ஸௌ',
+      'ஹ்', 'ஹ', 'ஹா', 'ஹி', 'ஹீ', 'ஹு', 'ஹூ', 'ஹெ', 'ஹே', 'ஹை', 'ஹொ', 'ஹோ', 'ஹௌ',
+      'க்ஷ்', 'க்ஷ', 'க்ஷா', 'க்ஷி', 'க்ஷீ', 'க்ஷு', 'க்ஷூ', 'க்ஷெ', 'க்ஷே', 'க்ஷை', 'க்ஷொ', 'க்ஷோ', 'க்ஷெள',
+      'ஸ்ரீ'];
+
+    const allLetters = uyirLetters.concat(meiLetters, uyirmeiLetters, aythaLetter, kiranthaLetters);
+
+    const sheetUrl = 'word_list.csv'
+    const categoryFilter = document.getElementById('categoryFilter');
+    const tilesContainer = document.getElementById('tilesContainer');
+    const answerBox = document.getElementById('answerBox');
+    const showAnswerBtn = document.getElementById('showAnswerBtn');
+    const nextWordBtn = document.getElementById('nextWordBtn');
+    const successMessage = document.getElementById('successMessage');
+
+    let dataRows = [];
+    let usedWords = new Set();
+    let currentCategory = '';
+    let currentWord = '';
+    let currentLetters = [];
+
+    function splitTamilWord(word) {
+      const result = [];
+      let i = 0;
+      while (i < word.length) {
+        let matched = false;
+        for (let len = 3; len > 0; len--) {
+          if (i + len <= word.length) {
+            const part = word.substring(i, i + len);
+            if (allLetters.includes(part)) {
+              result.push(part);
+              i += len;
+              matched = true;
+              break;
+            }
+          }
+        }
+        if (!matched) {
+          result.push(word[i]);
+          i++;
+        }
+      }
+      return result;
+    }
+
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+
+    function clearTiles() {
+      tilesContainer.innerHTML = '';
+      answerBox.innerHTML = '';
+    }
+
+    function renderTiles(letters) {
+      clearTiles();
+      letters.forEach((letter, index) => {
+        const tile = document.createElement('div');
+        tile.className = 'tile';
+        tile.textContent = letter;
+        tile.setAttribute('draggable', 'true');
+        tile.setAttribute('data-index', index);
+        tilesContainer.appendChild(tile);
+      });
+    }
+
+    function renderAnswerBox() {
+      answerBox.innerHTML = '';
+    }
+
+    function pickRandomWord() {
+      if (!currentCategory) return null;
+      const words = dataRows
+        .filter(row => row.category === currentCategory)
+        .map(row => row.tamil)
+        .filter(word => !usedWords.has(word));
+      if (words.length === 0) {
+        // Move to next category automatically
+        const categories = [...new Set(dataRows.map(r => r.category))].sort();
+        let currentIndex = categories.indexOf(currentCategory);
+        currentIndex = (currentIndex + 1) % categories.length;
+        currentCategory = categories[currentIndex];
+        usedWords.clear();
+        alert('அடுத்த பிரிவிற்கு மாறுகின்றோம்: ' + currentCategory);
+        categoryFilter.value = currentCategory;
+        return pickRandomWord();
+      }
+      const word = words[Math.floor(Math.random() * words.length)];
+      usedWords.add(word);
+      return word;
+    }
+
+    function setupNewWord() {
+      currentWord = pickRandomWord();
+      if (!currentWord) return;
+      currentLetters = splitTamilWord(currentWord);
+      const shuffled = currentLetters.slice();
+      shuffleArray(shuffled);
+      renderTiles(shuffled);
+      renderAnswerBox();
+      hideSuccessMessage();
+    }
+
+    function checkAnswer() {
+      const answerLetters = [];
+      for (const child of answerBox.children) {
+        answerLetters.push(child.textContent);
+      }
+      if (answerLetters.join('') === currentWord) {
+        showSuccessMessage();
+        setTimeout(() => {
+          setupNewWord();
+        }, 1500);
+      }
+    }
+
+    function showSuccessMessage() {
+      successMessage.style.display = 'block';
+    }
+
+    function hideSuccessMessage() {
+      successMessage.style.display = 'none';
+    }
+
+    // Drag and drop handlers
+    let dragSource = null;
+
+    function dragStart(e) {
+      dragSource = e.target.parentNode;
+      e.dataTransfer.setData('text/plain', e.target.getAttribute('data-index'));
+      e.target.classList.add('dragging');
+    }
+
+    function dragEnd(e) {
+      e.target.classList.remove('dragging');
+      dragSource = null;
+    }
+
+    function allowDrop(e) {
+      e.preventDefault();
+    }
+
+    function drop(e) {
+      e.preventDefault();
+      const dataIndex = e.dataTransfer.getData('text/plain');
+      if (dataIndex === '') return;
+
+      // Find dragged tile by data-index within dragSource container
+      let tile = null;
+      if (dragSource) {
+        tile = dragSource.querySelector(`.tile[data-index='${dataIndex}']`);
+      }
+      if (!tile) return;
+
+      if (e.currentTarget === answerBox && tile.parentNode === answerBox) {
+        // Rearrange inside answerBox
+        if (e.target.classList.contains('tile')) {
+          const rect = e.target.getBoundingClientRect();
+          const isAfter = e.clientX > rect.left + rect.width / 2;
+          if (isAfter) {
+            answerBox.insertBefore(tile, e.target.nextSibling);
+          } else {
+            answerBox.insertBefore(tile, e.target);
+          }
+        } else {
+          answerBox.appendChild(tile);
+        }
+      } else if (e.currentTarget === answerBox && tile.parentNode !== answerBox) {
+        // Move tile from tilesContainer to answerBox
+        answerBox.appendChild(tile);
+      } else if (e.currentTarget === tilesContainer && tile.parentNode !== tilesContainer) {
+        // Move tile from answerBox to tilesContainer
+        tilesContainer.appendChild(tile);
+      } else if (e.currentTarget === tilesContainer && tile.parentNode === tilesContainer) {
+        // Rearrange inside tilesContainer
+        if (e.target.classList.contains('tile')) {
+          const rect = e.target.getBoundingClientRect();
+          const isAfter = e.clientX > rect.left + rect.width / 2;
+          if (isAfter) {
+            tilesContainer.insertBefore(tile, e.target.nextSibling);
+          } else {
+            tilesContainer.insertBefore(tile, e.target);
+          }
+        } else {
+          tilesContainer.appendChild(tile);
+        }
+      }
+
+      // Delay checkAnswer so the tile visually moves first
+      setTimeout(checkAnswer, 300);
+    }
+
+    tilesContainer.addEventListener('dragstart', dragStart);
+    tilesContainer.addEventListener('dragend', dragEnd);
+    tilesContainer.addEventListener('dragover', allowDrop);
+    tilesContainer.addEventListener('drop', drop);
+
+    answerBox.addEventListener('dragstart', dragStart);
+    answerBox.addEventListener('dragend', dragEnd);
+    answerBox.addEventListener('dragover', allowDrop);
+    answerBox.addEventListener('drop', drop);
+
+    // ==== NEW: Tap-to-move tiles ====
+    function onTileClick(e) {
+      const tile = e.target;
+      if (!tile.classList.contains('tile')) return;
+
+      if (tile.parentNode === tilesContainer) {
+        answerBox.appendChild(tile);
+      } else if (tile.parentNode === answerBox) {
+        tilesContainer.appendChild(tile);
+      }
+
+      setTimeout(checkAnswer, 300);
+    }
+
+    tilesContainer.addEventListener('click', onTileClick);
+    answerBox.addEventListener('click', onTileClick);
+    // ==== END NEW ====
+
+    showAnswerBtn.onclick = function () {
+      clearTiles();
+      currentLetters.forEach(letter => {
+        const tile = document.createElement('div');
+        tile.className = 'tile';
+        tile.textContent = letter;
+        tile.setAttribute('draggable', 'false');
+        answerBox.appendChild(tile);
+      });
+      hideSuccessMessage();
+    };
+
+    nextWordBtn.onclick = function () {
+      setupNewWord();
+      hideSuccessMessage();
+    };
+
+    categoryFilter.onchange = function () {
+      currentCategory = this.value;
+      usedWords.clear();
+      setupNewWord();
+      hideSuccessMessage();
+    };
+
+    fetch(sheetUrl)
+      .then(res => res.text())
+      .then(csvText => {
+        const lines = csvText.trim().split('\n');
+        const header = lines[0].split(',');
+        const catIndex = header.indexOf('Category');
+        const tamilIndex = header.indexOf('Tamil');
+
+        const categoriesSet = new Set();
+
+        for (let i = 1; i < lines.length; i++) {
+          const parts = lines[i].split(',');
+          const category = parts[catIndex].trim();
+          const tamilWord = parts[tamilIndex].trim();
+
+          dataRows.push({ category, tamil: tamilWord });
+          categoriesSet.add(category);
+        }
+
+        // Populate category filter
+        categoriesSet.forEach(cat => {
+          const option = document.createElement('option');
+          option.value = cat;
+          option.textContent = cat;
+          categoryFilter.appendChild(option);
+        });
+      });
+  </script>
+
+</body>
+
+</html>

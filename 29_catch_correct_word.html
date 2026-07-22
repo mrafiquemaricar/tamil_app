@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>சரியான வார்த்தையைப் பிடி </title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    h1 {
+      color: #00f;
+      text-align: center;
+    }
+
+    #categorySelect {
+      width: 100%;
+      max-width: 400px;
+      padding: 10px;
+      font-size: 1.1em;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    #home {
+      text-decoration: none;
+      background-color: #0000ff;
+      color: #ffffff;
+      padding: 10px;
+      border-radius: 15px;
+    }
+
+    /* Game-specific styling */
+    #gameArea {
+      position: relative;
+      width: 100%;
+      height: 400px;
+      border: 1px solid #ccc;
+      margin: 20px auto;
+      overflow: hidden;
+      background: #e0f7fa;
+    }
+
+    .tamilWord {
+      position: absolute;
+      padding: 5px 10px;
+      background: #ffeb3b;
+      border-radius: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    #wrongIndicator {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 3em;
+      color: red;
+      display: none;
+      font-weight: bold;
+    }
+
+    #englishWord {
+      font-size: 2em;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #000;
+    }
+
+    #scoreboard {
+      font-size: 1.2em;
+      margin-top: 5px;
+      color: #333;
+    }
+
+    #timer {
+      font-size: 1.5em;
+      margin-top: 5px;
+    }
+
+     /* Mobile adjustments */
+  @media (max-width: 600px) {
+    #categorySelect {
+      font-size: 1em;
+      padding: 8px;
+    }
+
+    #englishWord {
+      font-size: 1.5em;
+    }
+
+    #timer {
+      font-size: 1.2em;
+    }
+
+    #scoreboard {
+      font-size: 1em;
+    }
+
+    .controls button {
+      font-size: 2em;
+      padding: 8px 10px;
+      margin: 0 5px;
+    }
+
+    #gameArea {
+      height: 300px;
+    }
+
+    .tamilWord {
+      padding: 4px 8px;
+      font-size: 0.9em;
+    }
+
+    #wrongIndicator {
+      font-size: 2em;
+    }
+  }
+
+  @media (max-width: 400px) {
+    #englishWord {
+      font-size: 1.2em;
+    }
+
+    .controls button {
+      font-size: 1.5em;
+      padding: 6px 8px;
+      margin: 0 3px;
+    }
+
+    #gameArea {
+      height: 250px;
+    }
+
+    .tamilWord {
+      font-size: 0.8em;
+      padding: 3px 6px;
+    }
+
+    #wrongIndicator {
+      font-size: 1.5em;
+    }
+  }
+  </style>
+</head>
+
+<body>
+
+  <a id="home" href="index.html"> ◀ முகப்பு</a>
+  <h1>சரியான வார்த்தையைப் பிடி</h1>
+  <select id="categorySelect">
+    <option value="">-- தேர்வு செய்யவும் --</option>
+  </select>
+
+  <div id="englishWord"></div>
+  <div id="timer">நேரம்: 0 வினாடிகள் </div>
+  <div id="scoreboard">சரி: 0 | தவறு: 0</div>
+  <div id="gameArea"></div>
+  <div id="wrongIndicator">தவறு!</div>
+
+  <script>
+    const sheetUrl = 'word_list.csv';
+
+    let cards = [];
+    let filteredCards = [];
+    let currentIndex = 0;
+
+    // Game variables
+    let gameWords = [];
+    let englishWordsQueue = [];
+    let timer = 0;
+    let timerInterval;
+    let scoreCorrect = 0;
+    let scoreWrong = 0;
+
+    function parseCSV(text) {
+      const rows = [];
+      let cur = [];
+      let field = '';
+      let inQuotes = false;
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (ch === '"') {
+          if (inQuotes && text[i + 1] === '"') { field += '"'; i++; } 
+          else { inQuotes = !inQuotes; }
+        } else if ((ch === ',' && !inQuotes) || ((ch === '\n' || ch === '\r') && !inQuotes)) {
+          if (ch === '\r' && text[i + 1] === '\n') i++;
+          cur.push(field);
+          field = '';
+          if (ch === '\n' || ch === '\r') {
+            if (cur.some(c => c.trim() !== '')) rows.push(cur);
+            cur = [];
+          }
+        } else { field += ch; }
+      }
+      if (field !== '' || cur.length > 0) { 
+        cur.push(field); 
+        if (cur.some(c => c.trim() !== '')) rows.push(cur); 
+      }
+      return rows;
+    }
+
+    function loadCards() {
+      fetch(sheetUrl).then(res => res.text()).then(text => {
+        const rawRows = parseCSV(text);
+        if (rawRows.length === 0) { cards = []; loadCategories(); return; }
+
+        const header = rawRows[0].map(h => (h || '').trim());
+        let catIndex = header.indexOf('Category');
+        let tamilIndex = header.indexOf('Tamil');
+        let engIndex = header.indexOf('English');
+        if (catIndex === -1 || tamilIndex === -1) {
+          for (let i = 0; i < header.length; i++) {
+            const h = (header[i] || '').toLowerCase();
+            if (h === 'category') catIndex = i;
+            if (h === 'tamil') tamilIndex = i;
+            if (h === 'english') engIndex = i;
+          }
+        }
+        if (catIndex === -1) catIndex = 0;
+        if (tamilIndex === -1) tamilIndex = 1;
+        if (engIndex === -1) engIndex = 2;
+
+        cards = [];
+        for (let r = 1; r < rawRows.length; r++) {
+          const row = rawRows[r];
+          const cat = (row[catIndex] || '').trim();
+          const tam = (row[tamilIndex] || '').trim();
+          const eng = (row[engIndex] || '').trim();
+          if (cat && tam && eng) cards.push({ Category: cat, Tamil: tam, English: eng });
+        }
+        loadCategories();
+      }).catch(err => {
+        alert("CSV படிப்பதில் பிழை: " + err);
+        console.error(err);
+      });
+    }
+
+    function loadCategories() {
+      const select = document.getElementById('categorySelect');
+      while (select.options.length > 1) select.remove(1);
+      const set = {};
+      const categories = [];
+      for (let i = 0; i < cards.length; i++) {
+        const c = cards[i].Category;
+        if (!set[c]) { set[c] = true; categories.push(c); }
+      }
+      for (let i = 0; i < categories.length; i++) {
+        const option = document.createElement('option');
+        option.value = categories[i];
+        option.textContent = categories[i];
+        select.appendChild(option);
+      }
+      select.onchange = function () {
+        scoreCorrect = 0;
+        scoreWrong = 0;
+        updateScoreboard();
+        startGameForCategory(this.value);
+      };
+    }
+
+    function startGameForCategory(category) {
+      filteredCards = cards.filter(c => c.Category === category);
+      if (filteredCards.length === 0) return;
+
+      const gameArea = document.getElementById('gameArea');
+      gameArea.innerHTML = '';
+
+      gameWords = filteredCards.map(c => ({ Tamil: c.Tamil, English: c.English }));
+      englishWordsQueue = [...gameWords];
+      showNextEnglishWord();
+
+      gameWords.forEach(word => {
+        const div = document.createElement('div');
+        div.className = 'tamilWord';
+        div.textContent = word.Tamil;
+        div.dataset.english = word.English;
+        gameArea.appendChild(div);
+        randomMove(div);
+        div.addEventListener('click', () => handleWordClick(div));
+      });
+
+      timer = 0;
+      const timerDiv = document.getElementById('timer');
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        timer++;
+        timerDiv.textContent = "நேரம்: " + timer + "s";
+      }, 1000);
+    }
+
+    function showNextEnglishWord() {
+      const englishDiv = document.getElementById('englishWord');
+      if (englishWordsQueue.length === 0) {
+        clearInterval(timerInterval);
+        alert(`பாராட்டுக்கள்!\nநேரம்: ${timer} வினாடி\nசரி: ${scoreCorrect} | தவறு: ${scoreWrong}`);
+        const select = document.getElementById('categorySelect');
+        const nextIndex = select.selectedIndex + 1;
+        if (nextIndex < select.options.length) {
+          select.selectedIndex = nextIndex;
+          scoreCorrect = 0; scoreWrong = 0;
+          updateScoreboard();
+          startGameForCategory(select.value);
+        } else {
+          englishDiv.textContent = "🎉 All categories done!";
+        }
+        return;
+      }
+      const idx = Math.floor(Math.random() * englishWordsQueue.length);
+      englishDiv.textContent = englishWordsQueue[idx].English;
+      currentIndex = idx;
+    }
+
+    function handleWordClick(div) {
+      const currentEnglish = englishWordsQueue[currentIndex].English;
+      if (div.dataset.english === currentEnglish) {
+        div.style.display = 'none';
+        englishWordsQueue.splice(currentIndex, 1);
+        scoreCorrect++;
+        updateScoreboard();
+        showNextEnglishWord();
+      } else {
+        scoreWrong++;
+        updateScoreboard();
+        flashWrongIndicator();
+      }
+    }
+
+    function flashWrongIndicator() {
+      const ind = document.getElementById('wrongIndicator');
+      ind.style.display = 'block';
+      setTimeout(() => { ind.style.display = 'none'; }, 500);
+    }
+
+    function randomMove(div) {
+      const gameArea = document.getElementById('gameArea');
+      let x = Math.random() * (gameArea.clientWidth - div.clientWidth);
+      let y = Math.random() * (gameArea.clientHeight - div.clientHeight);
+      let dx = (Math.random() - 0.5) * 2;
+      let dy = (Math.random() - 0.5) * 2;
+
+      function move() {
+        x += dx; y += dy;
+        if (x < 0 || x + div.clientWidth > gameArea.clientWidth) dx = -dx;
+        if (y < 0 || y + div.clientHeight > gameArea.clientHeight) dy = -dy;
+        div.style.left = x + "px";
+        div.style.top = y + "px";
+        requestAnimationFrame(move);
+      }
+      move();
+    }
+
+    function updateScoreboard() {
+      const sb = document.getElementById('scoreboard');
+      sb.textContent = `சரி: ${scoreCorrect} | தவறு: ${scoreWrong}`;
+    }
+
+    loadCards();
+  </script>
+
+</body>
+
+</html>

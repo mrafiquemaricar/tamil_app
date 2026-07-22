@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Basic SEO -->
+  <meta name="description"
+    content="தமிழ் கற்றுக்கொள்வோம்: தமிழ் எழுத்துக்கள், வார்த்தைகள், பயிற்சி விளையாட்டுகள் அனைத்தும் ஒரே இடத்தில்." />
+
+  <!-- Open Graph / Facebook / WhatsApp -->
+  <meta property="og:title" content="தமிழ். இனிது. எளிது." />
+  <meta property="og:description"
+    content="தமிழ் கற்றுக்கொள்வோம்: தமிழ் எழுத்துக்கள், வார்த்தைகள், பயிற்சி விளையாட்டுகள் அனைத்தும் ஒரே இடத்தில்." />
+  <meta property="og:image" content="https://www.infocomonline.com/tamil/preview.jpg" />
+  <meta property="og:url" content="https://www.infocomonline.com/tamil" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="ta_IN" />
+
+  <!-- Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <script>
+  if (typeof navigator.serviceWorker !== 'undefined') {
+    navigator.serviceWorker.register('sw.js')
+  }
+</script>
+
+  <title>தமிழ். இனிது. எளிது.</title>
+
+  <style>
+    /* ---------- Share buttons (isolated) ---------- */
+    .share-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin: 15px 20px;
+    }
+
+    .share-buttons .share-btn {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 6px;
+      text-decoration: none;
+      color: #ffffff;
+      /* font-weight: 700; */
+      font-size: 14px;
+      transition: background 0.18s ease, transform 0.08s ease;
+      cursor: pointer;
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+    }
+
+    .share-buttons .share-btn:active {
+      transform: translateY(1px);
+    }
+
+    .share-buttons .share-facebook {
+      background-color: #1877f2;
+    }
+
+    .share-buttons .share-facebook:hover {
+      background-color: #0f5bb5;
+    }
+
+    .share-buttons .share-whatsapp {
+      background-color: #25d366;
+    }
+
+    .share-buttons .share-whatsapp:hover {
+      background-color: #1da851;
+    }
+
+    /* ---------- Page general styles ---------- */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+
+    main {
+      padding-top: 10px;
+      text-align: center;
+      padding: 20px;
+    }
+
+    main h1 {
+      color: #00f;
+      margin-bottom: 50px;
+    }
+
+    /* ---------- Grid: only these anchors get the box styles ---------- */
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      padding: 0 10px;
+    }
+
+    .grid a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 150px;
+      height: 150px;
+      padding: 12px;
+      text-decoration: none;
+      border-radius: 20px;
+      text-align: center;
+      line-height: 1.5;
+      word-wrap: break-word;
+      transition: background 0.3s;
+      color: #000;
+      /* font-weight: 700; */
+    }
+
+    .grid a:hover {
+      background-color: #ffa500;
+      color: #000;
+      border: 1px dashed #000;
+    }
+
+    /* five-color rotation for grid boxes */
+    .grid a:nth-child(5n + 1) {
+      background-color: #ffd700 !important;
+      color: #000;
+    }
+
+    .grid a:nth-child(5n + 2) {
+      background-color: #90ee90 !important;
+      color: #000;
+    }
+
+    .grid a:nth-child(5n + 3) {
+      background-color: #ff7f50 !important;
+      color: #000;
+    }
+
+    .grid a:nth-child(5n + 4) {
+      background-color: #87cefa !important;
+      color: #000;
+    }
+
+    .grid a:nth-child(5n + 5) {
+      background-color: #dda0dd !important;
+      color: #000;
+    }
+
+    hr {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Share buttons: isolated and placed above the main content -->
+  <!--<div class="share-buttons">
+    <a class="share-btn share-facebook"
+      href="https://www.facebook.com/sharer/sharer.php?u=https://www.infocomonline.com/tamil" target="_blank"
+      rel="noopener noreferrer">📘 Share on Facebook</a>
+
+    <a class="share-btn share-whatsapp"
+      href="https://api.whatsapp.com/send?text=Check%20this%20out:%20https://www.infocomonline.com/tamil"
+      target="_blank" rel="noopener noreferrer">💬 Share on WhatsApp</a>
+  </div>-->
+
+  <main>
+    <h1>தமிழ். இனிது. எளிது.</h1>
+
+    <div class="grid">
+      <a href="01_alphabets_with_sound.html">தமிழ் எழுத்துக்கள் - கணினி ஒலியுடன்</a>
+      <a href="16_writing_alphabets.html">எழுத்துப் பயிற்சி செய்வோம்</a>
+      <a href="02_mei_plus_uyir.html">உயிர் + மெய் = உயிர் மெய்</a>
+      <a href="03_letter_joining.html">எழுத்துக் கூட்டி படிப் படியாகப் படிப்போம்</a>
+      <a href="04_reading_words.html">வார்த்தைகள் படிப்போம் - கணினி ஒலியுடன்</a>
+      <a href="18_dictation.html">சொல்வதை எழுதுதல்</a>
+      <a href="05_english_to_tamil.html">தமிழ் - ஆங்கிலம் இரு புற அட்டை</a>
+      <a href="06_matching_words.html">தமிழ் - ஆங்கில வார்த்தைகளைப் பொருத்துவோம்</a>
+      <a href="07_jumbled_letters.html">கலைந்த வார்த்தையை சரி செய்வோம்</a>
+      <a href="22_remember_form_words.html">ஞாபகம் வருதே</a>
+      <a href="29_catch_correct_word.html">சரியான வார்த்தையைப் பிடி</a>
+      <a href="08_flip_match_cards.html">நினைவில் நிற்பவை</a>
+      <a href="30_select_unrelated_word.html">தொடர்பில்லா வார்த்தையை தேர்ந்தெடுப்போம்</a> 
+      <a href="09_form_words.html">எத்தனை சரியான வார்த்தைகள் அமைக்க முடியும்?</a>
+      <a href="10_fill_up_words.html">ஆத்திசூடி, <br>பழ மொழிகள்</a>
+      <a href="23_maraputhodar.html">மரபுத் தொடர்</a>
+      <a href="11_form_sentences.html">எத்தனை சரியான வாக்கியம் அமைக்க முடியும்?</a>
+      <a href="12_opposite_words.html">எதிர்ச்சொல் என்ன?</a>
+      <a href="13_singular_plural.html">ஒருமை - பன்மை</a>
+      <a href="14_kalangal.html">காலங்கள்</a>
+      <a href="24_inaimozhigal.html">இணை மொழிகள்</a>
+      <a href="15_select_correct_word.html">பிழையில்லா வார்த்தையை தேர்ந்தெடுப்போம்</a>
+      <a href="25_vetrumaigal.html">வேற்றுமைகள்</a>
+      <a href="26_or_oru.html">ஓர் - ஒரு</a>
+      <a href="27_kuril_nedil.html">குறில் - நெடில்</a>
+      <a href="28_oli_verupadu.html">ஒலி வேறுபாட்டுச் சொற்கள்</a>
+      <a href="20_word_search.html">5 நிமிட வார்த்தை தேடல்</a>
+      <a href="21_word_forming.html">குறுக்கெழுத்து வார்த்தைகள்</a>
+      <a href="17_voice_to_text.html">குரல் → தமிழ் தட்டச்சு </a>
+      <a href="19_poem_fill.html">புதுக்கவிதைகள்</a>
+
+    </div>
+
+    <hr>
+    <p align="center">Infocom Consultants, Singapore | 2025</p>
+  </main>
+
+</body>
+
+</html>

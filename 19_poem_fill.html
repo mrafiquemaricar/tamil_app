@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>புதுக்கவிதைகள்</title>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      padding: 20px;
+      max-width: 700px;
+      margin: auto;
+    }
+
+    h1 {
+      color: #00f;
+      /* font-size: 1.5rem; */
+      margin-bottom: 1rem;
+    }
+
+    .question {
+      /* question area */
+      text-align: center;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      font-size: 1.5rem;
+      line-height: 2.5rem;
+      margin: 2rem 0;
+      white-space: pre-line;
+      /* 👈 ensures \n is shown as line break */
+    }
+
+    .blank {
+      display: inline-flex;
+      /* flexbox instead of inline-block */
+      align-items: center;
+      /* vertical centering */
+      justify-content: center;
+      /* horizontal centering */
+      min-width: 5rem;
+      height: 2rem;
+      border: 2px solid #555;
+      padding: 0.3rem 0.5rem;
+      cursor: pointer;
+      user-select: none;
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .blank.selected {
+      border-color: blue;
+      background: #d0e8ff;
+    }
+
+    .blank.correct {
+      border-color: green;
+      background: #d4edda;
+    }
+
+    .blank.incorrect {
+      border-color: red;
+      background: #f8d7da;
+    }
+
+    .words {
+      margin: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.3rem;
+    }
+
+    .word-chunk {
+      background: #15ff00;
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      cursor: pointer;
+      user-select: none;
+      font-size: 1.1rem;
+    }
+
+    .word-chunk.used {
+      background: #a3c8ff;
+      cursor: default;
+    }
+
+    button {
+      margin: 1rem 0.3rem;
+      /* font-size: 1.2rem; */
+      padding: 0.5rem 1rem;
+    }
+
+    .controls {
+      margin: 20px 0;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .controls button {
+      padding: 10px 15px;
+      font-size: 4em;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #0000ff;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    .controls button:hover {
+      background: #ffa500;
+    }
+
+    #home {
+      text-decoration: none;
+      background-color: #0000ff;
+      color: #ffffff;
+      padding: 10px;
+      border-radius: 15px;
+    }
+  </style>
+</head>
+
+<body>
+  <a id="home" href="index.html"> ◀ முகப்பு</a>
+  <h1>புதுக்கவிதைகள்</h1>
+  <hr>
+  <div id="paragraph" class="question"></div>
+  <div class="words" id="wordChunks"></div>
+  <hr>
+  <div class="controls">
+    <button id="checkBtn">✔</button>
+    <button id="resetBtn">↩</button>
+    <button id="nextBtn">▶</button>
+  </div>
+
+  <script>
+    const questions = [`புரியாத பாடத்தை, அன்றே
+/ஆசிரியரிடம்/ கேட்டாயா?
+தானாக விளங்கட்டும் என
+தள்ளிப் /போட்டாயா?/`,
+
+      `பாடங்களில்  தெளிவின்றி
+பக்கம் /பக்கமாகப்/ பயிற்சியா?
+பாடங்கள் புரிந்தும்
+பயிற்சி /செய்ய/ சோம்பலா?`,
+
+      `இப்பாடம், வாழ்க்கைக்குப்
+பயன்படுமா /என்ற/ வினாவா?
+எவ்வாறாயினும், /கணிதமின்றி/
+முன்னேறுவது கடினமே!`,
+
+      `பல்கலைக்கழகத்திலும்,
+பலதுறைக்கல்லூரியிலும்,
+கணிதம் /வெவ்வேறு/ வடிவங்களில்
+மீண்டும், /மீண்டும்/ தலை காட்டும்.`,
+
+      `கணக்கு - /அது/ பிணக்கோ,
+ஆமணக்கோ இல்லை.
+கற்று, /கரை/ சேர முடியாத
+கடலும் இல்லை.`,
+
+      `எண்ணும், /எழுத்தும்/
+கண் எனத் தகும்
+/ஆன்றோர்/ வாக்கில்
+ஆச்சரியம் எதற்கு?`,
+
+      `கணிதமின்றி /கணிணி/ இல்லை.
+கணிதமின்றி கைபேசி /இல்லை/.
+கணிதமின்றி இணையம் இல்லை.
+/கணிதமின்றி/ மென்பொருள் இல்லை.`,
+
+      `பள்ளி /விடுமுறையில்/ கணிதப்
+பாடங்களைப் /பொறுமையாக/ படி.
+கற்றுக் கொண்டவற்றையும்,
+புரியாத /புதிர்களையும்/ பட்டியலிடு.`,
+
+      `உதவிகள் ஏராளம்
+இணையத்தில் /உண்டு/.
+உனக்காகவே, குறுங்காணொளி
+/வடிவிலும்/ உண்டு.`,
+
+      `கைத்திறன்பேசியைச் /சிறிது/ நேரம்
+கல்வி /கற்கவும்/ பயன்படுத்து.
+உன்னால் முடியும் என
+உறுதியாக /நம்பு./`,
+
+      `இலக்கினை /குறி/ வை!
+இப்போதே /துவங்கி/ விடு!
+தேடு! படி! பயிற்சி செய்!
+முயற்சியே, /வெற்றியின் முதல் படி!/`,
+
+      `அதிகாலையின் அருட்கொடை, மூன்றணு காற்றைச் /சுவாசிப்போம்./
+ஆண்டவனை, உளவுடல் சுத்தியோடு, /ஆத்மார்த்தமாக/ தொழுவோம்.
+இன்றைய /பொழுதும்/ எல்லோருக்கும் இனிதாகிடவே இறைஞ்சுவோம்.`,
+
+      `ஈகைத்தன்மை, இரக்க /சுபாவம்/ இதயத்திலென்றும் இருத்துவோம்.
+உணவையும், /குடிநீரையும்/ அவசரமின்றி, அமர்ந்தே உண்போம்.
+ஊரும், உறவும், /பசி, பிணி, பகை நீங்கி/  வாழ வாழ்த்துவோம்.`,
+
+      `என்றென்றும் தேடிக் கற்று, அறிவாற்றல், செயல் திறன் /வளர்ப்போம்./
+ஏற்றமிகு /வாழ்வு/ பெற்று, எல்லோரும் வளம் பெற வழங்குவோம்.
+ஐவிரல் வேற்றுமை, நமக்கு /வலிமையே/ உணர்வோம்.`,
+
+      `ஒவ்வொரு தினமும் /உடல், மனப்பயிற்சி/ ஒழுங்காக செய்வோம்.
+ஓட்டம், /மெது நடை,/ இறை தியானம் அனைத்தையும் தொடர்வோம்.
+ஔடதம் தவிர்க்க, அளவோடுண்டு, உடல் எடை பேணி, /காலத்தே/ துயில்வோம்.`,
+
+      `முதல் மாதச் சம்பளமா?
+எண்ண, /எண்ண/ இனிக்குமே!
+ஏழைகளையும் /சிறிது/ எண்ணிப் பார்.
+சிறு /தொகையை/ உடன் வழங்கு.`,
+
+      `நல்லாசிகளும், வாழ்த்துகளும்
+பன்மடங்காய்ப் /பெருகி/ வந்து
+உனைப் /பாதுகாக்கும்/,
+நீ /அறியா/ வழிகளிலும்.`,
+
+      `செலவழித்து மீதமிருந்தால்
+மட்டுமே /சேமிக்க/ இயலுமா?
+சேமித்த /மீதத்திலும்/ செய்ய
+இயலுமே உன் /செலவை/.`,
+
+      `சிறுவாடு சேமிப்பைப்
+பாட்டியிடம் /பயின்று/ கொள்.
+சிறு /துளியே/ நீர்த் தேக்கம்.
+சேமிப்பே /பெரும்/ புதையல்.`,
+
+      `கண்டதையும், ஏன், /கேட்டதையும்/
+உடனே /வாங்குவதை/ நிறுத்து.
+தேவையையும்,  /ஆசையையும்/
+அன்னமாகப் பகுத்து அறி.`,
+
+      `கடன் பற்று அட்டைக் கடனை
+/காலத்தே/ அடைத்து விடு.
+பற்று /பெருகி/ விடின்,
+பற்றித் /தீங்கிழைக்கும்/.`,
+
+      `உலகம் படு /வேகமாக/
+உருண்டு கொண்டே இருக்கும்.
+உனக்கோ, /எனக்கோ/
+ஒரு நொடி /கூட/ அது நிற்காது.`,
+
+      `முதல் முதலீடு, உன்னில்
+உடனே /செய்யத்/ தொடங்கு.
+பட்டப் /படிப்போடு/ உன்
+படிப்புக்குத் /தாழ்/ இடாதே.`,
+
+      `திறன் பயிற்சிகளை,
+தீர்க்கமாய்க் /கற்று/ உயர்.
+கல்லறை /வரையிலும்/
+எக்கல்விக்கும் /முடிவில்லை/.`,
+
+      `உன் /கை/ மட்டுமல்ல.
+உன் கல்வியும்,
+உன் /சேமிப்பும்/
+உனக்கு /உதவியே!/`
+
+    ];
+
+    let currentData = null;
+    let selectedBlank = null;
+
+    const paragraphDiv = document.getElementById('paragraph');
+    const wordChunksDiv = document.getElementById('wordChunks');
+
+    let lastIndex = -1;  // track last asked question
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+
+    function pickRandomQuestion() {
+      let index;
+      do {
+        index = Math.floor(Math.random() * questions.length);
+      } while (index === lastIndex && questions.length > 1);
+      lastIndex = index;
+      return questions[index];
+    }
+
+    function prepareQuiz() {
+      const sentence = pickRandomQuestion();
+      const regex = /\/(.*?)\//g;
+      let match, lastIndex = 0;
+      let line = '';
+      const missingWords = [];
+
+      while ((match = regex.exec(sentence)) !== null) {
+        line += sentence.slice(lastIndex, match.index) + '__';
+        missingWords.push(match[1]);
+        lastIndex = match.index + match[0].length;
+      }
+      line += sentence.slice(lastIndex);
+      currentData = { line, missingWords };
+    }
+
+    function renderQuiz() {
+      paragraphDiv.innerHTML = '';
+      wordChunksDiv.innerHTML = '';
+      selectedBlank = null;
+
+      const { line, missingWords } = currentData;
+
+      // Create question div
+      const qDiv = document.createElement('div');
+      qDiv.className = 'question';
+
+      const parts = line.split('__');
+      qDiv.appendChild(document.createTextNode(parts[0]));
+
+      // Render word chunks (shuffled)
+      shuffle([...missingWords]).forEach(word => {
+        const chunk = document.createElement('div');
+        chunk.className = 'word-chunk';
+        chunk.textContent = word;
+        chunk.setAttribute('draggable', 'true');
+        chunk.setAttribute('data-word', word);
+
+        chunk.addEventListener('click', () => {
+          if (selectedBlank && !chunk.classList.contains('used')) {
+            selectedBlank.textContent = word;
+            chunk.classList.add('used');
+          }
+        });
+
+        chunk.addEventListener('dragstart', e => {
+          e.dataTransfer.setData('text/plain', word);
+        });
+
+        wordChunksDiv.appendChild(chunk);
+      });
+
+
+      missingWords.forEach((word, i) => {
+        const blank = document.createElement('span');
+        blank.className = 'blank';
+        blank.setAttribute('data-index', i);
+        blank.addEventListener('click', () => {
+          document.querySelectorAll('.blank').forEach(b => b.classList.remove('selected'));
+          blank.classList.add('selected');
+          selectedBlank = blank;
+        });
+        blank.addEventListener('dragover', e => e.preventDefault());
+        blank.addEventListener('drop', e => {
+          e.preventDefault();
+          const word = e.dataTransfer.getData('text/plain');
+          if (!word) return;
+          blank.textContent = word;
+          const chunk = document.querySelector(`.word-chunk[data-word='${word}']`);
+          if (chunk) chunk.classList.add('used');
+        });
+        qDiv.appendChild(blank);
+        qDiv.appendChild(document.createTextNode(parts[i + 1]));
+      });
+
+      paragraphDiv.appendChild(qDiv);
+
+    }
+    function checkAnswers() {
+      const { missingWords } = currentData;
+      document.querySelectorAll('.blank').forEach((blank, i) => {
+        if (blank.textContent === missingWords[i]) {
+          blank.classList.add('correct');
+          blank.classList.remove('incorrect');
+        } else {
+          blank.classList.add('incorrect');
+          blank.classList.remove('correct');
+        }
+      });
+    }
+
+    document.getElementById('checkBtn').addEventListener('click', checkAnswers);
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      prepareQuiz();
+      renderQuiz();
+    });
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      renderQuiz();
+    });
+
+    prepareQuiz();
+    renderQuiz();
+  </script>
+
+</body>
+
+</html>

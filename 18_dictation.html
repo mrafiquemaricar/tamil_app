@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>சொல்வதை எழுதுதல்</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #fdfdfd;
+      text-align: center;
+      margin: 0;
+    }
+
+    h1 {
+      color: #00f;
+      text-align: center;
+    }
+
+    select {
+      font-size: 20px;
+      padding: 12px 16px;
+      margin: 30px 0px;
+      width: 100%;
+      max-width: 400px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    button {
+      padding: 10px 15px;
+      margin: 0 8px;
+      font-size: 2.5rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #0000ff;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    /* #playBtn {
+      background: #4caf50;
+      color: white;
+    }
+
+    #checkBtn {
+      background: #2196f3;
+      color: white;
+    }
+
+    #nextBtn {
+      background: #ff9800;
+      color: white;
+    } */
+
+    #answerBox {
+      font-size: 22px;
+      padding: 10px;
+      width: 90%;
+      max-width: 400px;
+      margin: 30px 0px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    #result {
+      font-size: 24px;
+      margin: 15px;
+      font-weight: bold;
+    }
+
+    #home {
+      text-decoration: none;
+      background-color: #0000ff;
+      color: #ffffff;
+      padding: 10px;
+      border-radius: 15px;
+    }
+  </style>
+</head>
+
+<body>
+  <a id="home" href="index.html"> ◀ முகப்பு</a>
+  <h1>சொல்வதை எழுதுதல்</h1>
+
+  <select id="categoryFilter">
+    <option value="">-- தேர்வு செய்யவும் --</option>
+  </select>
+
+  <div id="controls" style="display:none;">
+    <button id="playBtn">🔊</button><br />
+    <input type="text" id="answerBox" placeholder="இங்கே தட்டச்சிடவும்" /><br />
+    <button id="checkBtn">✔</button>
+    <button id="nextBtn">▶</button>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const sheetUrl = 'word_list.csv';
+    const categoryFilter = document.getElementById('categoryFilter');
+    const controls = document.getElementById('controls');
+    const playBtn = document.getElementById('playBtn');
+    const checkBtn = document.getElementById('checkBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const answerBox = document.getElementById('answerBox');
+    const result = document.getElementById('result');
+
+    let dataRows = [];
+    let ttsEnabled = false;
+    let currentWord = "";
+    let remainingWords = [];
+
+    // Fetch CSV
+    fetch(sheetUrl)
+      .then(res => res.text())
+      .then(csvText => {
+        const lines = csvText.trim().split('\n');
+        const header = lines[0].split(',');
+        const catIndex = header.indexOf('Category');
+        const tamilIndex = header.indexOf('Tamil');
+
+        const categoriesSet = new Set();
+
+        for (let i = 1; i < lines.length; i++) {
+          const parts = lines[i].split(',');
+          const category = parts[catIndex].trim();
+          const tamilWord = parts[tamilIndex].trim();
+          dataRows.push({ category, tamil: tamilWord });
+          categoriesSet.add(category);
+        }
+
+        categoriesSet.forEach(cat => {
+          const option = document.createElement('option');
+          option.value = cat;
+          option.textContent = cat;
+          categoryFilter.appendChild(option);
+        });
+      });
+
+    // Enable TTS
+    document.body.addEventListener('click', function initTTS() {
+      ttsEnabled = true;
+      document.body.removeEventListener('click', initTTS);
+    }, { once: true });
+
+    // Category change
+    categoryFilter.onchange = function () {
+      const selectedCategory = this.value;
+      if (!selectedCategory) {
+        controls.style.display = "none";
+        return;
+      }
+      remainingWords = dataRows
+        .filter(row => row.category === selectedCategory)
+        .map(row => row.tamil);
+
+      shuffleArray(remainingWords);
+      nextWord();
+      controls.style.display = "block";
+    };
+
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+
+    function nextWord() {
+      result.textContent = "";
+      answerBox.value = "";
+      if (remainingWords.length === 0) {
+        result.textContent = "🎉 அனைத்து சொற்களும் முடிந்துவிட்டன!";
+        currentWord = "";
+        return;
+      }
+      currentWord = remainingWords.pop();
+      // Auto-focus text box
+      answerBox.focus();
+      autoSpeak(currentWord);
+    }
+
+    function autoSpeak(word) {
+      if (!ttsEnabled || !word) return;
+      const utterance = new SpeechSynthesisUtterance(word);
+      utterance.lang = 'ta-IN';
+      speechSynthesis.cancel();
+      speechSynthesis.speak(utterance);
+    }
+
+    playBtn.onclick = function () {
+      autoSpeak(currentWord);
+    };
+
+    checkBtn.onclick = function () {
+      if (!currentWord) return;
+      if (answerBox.value.trim() === currentWord) {
+        result.textContent = "✔ சரி!";
+        result.style.color = "green";
+      } else {
+        result.textContent = "✘ தவறு! சரியான சொல்: " + currentWord;
+        result.style.color = "red";
+      }
+      // Keep focus for faster retry
+      answerBox.focus();
+    };
+
+    nextBtn.onclick = function () {
+      nextWord();
+    };
+  </script>
+</body>
+
+</html>
