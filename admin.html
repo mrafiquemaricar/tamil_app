@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>நிர்வாக பலகை (Admin Dashboard) - தமிழ். இனிது. எளிது.</title>
+  <link rel="stylesheet" href="css/auth.css" />
+</head>
+
+<body style="background-color: #f4f4f9; margin: 0; padding: 0;">
+
+  <main>
+    <div class="admin-dashboard-container">
+      
+      <!-- Top Banner -->
+      <div class="admin-header-banner">
+        <div>
+          <h1>📊 நிர்வாகப் பலகை (Admin Dashboard)</h1>
+          <p>பயனீட்டாளர்கள், சந்தாக்கள் & கற்றல் புள்ளிவிவரங்கள்</p>
+        </div>
+        <a href="index.html" class="header-btn" style="background:rgba(255,255,255,0.2); color:#fff;">🏠 முகப்பு</a>
+      </div>
+
+      <!-- KPI Summary Cards Grid -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon">👥</div>
+          <div class="kpi-value" id="kpi-total-users">0</div>
+          <div class="kpi-label">மொத்த பயனீட்டாளர்கள்</div>
+          <div class="kpi-subtext">Registered Users</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon">🎓</div>
+          <div class="kpi-value" id="kpi-total-learners">0</div>
+          <div class="kpi-label">மாணவர்கள் (Learners)</div>
+          <div class="kpi-subtext">Active Pass Holders</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon">👑</div>
+          <div class="kpi-value" id="kpi-total-admins">0</div>
+          <div class="kpi-label">ஆசிரியர்கள் (Teachers)</div>
+          <div class="kpi-subtext">Admin Privileges</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon">💰</div>
+          <div class="kpi-value" id="kpi-mrr">SGD $0.00</div>
+          <div class="kpi-label">மாதாந்திர வருவாய் (MRR)</div>
+          <div class="kpi-subtext">HitPay Recurring</div>
+        </div>
+      </div>
+
+      <!-- Admin Two Column Section -->
+      <div class="admin-panels-grid">
+        
+        <!-- Left: User Management Table -->
+        <div class="admin-panel">
+          <h3>📋 பயனீட்டாளர்கள் மேலாண்மை (User Management)</h3>
+          <div class="admin-table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>பெயர் (Name)</th>
+                  <th>மின்னஞ்சல் (Email)</th>
+                  <th>பங்கு (Role)</th>
+                  <th>சந்தா (Status)</th>
+                  <th>செயல்கள் (Actions)</th>
+                </tr>
+              </thead>
+              <tbody id="user-table-body">
+                <!-- Dynamically Rendered -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Right: Top Played Modules Leaderboard -->
+        <div class="admin-panel">
+          <h3>🔥 பிரபலமான தமிழ் விளையாட்டுகள்</h3>
+          <ul class="module-leaderboard">
+            <li>
+              <span><span class="module-leaderboard-rank">1</span> தமிழ் எழுத்துக்கள் (01)</span>
+              <span class="role-badge role-learner">1,240 plays</span>
+            </li>
+            <li>
+              <span><span class="module-leaderboard-rank">2</span> வார்த்தை பொருத்துதல் (06)</span>
+              <span class="role-badge role-learner">980 plays</span>
+            </li>
+            <li>
+              <span><span class="module-leaderboard-rank">3</span> நினைவில் நிற்பவை (08)</span>
+              <span class="role-badge role-learner">840 plays</span>
+            </li>
+            <li>
+              <span><span class="module-leaderboard-rank">4</span> குரல் → தமிழ் தட்டச்சு (17)</span>
+              <span class="role-badge role-subscriber">620 plays</span>
+            </li>
+            <li>
+              <span><span class="module-leaderboard-rank">5</span> வார்த்தை தேடல் (20)</span>
+              <span class="role-badge role-subscriber">510 plays</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <script src="js/auth.js"></script>
+  <script>
+    TamilAuth.initPage();
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderDashboard();
+    });
+
+    function renderDashboard() {
+      const stats = TamilAuth.getAdminStats();
+      
+      document.getElementById('kpi-total-users').innerText = stats.totalUsers;
+      document.getElementById('kpi-total-learners').innerText = stats.totalLearners;
+      document.getElementById('kpi-total-admins').innerText = stats.totalAdmins;
+      document.getElementById('kpi-mrr').innerText = `SGD $${stats.mrr}`;
+
+      const tbody = document.getElementById('user-table-body');
+      tbody.innerHTML = stats.users.map(user => `
+        <tr>
+          <td><strong>${user.name}</strong></td>
+          <td>${user.email}</td>
+          <td>
+            <span class="role-badge role-${user.role === 'admin' ? 'admin' : (user.role === 'learner' ? 'subscriber' : 'guest')}">
+              ${user.role === 'admin' ? 'ஆசிரியர்' : (user.role === 'learner' ? 'மாணவர்' : 'விருந்தினர்')}
+            </span>
+          </td>
+          <td>
+            <span style="color: ${user.subscriptionStatus === 'active' || user.role === 'learner' || user.role === 'admin' ? '#10b981' : '#6b7280'}; font-weight:700;">
+              ${user.subscriptionStatus === 'active' || user.role === 'learner' || user.role === 'admin' ? '● Active' : '○ Free'}
+            </span>
+          </td>
+          <td>
+            <button class="action-btn" onclick="handleToggleRole('${user.email}')">
+              ${user.role === 'admin' ? 'Demote to Student' : '👑 Promote Admin'}
+            </button>
+            <button class="action-btn" onclick="handleToggleSub('${user.email}')">
+              ${user.role === 'guest' ? '💳 Grant Sub' : 'Revoke'}
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function handleToggleRole(email) {
+      TamilAuth.toggleUserRole(email);
+      renderDashboard();
+    }
+
+    function handleToggleSub(email) {
+      TamilAuth.toggleSubscription(email);
+      renderDashboard();
+    }
+  </script>
+</body>
+
+</html>

@@ -1,6 +1,6 @@
 /**
  * ==========================================================================
- * Tamil App - Authentication, Firestore & Checkout Engine (TamilAuth)
+ * Tamil App - Authentication, Firestore, Checkout & Admin Analytics Engine
  * ==========================================================================
  */
 
@@ -28,6 +28,7 @@
   // Module Access Mapping
   const MODULE_ROLES = {
     'index.html': 'guest',
+    'admin.html': 'admin',
     '01_alphabets_with_sound.html': 'guest',
     '02_mei_plus_uyir.html': 'guest',
     '03_letter_joining.html': 'guest',
@@ -62,8 +63,10 @@
 
   // Default Initial Mock Users
   const INITIAL_USERS = [
-    { email: 'admin@tamil.app', name: 'ஆசிரியர் (Teacher)', password: 'admin123', role: ROLES.ADMIN },
-    { email: 'student@tamil.app', name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER }
+    { email: 'admin@tamil.app', name: 'ஆசிரியர் (Teacher)', password: 'admin123', role: ROLES.ADMIN, subscriptionStatus: 'active', joinedAt: '2026-07-01' },
+    { email: 'student@tamil.app', name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active', joinedAt: '2026-07-15' },
+    { email: 'user1@example.com', name: 'கார்த்திக் (Karthik)', password: 'user123', role: ROLES.LEARNER, subscriptionStatus: 'active', joinedAt: '2026-07-18' },
+    { email: 'user2@example.com', name: 'பிரியா (Priya)', password: 'user123', role: ROLES.GUEST, subscriptionStatus: 'inactive', joinedAt: '2026-07-20' }
   ];
 
   // Localization Dictionary
@@ -78,12 +81,13 @@
       admin: 'ஆசிரியர்',
       subscribe: 'சந்தா செலுத்துங்கள்',
       activeSubscriber: 'சந்தாதாரர்',
+      adminDashboard: 'நிர்வாக பலகை',
       emailLabel: 'மின்னஞ்சல் முகவரி',
       passwordLabel: 'கடவுச்சொல்',
       nameLabel: 'பெயர்',
       enterAsGuest: 'விருந்தினராக தொடரவும்',
       accessDeniedTitle: 'அணுகல் மறுக்கப்பட்டது 🔒',
-      accessDeniedMsg: 'இந்தப் பகுதியை அணுக நீங்கள் சந்தா செலுத்த அல்லது கணக்கை உயர்த்த வேண்டும்.',
+      accessDeniedMsg: 'இந்தப் பகுதியை அணுக நீங்கள் ஆசிரியர் / நிர்வாகி அனுமதியைப் பெற்றிருக்க வேண்டும்.',
       demoHeader: 'விரைவு சோதனை கணக்குகள் (Demo Accounts):',
       loginSuccess: 'வெற்றிகரமாக உள்நுழைந்தீர்கள்!',
       loginError: 'தவறான மின்னஞ்சல் அல்லது கடவுச்சொல்!',
@@ -143,7 +147,7 @@
       if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
         return { success: false, message: I18N.ta.userExists };
       }
-      const newUser = { name, email, password, role };
+      const newUser = { name, email, password, role, subscriptionStatus: 'inactive', joinedAt: new Date().toISOString().split('T')[0] };
       users.push(newUser);
       localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
       return { success: true, message: I18N.ta.registerSuccess };
@@ -152,7 +156,7 @@
     logout() {
       localStorage.removeItem(STORAGE_KEY_USER);
       this.currentUser = { name: I18N.ta.guest, role: ROLES.GUEST, email: 'guest@tamil.app', subscriptionStatus: 'inactive' };
-      window.location.reload();
+      window.location.href = 'index.html';
     }
 
     getCurrentUser() {
@@ -179,8 +183,9 @@
     renderHeader(container) {
       const user = this.currentUser;
       const isGuest = user.role === ROLES.GUEST;
+      const isAdmin = user.role === ROLES.ADMIN;
       const isSubscriber = user.role === ROLES.LEARNER || user.role === ROLES.ADMIN;
-      const roleLabel = isSubscriber ? I18N.ta.activeSubscriber : I18N.ta.guest;
+      const roleLabel = isAdmin ? I18N.ta.admin : (isSubscriber ? I18N.ta.activeSubscriber : I18N.ta.guest);
 
       const headerHTML = `
         <header class="tamil-app-header">
@@ -191,12 +196,14 @@
           <div class="header-user-nav">
             <div class="header-user-badge">
               <span>👤 ${user.name}</span>
-              <span class="role-badge role-${isSubscriber ? 'subscriber' : 'guest'}">${roleLabel}</span>
+              <span class="role-badge role-${isAdmin ? 'admin' : (isSubscriber ? 'subscriber' : 'guest')}">${roleLabel}</span>
             </div>
             ${
-              !isSubscriber
-                ? `<button class="header-btn header-btn-upgrade" onclick="TamilAuth.openCheckoutModal()">💳 ${I18N.ta.subscribe}</button>`
-                : ''
+              isAdmin
+                ? `<a href="admin.html" class="header-btn" style="background:#f59e0b; color:#fff;">📊 ${I18N.ta.adminDashboard}</a>`
+                : (!isSubscriber
+                  ? `<button class="header-btn header-btn-upgrade" onclick="TamilAuth.openCheckoutModal()">💳 ${I18N.ta.subscribe}</button>`
+                  : '')
             }
             ${
               isGuest
@@ -269,12 +276,11 @@
           <div class="access-denied-icon">🔒</div>
           <h2 class="access-denied-title">${I18N.ta.accessDeniedTitle}</h2>
           <p class="access-denied-desc">
-            "${currentFile}" பகுதிக்குச் செல்ல <strong>தமிழ் கற்றல் சந்தா</strong> தேவை.<br>
-            மாதாந்திர சந்தா செலுத்தி அனைத்து 30 தமிழ் விளையாட்டுகளையும் உடனே தொடங்குங்கள்!
+            "${currentFile}" பகுதியை அணுக <strong>ஆசிரியர் / நிர்வாகி</strong> அனுமதி தேவை.<br>
+            தயவுசெய்து ஆசிரியர் கணக்கில் உள்நுழையவும்.
           </p>
           <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-            <button class="header-btn header-btn-upgrade" style="padding:12px 24px;" onclick="TamilAuth.openCheckoutModal()">💳 சந்தா செலுத்துங்கள் ($9.90/மாதம்)</button>
-            <button class="header-btn" onclick="TamilAuth.openModal('login')">🔑 உள்நுழைவு</button>
+            <button class="header-btn" style="background:#4f46e5; color:#fff;" onclick="TamilAuth.openModal('login')">🔑 உள்நுழைவு</button>
             <a href="index.html" class="header-btn header-btn-secondary" style="background:#f3f4f6; color:#374151;">🏠 முகப்பு</a>
           </div>
         </div>
@@ -512,7 +518,6 @@
       this.showAlert('கட்டணம் செயலாக்கப்படுகிறது... (HitPay Gateway)', 'success', 'checkout-alert-msg');
 
       setTimeout(() => {
-        // Upgrade current user session in LocalStorage and Firestore database
         const users = this.getUsersDB();
         const user = this.currentUser;
         
@@ -520,12 +525,12 @@
         user.subscriptionStatus = 'active';
         user.subscribedAt = new Date().toISOString();
 
-        // Update stored users DB
         const existingIdx = users.findIndex(u => u.email.toLowerCase() === user.email.toLowerCase());
         if (existingIdx !== -1) {
           users[existingIdx].role = ROLES.LEARNER;
+          users[existingIdx].subscriptionStatus = 'active';
         } else {
-          users.push({ ...user, role: ROLES.LEARNER });
+          users.push({ ...user, role: ROLES.LEARNER, subscriptionStatus: 'active' });
         }
         localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
         localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
@@ -537,6 +542,59 @@
           window.location.reload();
         }, 1200);
       }, 1000);
+    }
+
+    /* ---------- Admin Analytics & Management Functions ---------- */
+    getAdminStats() {
+      const users = this.getUsersDB();
+      const totalUsers = users.length;
+      const totalLearners = users.filter(u => u.role === ROLES.LEARNER).length;
+      const totalAdmins = users.filter(u => u.role === ROLES.ADMIN).length;
+      const activeSubscribers = users.filter(u => u.role === ROLES.LEARNER && u.subscriptionStatus === 'active').length;
+      const mrr = activeSubscribers * 9.90;
+
+      return {
+        totalUsers,
+        totalLearners,
+        totalAdmins,
+        activeSubscribers,
+        mrr: mrr.toFixed(2),
+        users
+      };
+    }
+
+    toggleUserRole(email) {
+      const users = this.getUsersDB();
+      const target = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+      if (target) {
+        target.role = target.role === ROLES.ADMIN ? ROLES.LEARNER : ROLES.ADMIN;
+        localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
+        return true;
+      }
+      return false;
+    }
+
+    toggleSubscription(email) {
+      const users = this.getUsersDB();
+      const target = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+      if (target) {
+        if (target.role === ROLES.GUEST) {
+          target.role = ROLES.LEARNER;
+          target.subscriptionStatus = 'active';
+        } else {
+          target.role = ROLES.GUEST;
+          target.subscriptionStatus = 'inactive';
+        }
+        localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
+        return true;
+      }
+      return false;
+    }
+
+    deleteUser(email) {
+      let users = this.getUsersDB();
+      users = users.filter(u => u.email.toLowerCase() !== email.toLowerCase());
+      localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
     }
   }
 
