@@ -1,6 +1,6 @@
 /**
  * ==========================================================================
- * Tamil App - Cloud Firestore Authentication & Admin Engine
+ * Tamil App - Cloud Firestore Authentication, Admin & Localization Engine
  * ==========================================================================
  */
 
@@ -10,7 +10,7 @@
   // Key Constants
   const STORAGE_KEY_USER = 'tamil_app_current_user';
   const STORAGE_KEY_USERS_DB = 'tamil_app_users_db';
-  const STORAGE_KEY_USER_PROGRESS = 'tamil_app_user_progress';
+  const STORAGE_KEY_LANG = 'tamil_app_lang';
 
   // Role Definitions
   const ROLES = {
@@ -31,6 +31,7 @@
   // Module Access Mapping
   const MODULE_ROLES = {
     'index.html': 'guest',
+    'login.html': 'guest',
     'admin.html': 'admin',
     'learner-dashboard.html': 'learner',
     'teacher-dashboard.html': 'teacher',
@@ -89,10 +90,14 @@
     { email: 'user2@example.com', name: 'பிரியா (Priya)', password: 'user123', role: ROLES.GUEST, subscriptionStatus: 'inactive', joinedAt: '2026-07-20' }
   ];
 
-  // Localization Dictionary
+  // Comprehensive Localization Dictionary
   const I18N = {
     ta: {
       appName: 'தமிழ். இனிது. எளிது.',
+      heroTagline: 'தமிழ் கற்றல் இப்போது மிக எளிது!',
+      heroSub: '30 ஊடாடும் விளையாட்டுகள், குரல்வழி தட்டச்சு, சொல் அகராதி & உச்சரிப்புப் பயிற்சிகளுடன் தமிழைக் கற்றுக்கொள்ளுங்கள்.',
+      getStarted: 'இலவசமாகத் தொடங்குங்கள்',
+      subscribeNow: 'சந்தா செலுத்துங்கள் ($9.90/மாதம்)',
       login: 'உள்நுழைவு',
       register: 'பதிவு செய்க',
       logout: 'வெளியேறு',
@@ -100,7 +105,6 @@
       learner: 'மாணவர்',
       teacher: 'ஆசிரியர்',
       admin: 'நிர்வாகி',
-      subscribe: 'சந்தா செலுத்துங்கள்',
       activeSubscriber: 'சந்தாதாரர்',
       adminDashboard: 'நிர்வாக பலகை',
       teacherDashboard: 'ஆசிரியர் பலகை',
@@ -115,17 +119,65 @@
       loginSuccess: 'வெற்றிகரமாக உள்நுழைந்தீர்கள்!',
       loginError: 'தவறான மின்னஞ்சல் அல்லது கடவுச்சொல்!',
       registerSuccess: 'கணக்கு வெற்றிகரமாக உருவாக்கப்பட்டது! இப்போது உள்நுழையவும்.',
-      userExists: 'இந்த மின்னஞ்சல் ஏற்கனவே பதிவு செய்யப்பட்டுள்ளது!'
+      userExists: 'இந்த மின்னஞ்சல் ஏற்கனவே பதிவு செய்யப்பட்டுள்ளது!',
+      langName: '🇮🇳 தமிழ்',
+      switchLangBtn: '🇬🇧 English'
+    },
+    en: {
+      appName: 'Learn Tamil. Easy & Fun.',
+      heroTagline: 'Mastering Tamil Language Made Effortless!',
+      heroSub: 'Learn Tamil with 30 interactive games, voice typing, word search dictionary, and pronunciation modules.',
+      getStarted: 'Get Started Free',
+      subscribeNow: 'Subscribe Now ($9.90/mo)',
+      login: 'Sign In',
+      register: 'Sign Up',
+      logout: 'Sign Out',
+      guest: 'Guest',
+      learner: 'Learner',
+      teacher: 'Teacher',
+      admin: 'Admin',
+      activeSubscriber: 'Subscriber',
+      adminDashboard: 'Admin Dashboard',
+      teacherDashboard: 'Teacher Dashboard',
+      learnerDashboard: 'My Dashboard',
+      emailLabel: 'Email Address',
+      passwordLabel: 'Password',
+      nameLabel: 'Full Name',
+      enterAsGuest: 'Continue as Guest',
+      accessDeniedTitle: 'Access Restricted 🔒',
+      accessDeniedMsg: 'Subscription or Teacher permission required to access this module.',
+      demoHeader: 'Quick Demo Accounts:',
+      loginSuccess: 'Signed in successfully!',
+      loginError: 'Invalid email or password!',
+      registerSuccess: 'Account created! Please sign in.',
+      userExists: 'This email is already registered!',
+      langName: '🇬🇧 English',
+      switchLangBtn: '🇮🇳 தமிழ்'
     }
   };
 
   class TamilAuthEngine {
     constructor() {
       this.db = null;
+      this.lang = localStorage.getItem(STORAGE_KEY_LANG) || 'ta';
       this.initFirebase();
       this.initDatabase();
       this.currentUser = this.loadSession();
       this.selectedPaymentMethod = 'paynow';
+    }
+
+    getLang() {
+      return this.lang;
+    }
+
+    setLanguage(newLang) {
+      this.lang = newLang;
+      localStorage.setItem(STORAGE_KEY_LANG, newLang);
+      window.location.reload();
+    }
+
+    t(key) {
+      return (I18N[this.lang] && I18N[this.lang][key]) || I18N['ta'][key] || key;
     }
 
     initFirebase() {
@@ -181,7 +233,7 @@
           localStorage.removeItem(STORAGE_KEY_USER);
         }
       }
-      return { name: I18N.ta.guest, role: ROLES.GUEST, email: 'guest@tamil.app', subscriptionStatus: 'inactive' };
+      return { name: this.t('guest'), role: ROLES.GUEST, email: 'guest@tamil.app', subscriptionStatus: 'inactive' };
     }
 
     login(email, password) {
@@ -221,13 +273,13 @@
         }
         return { success: true, user: userSession };
       }
-      return { success: false, message: I18N.ta.loginError };
+      return { success: false, message: this.t('loginError') };
     }
 
     register(name, email, password, role = ROLES.GUEST) {
       const users = this.getUsersDB();
       if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
-        return { success: false, message: I18N.ta.userExists };
+        return { success: false, message: this.t('userExists') };
       }
       const newUser = { name, email, password, role, subscriptionStatus: 'inactive', joinedAt: new Date().toISOString().split('T')[0] };
       users.push(newUser);
@@ -236,12 +288,12 @@
       if (this.db) {
         this.db.collection('users').doc(email.toLowerCase()).set(newUser).catch(() => {});
       }
-      return { success: true, message: I18N.ta.registerSuccess };
+      return { success: true, message: this.t('registerSuccess') };
     }
 
     logout() {
       localStorage.removeItem(STORAGE_KEY_USER);
-      this.currentUser = { name: I18N.ta.guest, role: ROLES.GUEST, email: 'guest@tamil.app', subscriptionStatus: 'inactive' };
+      this.currentUser = { name: this.t('guest'), role: ROLES.GUEST, email: 'guest@tamil.app', subscriptionStatus: 'inactive' };
       window.location.href = 'index.html';
     }
 
@@ -287,37 +339,41 @@
       const isLearner = user.role === ROLES.LEARNER;
       const isSubscriber = isLearner || isTeacher || isAdmin;
       
-      let roleLabel = I18N.ta.guest;
-      if (user.role === ROLES.ADMIN) roleLabel = I18N.ta.admin;
-      else if (user.role === ROLES.TEACHER) roleLabel = I18N.ta.teacher;
-      else if (isSubscriber) roleLabel = I18N.ta.activeSubscriber;
+      let roleLabel = this.t('guest');
+      if (user.role === ROLES.ADMIN) roleLabel = this.t('admin');
+      else if (user.role === ROLES.TEACHER) roleLabel = this.t('teacher');
+      else if (isSubscriber) roleLabel = this.t('activeSubscriber');
+
+      const nextLang = this.lang === 'ta' ? 'en' : 'ta';
+      const nextLangLabel = this.lang === 'ta' ? '🇬🇧 English' : '🇮🇳 தமிழ்';
 
       const headerHTML = `
         <header class="tamil-app-header">
           <a href="index.html" class="header-brand">
             <span class="header-brand-logo">த</span>
-            <span>தமிழ். இனிது. எளிது.</span>
+            <span>${this.t('appName')}</span>
           </a>
           <div class="header-user-nav">
+            <button class="lang-toggle-btn" onclick="TamilAuth.setLanguage('${nextLang}')">${nextLangLabel}</button>
             <div class="header-user-badge">
               <span>👤 ${user.name}</span>
               <span class="role-badge role-${isAdmin || isTeacher ? 'admin' : (isSubscriber ? 'subscriber' : 'guest')}">${roleLabel}</span>
             </div>
             ${
               isAdmin
-                ? `<a href="admin.html" class="header-btn" style="background:#f59e0b; color:#fff;">📊 ${I18N.ta.adminDashboard}</a>`
+                ? `<a href="admin.html" class="header-btn" style="background:#f59e0b; color:#fff;">📊 ${this.t('adminDashboard')}</a>`
                 : (isTeacher
-                  ? `<a href="teacher-dashboard.html" class="header-btn" style="background:#3b82f6; color:#fff;">📘 ${I18N.ta.teacherDashboard}</a>`
+                  ? `<a href="teacher-dashboard.html" class="header-btn" style="background:#3b82f6; color:#fff;">📘 ${this.t('teacherDashboard')}</a>`
                   : (isLearner
-                    ? `<a href="learner-dashboard.html" class="header-btn" style="background:#10b981; color:#fff;">🎓 ${I18N.ta.learnerDashboard}</a>`
+                    ? `<a href="learner-dashboard.html" class="header-btn" style="background:#10b981; color:#fff;">🎓 ${this.t('learnerDashboard')}</a>`
                     : (!isSubscriber
-                      ? `<button class="header-btn header-btn-upgrade" onclick="TamilAuth.openCheckoutModal()">💳 ${I18N.ta.subscribe}</button>`
+                      ? `<button class="header-btn header-btn-upgrade" onclick="TamilAuth.openCheckoutModal()">💳 ${this.t('subscribeNow')}</button>`
                       : '')))
             }
             ${
               isGuest
-                ? `<button class="header-btn" onclick="TamilAuth.openModal('login')">🔑 ${I18N.ta.login}</button>`
-                : `<button class="header-btn header-btn-secondary" onclick="TamilAuth.logout()">🚪 ${I18N.ta.logout}</button>`
+                ? `<a href="login.html" class="header-btn">🔑 ${this.t('login')}</a>`
+                : `<button class="header-btn header-btn-secondary" onclick="TamilAuth.logout()">🚪 ${this.t('logout')}</button>`
             }
           </div>
         </header>
@@ -363,7 +419,7 @@
 
         if (userLevel < requiredLevel) {
           link.classList.add('locked-module');
-          const badgeText = 'சந்தா தேவை';
+          const badgeText = this.lang === 'en' ? 'Subscription Required' : 'சந்தா தேவை';
           const tag = document.createElement('span');
           tag.className = 'level-tag';
           tag.innerText = badgeText;
@@ -383,21 +439,20 @@
       main.innerHTML = `
         <div class="access-denied-container">
           <div class="access-denied-icon">🔒</div>
-          <h2 class="access-denied-title">${I18N.ta.accessDeniedTitle}</h2>
+          <h2 class="access-denied-title">${this.t('accessDeniedTitle')}</h2>
           <p class="access-denied-desc">
-            "${currentFile}" பகுதியை அணுக <strong>தமிழ் கற்றல் சந்தா / ஆசிரியர் அனுமதி</strong> தேவை.<br>
-            தயவுசெய்து சந்தா செலுத்தவும் அல்லது கணக்கில் உள்நுழையவும்.
+            "${currentFile}" ${this.t('accessDeniedMsg')}
           </p>
           <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-            <button class="header-btn header-btn-upgrade" onclick="TamilAuth.openCheckoutModal()">💳 சந்தா செலுத்துங்கள் ($9.90/மாதம்)</button>
-            <button class="header-btn" style="background:#4f46e5; color:#fff;" onclick="TamilAuth.openModal('login')">🔑 உள்நுழைவு</button>
-            <a href="index.html" class="header-btn header-btn-secondary" style="background:#f3f4f6; color:#374151;">🏠 முகப்பு</a>
+            <button class="header-btn header-btn-upgrade" onclick="TamilAuth.openCheckoutModal()">💳 ${this.t('subscribeNow')}</button>
+            <a href="login.html" class="header-btn" style="background:#4f46e5; color:#fff;">🔑 ${this.t('login')}</a>
+            <a href="index.html" class="header-btn header-btn-secondary" style="background:#f3f4f6; color:#374151;">🏠 Home</a>
           </div>
         </div>
       `;
     }
 
-    /* ---------- Auth Modal Component Builder & Handlers ---------- */
+    /* ---------- Auth Modal Component Builder ---------- */
     buildAuthModal() {
       if (document.getElementById('tamil-auth-modal-root')) return;
 
@@ -407,8 +462,8 @@
             <button class="auth-modal-close" onclick="TamilAuth.closeModal('auth')">&times;</button>
             
             <div class="auth-tabs">
-              <button id="tab-btn-login" class="auth-tab-btn active" onclick="TamilAuth.switchTab('login')">${I18N.ta.login}</button>
-              <button id="tab-btn-register" class="auth-tab-btn" onclick="TamilAuth.switchTab('register')">${I18N.ta.register}</button>
+              <button id="tab-btn-login" class="auth-tab-btn active" onclick="TamilAuth.switchTab('login')">${this.t('login')}</button>
+              <button id="tab-btn-register" class="auth-tab-btn" onclick="TamilAuth.switchTab('register')">${this.t('register')}</button>
             </div>
 
             <div id="auth-alert-msg" class="auth-alert"></div>
@@ -416,40 +471,40 @@
             <!-- Login Form -->
             <form id="auth-form-login" onsubmit="TamilAuth.handleLogin(event)">
               <div class="auth-form-group">
-                <label>${I18N.ta.emailLabel}</label>
-                <input type="email" id="login-email" class="auth-form-input" placeholder="teacher@tamilapp.com" required />
+                <label>${this.t('emailLabel')}</label>
+                <input type="email" id="login-email" class="auth-form-input" placeholder="student@tamilapp.com" required />
               </div>
               <div class="auth-form-group">
-                <label>${I18N.ta.passwordLabel}</label>
+                <label>${this.t('passwordLabel')}</label>
                 <input type="password" id="login-password" class="auth-form-input" placeholder="••••••••" required />
               </div>
-              <button type="submit" class="auth-submit-btn">${I18N.ta.login}</button>
+              <button type="submit" class="auth-submit-btn">${this.t('login')}</button>
             </form>
 
             <!-- Register Form -->
             <form id="auth-form-register" style="display:none;" onsubmit="TamilAuth.handleRegister(event)">
               <div class="auth-form-group">
-                <label>${I18N.ta.nameLabel}</label>
-                <input type="text" id="reg-name" class="auth-form-input" placeholder="உங்கள் பெயர்" required />
+                <label>${this.t('nameLabel')}</label>
+                <input type="text" id="reg-name" class="auth-form-input" placeholder="Your Name" required />
               </div>
               <div class="auth-form-group">
-                <label>${I18N.ta.emailLabel}</label>
+                <label>${this.t('emailLabel')}</label>
                 <input type="email" id="reg-email" class="auth-form-input" placeholder="user@example.com" required />
               </div>
               <div class="auth-form-group">
-                <label>${I18N.ta.passwordLabel}</label>
+                <label>${this.t('passwordLabel')}</label>
                 <input type="password" id="reg-password" class="auth-form-input" placeholder="••••••••" required />
               </div>
-              <button type="submit" class="auth-submit-btn">${I18N.ta.register}</button>
+              <button type="submit" class="auth-submit-btn">${this.t('register')}</button>
             </form>
 
             <!-- Demo Quick Accounts -->
             <div class="demo-accounts-box">
-              <h4>${I18N.ta.demoHeader}</h4>
+              <h4>${this.t('demoHeader')}</h4>
               <div class="demo-btn-group">
-                <button type="button" class="demo-btn" onclick="TamilAuth.fillDemo('student@tamilapp.com', 'student123')">🎓 மாணவர் (Learner)</button>
-                <button type="button" class="demo-btn" onclick="TamilAuth.fillDemo('teacher@tamilapp.com', 'teacher123')">📘 ஆசிரியர் (Teacher)</button>
-                <button type="button" class="demo-btn" onclick="TamilAuth.fillDemo('admin@tamilapp.com', 'admin123')">👑 நிர்வாகி (Admin)</button>
+                <button type="button" class="demo-btn" onclick="TamilAuth.fillDemo('student@tamilapp.com', 'student123')">🎓 Learner</button>
+                <button type="button" class="demo-btn" onclick="TamilAuth.fillDemo('teacher@tamilapp.com', 'teacher123')">📘 Teacher</button>
+                <button type="button" class="demo-btn" onclick="TamilAuth.fillDemo('admin@tamilapp.com', 'admin123')">👑 Admin</button>
               </div>
             </div>
           </div>
@@ -465,32 +520,33 @@
     buildCheckoutModal() {
       if (document.getElementById('tamil-checkout-modal-root')) return;
 
+      const isEn = this.lang === 'en';
       const checkoutHTML = `
         <div id="tamil-checkout-modal-root" class="auth-modal-overlay">
           <div class="auth-modal-card">
             <button class="auth-modal-close" onclick="TamilAuth.closeModal('checkout')">&times;</button>
 
             <div class="checkout-card-header">
-              <h3>தமிழ் கற்றல் மாதாந்திர சந்தா</h3>
-              <div class="pricing-badge">S$ 9.90 / மாதம்</div>
-              <p style="color:#6b7280; font-size:0.9rem; margin:0;">மாதந்தோறும் எப்போது வேண்டுமானாலும் ரத்து செய்யலாம்</p>
+              <h3>${isEn ? 'Tamil Learning Monthly Pass' : 'தமிழ் கற்றல் மாதாந்திர சந்தா'}</h3>
+              <div class="pricing-badge">S$ 9.90 / ${isEn ? 'month' : 'மாதம்'}</div>
+              <p style="color:#6b7280; font-size:0.9rem; margin:0;">${isEn ? 'Cancel anytime with 1-click' : 'மாதந்தோறும் எப்போது வேண்டுமானாலும் ரத்து செய்யலாம்'}</p>
             </div>
 
             <ul class="pricing-features-list">
-              <li>30 தமிழ் கற்றல் விளையாட்டுகள் & பயிற்சிகள்</li>
-              <li>குரல்வழி தட்டச்சு & உச்சரிப்புப் பயிற்சி</li>
-              <li>தமிழ்-ஆங்கில சொல் அட்டைகள் & அகராதி</li>
-              <li>நிகழ்நேர முன்னேற்றப் பதிவு & சாதனைப் பதக்கங்கள்</li>
+              <li>${isEn ? 'All 30 Tamil Games & Practice Modules' : '30 தமிழ் கற்றல் விளையாட்டுகள் & பயிற்சிகள்'}</li>
+              <li>${isEn ? 'Voice Typing & Dictation Engine' : 'குரல்வழி தட்டச்சு & உச்சரிப்புப் பயிற்சி'}</li>
+              <li>${isEn ? 'Tamil-English Flashcards & Dictionary' : 'தமிழ்-ஆங்கில சொல் அட்டைகள் & அகராதி'}</li>
+              <li>${isEn ? 'Live Progress Tracker & Badges' : 'நிகழ்நேர முன்னேற்றப் பதிவு & சாதனைப் பதக்கங்கள்'}</li>
             </ul>
 
             <div class="payment-methods-box">
-              <h4>செலுத்தும் முறை (HitPay Gateway):</h4>
+              <h4>${isEn ? 'Select Payment Method (HitPay Gateway):' : 'செலுத்தும் முறை (HitPay Gateway):'}</h4>
               <div class="payment-options-grid">
                 <div class="payment-option-card selected" id="pay-opt-paynow" onclick="TamilAuth.selectPayment('paynow')">
                   📱 PayNow QR
                 </div>
                 <div class="payment-option-card" id="pay-opt-card" onclick="TamilAuth.selectPayment('card')">
-                  💳 கிரெடிட் கார்டு
+                  💳 Credit Card
                 </div>
                 <div class="payment-option-card" id="pay-opt-ewallet" onclick="TamilAuth.selectPayment('ewallet')">
                   👛 e-Wallet
@@ -501,7 +557,7 @@
             <div id="checkout-alert-msg" class="auth-alert"></div>
 
             <button class="btn-proceed-pay" onclick="TamilAuth.processCheckout()">
-              💳 கட்டணம் செலுத்தி சந்தாவைத் தொடங்கு (SGD $9.90)
+              💳 ${isEn ? 'Start Monthly Subscription (SGD $9.90)' : 'கட்டணம் செலுத்தி சந்தாவைத் தொடங்கு (SGD $9.90)'}
             </button>
           </div>
         </div>
@@ -595,7 +651,7 @@
       const res = this.login(email, pass);
 
       if (res.success) {
-        this.showAlert(I18N.ta.loginSuccess, 'success');
+        this.showAlert(this.t('loginSuccess'), 'success');
         setTimeout(() => {
           this.closeModal('auth');
           if (res.user.role === ROLES.TEACHER) {
@@ -634,7 +690,8 @@
 
     /* ---------- Process Simulated / HitPay Checkout Flow ---------- */
     processCheckout() {
-      this.showAlert('கட்டணம் செயலாக்கப்படுகிறது... (HitPay Gateway)', 'success', 'checkout-alert-msg');
+      const msg = this.lang === 'en' ? 'Processing Payment... (HitPay Gateway)' : 'கட்டணம் செயலாக்கப்படுகிறது... (HitPay Gateway)';
+      this.showAlert(msg, 'success', 'checkout-alert-msg');
 
       setTimeout(() => {
         const users = this.getUsersDB();
@@ -662,7 +719,8 @@
           }, { merge: true }).catch(() => {});
         }
 
-        this.showAlert('வாழ்த்துக்கள்! உங்கள் சந்தா வெற்றிகரமாக தொடங்கப்பட்டது 🎉', 'success', 'checkout-alert-msg');
+        const successMsg = this.lang === 'en' ? 'Congratulations! Subscription activated 🎉' : 'வாழ்த்துக்கள்! உங்கள் சந்தா வெற்றிகரமாக தொடங்கப்பட்டது 🎉';
+        this.showAlert(successMsg, 'success', 'checkout-alert-msg');
         
         setTimeout(() => {
           this.closeModal('checkout');
@@ -692,7 +750,7 @@
     }
 
     getLearnerProgress() {
-      const defaultProgress = {
+      return {
         completedModules: [
           '01_alphabets_with_sound.html',
           '02_mei_plus_uyir.html',
@@ -710,18 +768,17 @@
         streakDays: 4,
         totalPoints: 2850,
         badges: [
-          { id: 'b1', name: 'எழுத்துச் சிற்பி', icon: '🥇', desc: 'தமிழ் எழுத்துக்களைக் கற்று முடித்தார்', unlocked: true },
-          { id: 'b2', name: 'சொல் வேந்தன்', icon: '🥈', desc: '100 தமிழ் வார்த்தைகளைப் பொருத்தியவர்', unlocked: true },
-          { id: 'b3', name: 'வேகப் புயல்', icon: '🥉', desc: '5 நிமிட வார்த்தை தேடலில் வெற்றி பெற்றவர்', unlocked: true },
-          { id: 'b4', name: 'இலக்கண மேதை', icon: '🎯', desc: 'இலக்கணப் பயிற்சிகளில் 100% மதிப்பெண்', unlocked: false }
+          { id: 'b1', name: this.lang === 'en' ? 'Alphabet Master' : 'எழுத்துச் சிற்பி', icon: '🥇', desc: this.lang === 'en' ? 'Mastered Tamil Alphabets' : 'தமிழ் எழுத்துக்களைக் கற்று முடித்தார்', unlocked: true },
+          { id: 'b2', name: this.lang === 'en' ? 'Vocabulary Champ' : 'சொல் வேந்தன்', icon: '🥈', desc: this.lang === 'en' ? 'Matched 100 Tamil words' : '100 தமிழ் வார்த்தைகளைப் பொருத்தியவர்', unlocked: true },
+          { id: 'b3', name: this.lang === 'en' ? 'Speed Runner' : 'வேகப் புயல்', icon: '🥉', desc: this.lang === 'en' ? 'Won 5-min Word Search' : '5 நிமிட வார்த்தை தேடலில் வெற்றி பெற்றவர்', unlocked: true },
+          { id: 'b4', name: this.lang === 'en' ? 'Grammar Expert' : 'இலக்கண மேதை', icon: '🎯', desc: this.lang === 'en' ? '100% score in Grammar' : 'இலக்கணப் பயிற்சிகளில் 100% மதிப்பெண்', unlocked: false }
         ],
         highScores: [
-          { game: '5 நிமிட வார்த்தை தேடல்', score: '1,450 புள்ளிகள்', date: 'இன்று' },
-          { game: 'சொல்வதை எழுதுதல் (Dictation)', score: '98% துல்லியம்', date: 'நேற்று' },
-          { game: 'நினைவில் நிற்பவை (Flip Match)', score: '28 வினாடிகள்', date: '3 நாட்களுக்கு முன்' }
+          { game: this.lang === 'en' ? '5-Min Word Search' : '5 நிமிட வார்த்தை தேடல்', score: '1,450 pts', date: 'Today' },
+          { game: this.lang === 'en' ? 'Dictation Master' : 'சொல்வதை எழுதுதல் (Dictation)', score: '98% Acc', date: 'Yesterday' },
+          { game: this.lang === 'en' ? 'Flip Match Cards' : 'நினைவில் நிற்பவை (Flip Match)', score: '28 sec', date: '3 days ago' }
         ]
       };
-      return defaultProgress;
     }
 
     /* ---------- Admin Analytics & Firestore User Management ---------- */

@@ -4,29 +4,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Basic SEO -->
-  <meta name="description"
-    content="தமிழ் கற்றுக்கொள்வோம்: தமிழ் எழுத்துக்கள், வார்த்தைகள், பயிற்சி விளையாட்டுகள் அனைத்தும் ஒரே இடத்தில்." />
+  <meta name="description" content="தமிழ் கற்றுக்கொள்வோம்: தமிழ் எழுத்துக்கள், வார்த்தைகள், பயிற்சி விளையாட்டுகள் அனைத்தும் ஒரே இடத்தில்." />
+  <title>தமிழ். இனிது. எளிது. - Learn Tamil Effortlessly</title>
 
-  <!-- Open Graph / Facebook / WhatsApp -->
-  <meta property="og:title" content="தமிழ். இனிது. எளிது." />
-  <meta property="og:description"
-    content="தமிழ் கற்றுக்கொள்வோம்: தமிழ் எழுத்துக்கள், வார்த்தைகள், பயிற்சி விளையாட்டுகள் அனைத்தும் ஒரே இடத்தில்." />
-  <meta property="og:image" content="https://www.infocomonline.com/tamil/preview.jpg" />
-  <meta property="og:url" content="https://www.infocomonline.com/tamil" />
-  <meta property="og:type" content="website" />
-  <meta property="og:locale" content="ta_IN" />
-
-  <!-- Manifest -->
   <link rel="manifest" href="manifest.json">
-
   <script>
-  if (typeof navigator.serviceWorker !== 'undefined') {
-    navigator.serviceWorker.register('sw.js')
-  }
-</script>
-
-  <title>தமிழ். இனிது. எளிது.</title>
+    if (typeof navigator.serviceWorker !== 'undefined') {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
 
   <link rel="stylesheet" href="/css/auth.css?v=20260723" />
   <script src="/js/auth.js?v=20260723"></script>
@@ -35,146 +21,140 @@
   </script>
 
   <style>
-    /* ---------- Share buttons (isolated) ---------- */
-    .share-buttons {
-      display: flex;
-      justify-content: flex-end;
-      gap: 12px;
-      margin: 15px 20px;
-    }
+    body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f8fafc; color: #1e293b; }
 
-    .share-buttons .share-btn {
-      display: inline-block;
-      padding: 8px 14px;
-      border-radius: 6px;
-      text-decoration: none;
-      color: #ffffff;
-      /* font-weight: 700; */
-      font-size: 14px;
-      transition: background 0.18s ease, transform 0.08s ease;
-      cursor: pointer;
-      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
-    }
-
-    .share-buttons .share-btn:active {
-      transform: translateY(1px);
-    }
-
-    .share-buttons .share-facebook {
-      background-color: #1877f2;
-    }
-
-    .share-buttons .share-facebook:hover {
-      background-color: #0f5bb5;
-    }
-
-    .share-buttons .share-whatsapp {
-      background-color: #25d366;
-    }
-
-    .share-buttons .share-whatsapp:hover {
-      background-color: #1da851;
-    }
-
-    /* ---------- Page general styles ---------- */
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f4f9;
-      color: #333;
-    }
-
-    main {
-      padding-top: 10px;
-      text-align: center;
-      padding: 20px;
-    }
-
-    main h1 {
-      color: #00f;
-      margin-bottom: 50px;
-    }
-
-    /* ---------- Grid: only these anchors get the box styles ---------- */
     .grid {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 15px;
-      padding: 0 10px;
+      gap: 16px;
+      padding: 20px 10px;
     }
 
     .grid a {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 150px;
+      width: 160px;
       height: 150px;
-      padding: 12px;
+      padding: 14px;
       text-decoration: none;
       border-radius: 20px;
       text-align: center;
-      line-height: 1.5;
+      line-height: 1.4;
       word-wrap: break-word;
-      transition: background 0.3s;
-      color: #000;
-      /* font-weight: 700; */
+      transition: all 0.25s ease;
+      color: #1e1b4b;
+      font-weight: 700;
+      font-size: 0.95rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     }
 
     .grid a:hover {
-      background-color: #ffa500;
-      color: #000;
-      border: 1px dashed #000;
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
     }
 
-    /* five-color rotation for grid boxes */
-    .grid a:nth-child(5n + 1) {
-      background-color: #ffd700 !important;
-      color: #000;
-    }
+    /* 5-Color Gradient Boxes */
+    .grid a:nth-child(5n + 1) { background: linear-gradient(135deg, #fef08a 0%, #fde047 100%); }
+    .grid a:nth-child(5n + 2) { background: linear-gradient(135deg, #bbf7d0 0%, #86efac 100%); }
+    .grid a:nth-child(5n + 3) { background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%); }
+    .grid a:nth-child(5n + 4) { background: linear-gradient(135deg, #bae6fd 0%, #7dd3fc 100%); }
+    .grid a:nth-child(5n + 5) { background: linear-gradient(135deg, #f5d0fe 0%, #f0abfc 100%); }
 
-    .grid a:nth-child(5n + 2) {
-      background-color: #90ee90 !important;
-      color: #000;
-    }
-
-    .grid a:nth-child(5n + 3) {
-      background-color: #ff7f50 !important;
-      color: #000;
-    }
-
-    .grid a:nth-child(5n + 4) {
-      background-color: #87cefa !important;
-      color: #000;
-    }
-
-    .grid a:nth-child(5n + 5) {
-      background-color: #dda0dd !important;
-      color: #000;
-    }
-
-    hr {
-      margin-top: 20px;
+    /* Pricing Section */
+    .pricing-hero-card {
+      max-width: 600px;
+      margin: 40px auto 60px auto;
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 36px 28px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+      border: 2px solid #e2e8f0;
+      text-align: center;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- Share buttons: isolated and placed above the main content -->
-  <!--<div class="share-buttons">
-    <a class="share-btn share-facebook"
-      href="https://www.facebook.com/sharer/sharer.php?u=https://www.infocomonline.com/tamil" target="_blank"
-      rel="noopener noreferrer">📘 Share on Facebook</a>
+  <!-- Landing Hero Section -->
+  <section class="landing-hero">
+    <h1 id="landing-title">தமிழ். இனிது. எளிது.</h1>
+    <p id="landing-subtitle">
+      30 ஊடாடும் விளையாட்டுகள், குரல்வழி தட்டச்சு, சொல் அகராதி & உச்சரிப்புப் பயிற்சிகளுடன் தமிழைக் கற்றுக்கொள்ளுங்கள்.
+    </p>
+    <div class="landing-hero-cta">
+      <a href="#modules-section" class="btn-hero-primary" id="btn-hero-explore">🚀 பயிற்சிகளைத் தொடங்கு</a>
+      <a href="login.html" class="btn-hero-secondary" id="btn-hero-login">🔑 கணக்கில் உள்நுழைவு</a>
+    </div>
+  </section>
 
-    <a class="share-btn share-whatsapp"
-      href="https://api.whatsapp.com/send?text=Check%20this%20out:%20https://www.infocomonline.com/tamil"
-      target="_blank" rel="noopener noreferrer">💬 Share on WhatsApp</a>
-  </div>-->
+  <!-- Key Statistics Bar -->
+  <section class="stats-bar-grid">
+    <div class="stat-card">
+      <div class="stat-number">30+</div>
+      <div class="stat-label" id="lbl-stat-1">பயிற்சி விளையாட்டுகள்</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">2,500+</div>
+      <div class="stat-label" id="lbl-stat-2">தமிழ் வார்த்தைகள்</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">S$ 9.90</div>
+      <div class="stat-label" id="lbl-stat-3">மாதாந்திர சந்தா</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">4.9 / 5</div>
+      <div class="stat-label" id="lbl-stat-4">மாணவர் மதிப்பீடு</div>
+    </div>
+  </section>
 
-  <main>
-    <h1>தமிழ். இனிது. எளிது.</h1>
+  <!-- Features Highlight Showcase -->
+  <section class="features-container">
+    <h2 class="section-title" id="feat-title">ஏன் தமிழ் ஆப்? (Why Learn With Us?)</h2>
+    <p class="section-subtitle" id="feat-subtitle">ஆசிரியர்கள் & மாணவர்களுக்காக வடிவமைக்கப்பட்ட அதிநவீன கற்றல் தளங்கள்</p>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🅰️</div>
+        <h3 id="f1-title">எழுத்துக்கள் & ஒலிகள்</h3>
+        <p id="f1-desc">தமிழ் உயிர், மெய், உயிர்மெய் எழுத்துக்களைத் தெளிவான ஒலி உச்சரிப்புடன் கற்றுக்கொள்ளுங்கள்.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🎤</div>
+        <h3 id="f2-title">குரல் தட்டச்சு & Dictation</h3>
+        <p id="f2-desc">பேச்சு அறிதல் (Speech Recognition) மூலம் சரியாக உச்சரித்து தட்டச்சு செய்யப் பழகுங்கள்.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <h3 id="f3-title">5 நிமிட வார்த்தை தேடல்</h3>
+        <p id="f3-desc">வேகமான சொல் தேடல் விளையாட்டுகளின் மூலம் உங்கள் தமிழ் சொல்வளத்தைப் பெருக்கிக் கொள்ளுங்கள்.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📚</div>
+        <h3 id="f4-title">இலக்கணம் & வாக்கியங்கள்</h3>
+        <p id="f4-desc">ஒருமை-பன்மை, எதிர்ச்சொல், காலங்கள் & மரபுத் தொடர்களை எளிதாகப் புரிந்து கொள்ளுங்கள்.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Card Section -->
+  <section class="pricing-hero-card">
+    <h3 style="margin:0 0 10px 0; font-size:1.6rem; color:#1e1b4b;" id="price-title">தமிழ் கற்றல் சந்தா (Monthly Pass)</h3>
+    <div style="font-size:2.4rem; font-weight:800; color:#10b981; margin-bottom:12px;">S$ 9.90 <span style="font-size:1rem; color:#64748b; font-weight:500;" id="lbl-per-month">/ மாதம்</span></div>
+    <p style="color:#64748b; font-size:0.95rem; margin-bottom:20px;" id="price-desc">30 தமிழ் விளையாட்டுகள், குரல் தட்டச்சு & முன்னேற்ற அறிக்கைகளை உடனடியாக அணுகுங்கள்.</p>
+    <button class="header-btn header-btn-upgrade" style="padding:14px 32px; font-size:1.05rem; border-radius:30px;" onclick="TamilAuth.openCheckoutModal()">
+      💳 சந்தா செலுத்தவும் (SGD $9.90)
+    </button>
+  </section>
+
+  <!-- 30 Modules Grid Section -->
+  <main id="modules-section">
+    <h2 class="section-title" id="grid-title" style="margin-top:20px;">30 தமிழ் பாடப்பகுதிகள் (All 30 Learning Modules)</h2>
 
     <div class="grid">
       <a href="01_alphabets_with_sound.html">தமிழ் எழுத்துக்கள் - கணினி ஒலியுடன்</a>
@@ -191,7 +171,7 @@
       <a href="08_flip_match_cards.html">நினைவில் நிற்பவை</a>
       <a href="30_select_unrelated_word.html">தொடர்பில்லா வார்த்தையை தேர்ந்தெடுப்போம்</a> 
       <a href="09_form_words.html">எத்தனை சரியான வார்த்தைகள் அமைக்க முடியும்?</a>
-      <a href="10_fill_up_words.html">ஆத்திசூடி, <br>பழ மொழிகள்</a>
+      <a href="10_fill_up_words.html">ஆத்திசூடி, பழ மொழிகள்</a>
       <a href="23_maraputhodar.html">மரபுத் தொடர்</a>
       <a href="11_form_sentences.html">எத்தனை சரியான வாக்கியம் அமைக்க முடியும்?</a>
       <a href="12_opposite_words.html">எதிர்ச்சொல் என்ன?</a>
@@ -205,15 +185,48 @@
       <a href="28_oli_verupadu.html">ஒலி வேறுபாட்டுச் சொற்கள்</a>
       <a href="20_word_search.html">5 நிமிட வார்த்தை தேடல்</a>
       <a href="21_word_forming.html">குறுக்கெழுத்து வார்த்தைகள்</a>
-      <a href="17_voice_to_text.html">குரல் → தமிழ் தட்டச்சு </a>
+      <a href="17_voice_to_text.html">குரல் → தமிழ் தட்டச்சு</a>
       <a href="19_poem_fill.html">புதுக்கவிதைகள்</a>
-
     </div>
 
-    <hr>
-    <p align="center">Infocom Consultants, Singapore | 2025</p>
+    <hr style="border:none; border-top:1px solid #cbd5e1; margin:40px 0;">
+    <p align="center" style="color:#64748b; font-size:0.9rem;">Infocom Consultants, Singapore | 2026</p>
   </main>
 
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      applyLandingLanguage();
+    });
+
+    function applyLandingLanguage() {
+      const isEn = TamilAuth.getLang() === 'en';
+
+      if (isEn) {
+        document.getElementById('landing-title').innerText = 'Learn Tamil. Easy & Fun.';
+        document.getElementById('landing-subtitle').innerText = 'Master Tamil through 30 interactive games, voice typing, word search dictionary, and pronunciation exercises.';
+        document.getElementById('btn-hero-explore').innerText = '🚀 Explore Modules';
+        document.getElementById('btn-hero-login').innerText = '🔑 Sign In';
+        document.getElementById('lbl-stat-1').innerText = 'Interactive Games';
+        document.getElementById('lbl-stat-2').innerText = 'Vocabulary Words';
+        document.getElementById('lbl-stat-3').innerText = 'Monthly Pass';
+        document.getElementById('lbl-stat-4').innerText = 'Student Rating';
+        document.getElementById('feat-title').innerText = 'Why Learn With Us?';
+        document.getElementById('feat-subtitle').innerText = 'Cutting-edge learning tools designed for students, teachers, and parents';
+        document.getElementById('f1-title').innerText = 'Alphabets & Audio';
+        document.getElementById('f1-desc').innerText = 'Learn Tamil vowels, consonants, and compound letters with native audio sounds.';
+        document.getElementById('f2-title').innerText = 'Voice Typing & Dictation';
+        document.getElementById('f2-desc').innerText = 'Practice speech recognition and dictation writing with real-time feedback.';
+        document.getElementById('f3-title').innerText = '5-Min Word Search';
+        document.getElementById('f3-desc').innerText = 'Expand your vocabulary through speed word-building games and timer challenges.';
+        document.getElementById('f4-title').innerText = 'Grammar & Sentences';
+        document.getElementById('f4-desc').innerText = 'Master singular/plural, opposites, tenses, and sentence building effortlessly.';
+        document.getElementById('price-title').innerText = 'Tamil Learning Monthly Pass';
+        document.getElementById('lbl-per-month').innerText = '/ month';
+        document.getElementById('price-desc').innerText = 'Unlock all 30 games, voice typing tools, and progress analytics instantly.';
+        document.getElementById('grid-title').innerText = 'All 30 Learning Modules';
+      }
+    }
+  </script>
 </body>
 
 </html>
