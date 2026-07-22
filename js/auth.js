@@ -77,8 +77,10 @@
   // Default Initial Users
   const INITIAL_USERS = [
     { email: 'admin@tamil.app', name: 'ஆசிரியர் (Admin)', password: 'admin123', role: ROLES.ADMIN, subscriptionStatus: 'active', joinedAt: '2026-07-01' },
+    { email: 'admin@tamilapp.com', name: 'ஆசிரியர் (Admin)', password: 'admin123', role: ROLES.ADMIN, subscriptionStatus: 'active', joinedAt: '2026-07-01' },
     { email: 'teacher@tamil.app', name: 'ஆசிரியர் (Teacher)', password: 'teacher123', role: ROLES.TEACHER, subscriptionStatus: 'active', joinedAt: '2026-07-05' },
     { email: 'student@tamil.app', name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active', joinedAt: '2026-07-15' },
+    { email: 'student@tamilapp.com', name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active', joinedAt: '2026-07-15' },
     { email: 'user1@example.com', name: 'கார்த்திக் (Karthik)', password: 'user123', role: ROLES.LEARNER, subscriptionStatus: 'active', joinedAt: '2026-07-18' },
     { email: 'user2@example.com', name: 'பிரியா (Priya)', password: 'user123', role: ROLES.GUEST, subscriptionStatus: 'inactive', joinedAt: '2026-07-20' }
   ];
@@ -402,9 +404,8 @@
             <div class="demo-accounts-box">
               <h4>${I18N.ta.demoHeader}</h4>
               <div class="demo-btn-group">
-                <button type="button" class="demo-btn" onclick="TamilAuth.fillDemo('student@tamil.app', 'student123')">🎓 மாணவர் (Learner)</button>
-                <button type="button" class="demo-btn" onclick="TamilAuth.fillDemo('teacher@tamil.app', 'teacher123')">📘 ஆசிரியர் (Teacher)</button>
-                <button type="button" class="demo-btn" onclick="TamilAuth.fillDemo('admin@tamil.app', 'admin123')">👑 நிர்வாகி (Admin)</button>
+                <button type="button" class="demo-btn" onclick="TamilAuth.fillDemo('student@tamilapp.com', 'student123')">🎓 மாணவர் (Learner)</button>
+                <button type="button" class="demo-btn" onclick="TamilAuth.fillDemo('admin@tamilapp.com', 'admin123')">👑 நிர்வாகி (Admin)</button>
               </div>
             </div>
           </div>
