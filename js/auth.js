@@ -147,7 +147,6 @@
         users = [];
       }
 
-      // Ensure all default demo accounts exist
       INITIAL_USERS.forEach(defaultUser => {
         const idx = users.findIndex(u => u.email.toLowerCase() === defaultUser.email.toLowerCase());
         if (idx === -1) {
@@ -189,7 +188,6 @@
       
       let found = users.find(u => u.email.toLowerCase() === cleanEmail && u.password === password);
 
-      // Flexible Demo Account Fallback Match
       if (!found) {
         if ((cleanEmail.startsWith('admin@') || cleanEmail.includes('admin')) && password === 'admin123') {
           found = { email: cleanEmail, name: 'ஆசிரியர் (Admin)', password: 'admin123', role: ROLES.ADMIN, subscriptionStatus: 'active' };
@@ -253,8 +251,20 @@
       return ROLE_HIERARCHY[roleName] || 1;
     }
 
+    getNormalizedPath(pathStr) {
+      const str = pathStr || window.location.pathname;
+      let file = str.split('/').pop().split('?')[0] || 'index.html';
+      if (file === '' || file === '/') {
+        file = 'index.html';
+      }
+      if (!file.includes('.')) {
+        file = file + '.html';
+      }
+      return file;
+    }
+
     canAccess(modulePath) {
-      const filename = modulePath.split('/').pop().split('?')[0] || 'index.html';
+      const filename = this.getNormalizedPath(modulePath);
       const requiredRole = MODULE_ROLES[filename] || 'guest';
       const userLevel = this.getRoleLevel(this.currentUser.role);
       const requiredLevel = this.getRoleLevel(requiredRole);
@@ -262,7 +272,8 @@
     }
 
     getRequiredRole(filename) {
-      return MODULE_ROLES[filename] || 'guest';
+      const norm = this.getNormalizedPath(filename);
+      return MODULE_ROLES[norm] || 'guest';
     }
 
     /* ---------- Header Navigation UI Render ---------- */
@@ -323,7 +334,7 @@
         this.buildAuthModal();
         this.buildCheckoutModal();
 
-        const currentFile = window.location.pathname.split('/').pop() || 'index.html';
+        const currentFile = this.getNormalizedPath();
         if (currentFile !== 'index.html' && currentFile !== 'login.html') {
           if (!this.canAccess(currentFile)) {
             this.renderAccessDenied(currentFile);
@@ -342,7 +353,7 @@
       links.forEach(link => {
         const href = link.getAttribute('href');
         if (!href) return;
-        const requiredRole = MODULE_ROLES[href] || 'guest';
+        const requiredRole = MODULE_ROLES[this.getNormalizedPath(href)] || 'guest';
         const requiredLevel = this.getRoleLevel(requiredRole);
 
         if (userLevel < requiredLevel) {
@@ -369,7 +380,7 @@
           <div class="access-denied-icon">🔒</div>
           <h2 class="access-denied-title">${I18N.ta.accessDeniedTitle}</h2>
           <p class="access-denied-desc">
-            "${currentFile}" பகுதியை அணுக <strong>தமிழ் கற்றல் சந்தா</strong> தேவை.<br>
+            "${currentFile}" பகுதியை அணுக <strong>தமிழ் கற்றல் சந்தா / ஆசிரியர் அனுமதி</strong> தேவை.<br>
             தயவுசெய்து சந்தா செலுத்தவும் அல்லது கணக்கில் உள்நுழையவும்.
           </p>
           <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
