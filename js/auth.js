@@ -1,6 +1,6 @@
 /**
  * ==========================================================================
- * Tamil App - Authentication, Firestore, Checkout & Admin Analytics Engine
+ * Tamil App - Cloud Firestore Authentication & Admin Engine
  * ==========================================================================
  */
 
@@ -15,13 +15,15 @@
   const ROLES = {
     GUEST: 'guest',
     LEARNER: 'learner',
+    TEACHER: 'teacher',
     ADMIN: 'admin'
   };
 
-  // Module Access Levels Hierarchy: guest (1) < learner (2) < admin (3)
+  // Module Access Levels Hierarchy: guest (1) < learner (2) < teacher/admin (3)
   const ROLE_HIERARCHY = {
     guest: 1,
     learner: 2,
+    teacher: 3,
     admin: 3
   };
 
@@ -61,9 +63,21 @@
     '20_word_search.html': 'admin'
   };
 
-  // Default Initial Mock Users
+  // Firebase Web SDK Configuration
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyBwdV_R-Hc2y3_h3qZaUjVKc-PbAxs0fsA",
+    authDomain: "tamilapp-3b8bf.firebaseapp.com",
+    projectId: "tamilapp-3b8bf",
+    storageBucket: "tamilapp-3b8bf.firebasestorage.app",
+    messagingSenderId: "391753582516",
+    appId: "1:391753582516:web:e901955a3cf5b6dd1854e1",
+    measurementId: "G-TX6Y3CPEY2"
+  };
+
+  // Default Initial Users
   const INITIAL_USERS = [
-    { email: 'admin@tamil.app', name: 'ஆசிரியர் (Teacher)', password: 'admin123', role: ROLES.ADMIN, subscriptionStatus: 'active', joinedAt: '2026-07-01' },
+    { email: 'admin@tamil.app', name: 'ஆசிரியர் (Admin)', password: 'admin123', role: ROLES.ADMIN, subscriptionStatus: 'active', joinedAt: '2026-07-01' },
+    { email: 'teacher@tamil.app', name: 'ஆசிரியர் (Teacher)', password: 'teacher123', role: ROLES.TEACHER, subscriptionStatus: 'active', joinedAt: '2026-07-05' },
     { email: 'student@tamil.app', name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active', joinedAt: '2026-07-15' },
     { email: 'user1@example.com', name: 'கார்த்திக் (Karthik)', password: 'user123', role: ROLES.LEARNER, subscriptionStatus: 'active', joinedAt: '2026-07-18' },
     { email: 'user2@example.com', name: 'பிரியா (Priya)', password: 'user123', role: ROLES.GUEST, subscriptionStatus: 'inactive', joinedAt: '2026-07-20' }
@@ -78,7 +92,8 @@
       logout: 'வெளியேறு',
       guest: 'விருந்தினர்',
       learner: 'மாணவர்',
-      admin: 'ஆசிரியர்',
+      teacher: 'ஆசிரியர்',
+      admin: 'நிர்வாகி',
       subscribe: 'சந்தா செலுத்துங்கள்',
       activeSubscriber: 'சந்தாதாரர்',
       adminDashboard: 'நிர்வாக பலகை',
@@ -87,7 +102,7 @@
       nameLabel: 'பெயர்',
       enterAsGuest: 'விருந்தினராக தொடரவும்',
       accessDeniedTitle: 'அணுகல் மறுக்கப்பட்டது 🔒',
-      accessDeniedMsg: 'இந்தப் பகுதியை அணுக நீங்கள் ஆசிரியர் / நிர்வாகி அனுமதியைப் பெற்றிருக்க வேண்டும்.',
+      accessDeniedMsg: 'இந்தப் பகுதியை அணுக உங்களுக்கு ஆசிரியர் / நிர்வாகி அனுமதி தேவை.',
       demoHeader: 'விரைவு சோதனை கணக்குகள் (Demo Accounts):',
       loginSuccess: 'வெற்றிகரமாக உள்நுழைந்தீர்கள்!',
       loginError: 'தவறான மின்னஞ்சல் அல்லது கடவுச்சொல்!',
@@ -98,9 +113,24 @@
 
   class TamilAuthEngine {
     constructor() {
+      this.db = null;
+      this.initFirebase();
       this.initDatabase();
       this.currentUser = this.loadSession();
       this.selectedPaymentMethod = 'paynow';
+    }
+
+    initFirebase() {
+      try {
+        if (window.firebase && !window.firebase.apps.length) {
+          window.firebase.initializeApp(FIREBASE_CONFIG);
+          this.db = window.firebase.firestore();
+        } else if (window.firebase && window.firebase.apps.length) {
+          this.db = window.firebase.firestore();
+        }
+      } catch (e) {
+        console.warn('Firebase SDK loading fallback to local DB:', e);
+      }
     }
 
     initDatabase() {
@@ -111,22 +141,25 @@
         users = [];
       }
 
-      // Ensure default demo accounts (admin, student) always exist
+      // Ensure all default demo accounts exist
       INITIAL_USERS.forEach(defaultUser => {
-        const exists = users.some(u => u.email.toLowerCase() === defaultUser.email.toLowerCase());
-        if (!exists) {
+        const idx = users.findIndex(u => u.email.toLowerCase() === defaultUser.email.toLowerCase());
+        if (idx === -1) {
           users.push(defaultUser);
         } else {
-          // Sync role and password for default admin/student
-          const idx = users.findIndex(u => u.email.toLowerCase() === defaultUser.email.toLowerCase());
-          if (idx !== -1 && (defaultUser.email === 'admin@tamil.app' || defaultUser.email === 'student@tamil.app')) {
-            users[idx].password = defaultUser.password;
-            users[idx].role = defaultUser.role;
-          }
+          users[idx].password = defaultUser.password;
+          users[idx].role = defaultUser.role;
         }
       });
 
       localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
+
+      // Sync to Firestore if available
+      if (this.db) {
+        users.forEach(u => {
+          this.db.collection('users').doc(u.email.toLowerCase()).set(u, { merge: true }).catch(() => {});
+        });
+      }
     }
 
     getUsersDB() {
@@ -157,6 +190,10 @@
         };
         localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(userSession));
         this.currentUser = userSession;
+
+        if (this.db) {
+          this.db.collection('users').doc(found.email.toLowerCase()).set(found, { merge: true }).catch(() => {});
+        }
         return { success: true, user: userSession };
       }
       return { success: false, message: I18N.ta.loginError };
@@ -170,6 +207,10 @@
       const newUser = { name, email, password, role, subscriptionStatus: 'inactive', joinedAt: new Date().toISOString().split('T')[0] };
       users.push(newUser);
       localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
+
+      if (this.db) {
+        this.db.collection('users').doc(email.toLowerCase()).set(newUser).catch(() => {});
+      }
       return { success: true, message: I18N.ta.registerSuccess };
     }
 
@@ -203,9 +244,13 @@
     renderHeader(container) {
       const user = this.currentUser;
       const isGuest = user.role === ROLES.GUEST;
-      const isAdmin = user.role === ROLES.ADMIN;
-      const isSubscriber = user.role === ROLES.LEARNER || user.role === ROLES.ADMIN;
-      const roleLabel = isAdmin ? I18N.ta.admin : (isSubscriber ? I18N.ta.activeSubscriber : I18N.ta.guest);
+      const isAdmin = user.role === ROLES.ADMIN || user.role === ROLES.TEACHER;
+      const isSubscriber = user.role === ROLES.LEARNER || isAdmin;
+      
+      let roleLabel = I18N.ta.guest;
+      if (user.role === ROLES.ADMIN) roleLabel = I18N.ta.admin;
+      else if (user.role === ROLES.TEACHER) roleLabel = I18N.ta.teacher;
+      else if (isSubscriber) roleLabel = I18N.ta.activeSubscriber;
 
       const headerHTML = `
         <header class="tamil-app-header">
@@ -358,7 +403,8 @@
               <h4>${I18N.ta.demoHeader}</h4>
               <div class="demo-btn-group">
                 <button type="button" class="demo-btn" onclick="TamilAuth.fillDemo('student@tamil.app', 'student123')">🎓 மாணவர் (Learner)</button>
-                <button type="button" class="demo-btn" onclick="TamilAuth.fillDemo('admin@tamil.app', 'admin123')">👑 ஆசிரியர் (Admin)</button>
+                <button type="button" class="demo-btn" onclick="TamilAuth.fillDemo('teacher@tamil.app', 'teacher123')">📘 ஆசிரியர் (Teacher)</button>
+                <button type="button" class="demo-btn" onclick="TamilAuth.fillDemo('admin@tamil.app', 'admin123')">👑 நிர்வாகி (Admin)</button>
               </div>
             </div>
           </div>
@@ -555,6 +601,14 @@
         localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
         localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
 
+        if (this.db) {
+          this.db.collection('users').doc(user.email.toLowerCase()).set({
+            role: ROLES.LEARNER,
+            subscriptionStatus: 'active',
+            subscribedAt: user.subscribedAt
+          }, { merge: true }).catch(() => {});
+        }
+
         this.showAlert('வாழ்த்துக்கள்! உங்கள் சந்தா வெற்றிகரமாக தொடங்கப்பட்டது 🎉', 'success', 'checkout-alert-msg');
         
         setTimeout(() => {
@@ -564,11 +618,12 @@
       }, 1000);
     }
 
-    /* ---------- Admin Analytics & Management Functions ---------- */
+    /* ---------- Admin Analytics & Firestore User Management ---------- */
     getAdminStats() {
       const users = this.getUsersDB();
       const totalUsers = users.length;
       const totalLearners = users.filter(u => u.role === ROLES.LEARNER).length;
+      const totalTeachers = users.filter(u => u.role === ROLES.TEACHER).length;
       const totalAdmins = users.filter(u => u.role === ROLES.ADMIN).length;
       const activeSubscribers = users.filter(u => u.role === ROLES.LEARNER && u.subscriptionStatus === 'active').length;
       const mrr = activeSubscribers * 9.90;
@@ -576,6 +631,7 @@
       return {
         totalUsers,
         totalLearners,
+        totalTeachers,
         totalAdmins,
         activeSubscribers,
         mrr: mrr.toFixed(2),
@@ -587,8 +643,14 @@
       const users = this.getUsersDB();
       const target = users.find(u => u.email.toLowerCase() === email.toLowerCase());
       if (target) {
-        target.role = target.role === ROLES.ADMIN ? ROLES.LEARNER : ROLES.ADMIN;
+        if (target.role === ROLES.ADMIN) target.role = ROLES.TEACHER;
+        else if (target.role === ROLES.TEACHER) target.role = ROLES.LEARNER;
+        else target.role = ROLES.ADMIN;
+
         localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
+        if (this.db) {
+          this.db.collection('users').doc(email.toLowerCase()).update({ role: target.role }).catch(() => {});
+        }
         return true;
       }
       return false;
@@ -606,15 +668,15 @@
           target.subscriptionStatus = 'inactive';
         }
         localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
+        if (this.db) {
+          this.db.collection('users').doc(email.toLowerCase()).update({
+            role: target.role,
+            subscriptionStatus: target.subscriptionStatus
+          }).catch(() => {});
+        }
         return true;
       }
       return false;
-    }
-
-    deleteUser(email) {
-      let users = this.getUsersDB();
-      users = users.filter(u => u.email.toLowerCase() !== email.toLowerCase());
-      localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
     }
   }
 

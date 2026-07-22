@@ -6,6 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>நிர்வாக பலகை (Admin Dashboard) - தமிழ். இனிது. எளிது.</title>
   <link rel="stylesheet" href="css/auth.css" />
+  <!-- Firebase Web SDK v10 (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 </head>
 
 <body style="background-color: #f4f4f9; margin: 0; padding: 0;">
@@ -16,8 +19,8 @@
       <!-- Top Banner -->
       <div class="admin-header-banner">
         <div>
-          <h1>📊 நிர்வாகப் பலகை (Admin Dashboard)</h1>
-          <p>பயனீட்டாளர்கள், சந்தாக்கள் & கற்றல் புள்ளிவிவரங்கள்</p>
+          <h1>📊 நிர்வாகப் பலகை (Admin & Teacher Dashboard)</h1>
+          <p>பயனீட்டாளர்கள், ஆசிரியர் கணக்குகள் & மாதாந்திர சந்தா புள்ளிவிவரங்கள்</p>
         </div>
         <a href="index.html" class="header-btn" style="background:rgba(255,255,255,0.2); color:#fff;">🏠 முகப்பு</a>
       </div>
@@ -28,7 +31,7 @@
           <div class="kpi-icon">👥</div>
           <div class="kpi-value" id="kpi-total-users">0</div>
           <div class="kpi-label">மொத்த பயனீட்டாளர்கள்</div>
-          <div class="kpi-subtext">Registered Users</div>
+          <div class="kpi-subtext">Cloud Firestore Users</div>
         </div>
 
         <div class="kpi-card">
@@ -41,8 +44,8 @@
         <div class="kpi-card">
           <div class="kpi-icon">👑</div>
           <div class="kpi-value" id="kpi-total-admins">0</div>
-          <div class="kpi-label">ஆசிரியர்கள் (Teachers)</div>
-          <div class="kpi-subtext">Admin Privileges</div>
+          <div class="kpi-label">ஆசிரியர்கள் / நிர்வாகிகள்</div>
+          <div class="kpi-subtext">Teacher & Admin Privileges</div>
         </div>
 
         <div class="kpi-card">
@@ -58,7 +61,10 @@
         
         <!-- Left: User Management Table -->
         <div class="admin-panel">
-          <h3>📋 பயனீட்டாளர்கள் மேலாண்மை (User Management)</h3>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 style="margin:0;">📋 பயனீட்டாளர்கள் மேலாண்மை (User Accounts in Cloud Firestore)</h3>
+            <button class="action-btn" style="background:#e0e7ff; color:#3730a3;" onclick="handleResetDB()">🔄 Sync Firestore DB</button>
+          </div>
           <div class="admin-table-wrapper">
             <table class="admin-table">
               <thead>
@@ -122,34 +128,44 @@
       
       document.getElementById('kpi-total-users').innerText = stats.totalUsers;
       document.getElementById('kpi-total-learners').innerText = stats.totalLearners;
-      document.getElementById('kpi-total-admins').innerText = stats.totalAdmins;
+      document.getElementById('kpi-total-admins').innerText = stats.totalAdmins + (stats.totalTeachers || 0);
       document.getElementById('kpi-mrr').innerText = `SGD $${stats.mrr}`;
 
       const tbody = document.getElementById('user-table-body');
-      tbody.innerHTML = stats.users.map(user => `
-        <tr>
-          <td><strong>${user.name}</strong></td>
-          <td>${user.email}</td>
-          <td>
-            <span class="role-badge role-${user.role === 'admin' ? 'admin' : (user.role === 'learner' ? 'subscriber' : 'guest')}">
-              ${user.role === 'admin' ? 'ஆசிரியர்' : (user.role === 'learner' ? 'மாணவர்' : 'விருந்தினர்')}
-            </span>
-          </td>
-          <td>
-            <span style="color: ${user.subscriptionStatus === 'active' || user.role === 'learner' || user.role === 'admin' ? '#10b981' : '#6b7280'}; font-weight:700;">
-              ${user.subscriptionStatus === 'active' || user.role === 'learner' || user.role === 'admin' ? '● Active' : '○ Free'}
-            </span>
-          </td>
-          <td>
-            <button class="action-btn" onclick="handleToggleRole('${user.email}')">
-              ${user.role === 'admin' ? 'Demote to Student' : '👑 Promote Admin'}
-            </button>
-            <button class="action-btn" onclick="handleToggleSub('${user.email}')">
-              ${user.role === 'guest' ? '💳 Grant Sub' : 'Revoke'}
-            </button>
-          </td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = stats.users.map(user => {
+        let roleBadgeClass = 'guest';
+        let roleText = 'விருந்தினர்';
+        if (user.role === 'admin') { roleBadgeClass = 'admin'; roleText = 'நிர்வாகி'; }
+        else if (user.role === 'teacher') { roleBadgeClass = 'admin'; roleText = 'ஆசிரியர்'; }
+        else if (user.role === 'learner') { roleBadgeClass = 'subscriber'; roleText = 'மாணவர்'; }
+
+        const isActive = user.subscriptionStatus === 'active' || user.role === 'learner' || user.role === 'teacher' || user.role === 'admin';
+
+        return `
+          <tr>
+            <td><strong>${user.name}</strong></td>
+            <td>${user.email}</td>
+            <td>
+              <span class="role-badge role-${roleBadgeClass}">
+                ${roleText}
+              </span>
+            </td>
+            <td>
+              <span style="color: ${isActive ? '#10b981' : '#6b7280'}; font-weight:700;">
+                ${isActive ? '● Active Pass' : '○ Free'}
+              </span>
+            </td>
+            <td>
+              <button class="action-btn" onclick="handleToggleRole('${user.email}')">
+                ${user.role === 'admin' ? 'Change Role' : '👑 Make Admin/Teacher'}
+              </button>
+              <button class="action-btn" onclick="handleToggleSub('${user.email}')">
+                ${user.role === 'guest' ? '💳 Grant Sub' : 'Revoke'}
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     function handleToggleRole(email) {
@@ -160,6 +176,12 @@
     function handleToggleSub(email) {
       TamilAuth.toggleSubscription(email);
       renderDashboard();
+    }
+
+    function handleResetDB() {
+      TamilAuth.initDatabase();
+      renderDashboard();
+      alert('Cloud Firestore Database synchronized successfully!');
     }
   </script>
 </body>
