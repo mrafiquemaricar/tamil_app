@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>எனது கற்றல் பலகை (Learner Dashboard) - தமிழ். இனிது. எளிது.</title>
+  <link rel="stylesheet" href="/css/auth.css?v=20260723" />
+  <!-- Firebase Web SDK v10 (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f4f4f9; margin: 0; padding: 0; }
+    .learner-container { max-width: 1100px; margin: 30px auto; padding: 0 20px 60px 20px; }
+    .learner-hero-banner {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff;
+      padding: 28px 36px;
+      border-radius: 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .learner-hero-banner h1 { margin: 0 0 8px 0; font-size: 1.9rem; }
+    .learner-hero-banner p { margin: 0; opacity: 0.95; font-size: 1rem; }
+    .streak-badge-pill {
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    /* Progress Overview Bar */
+    .progress-overview-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 30px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+      text-align: left;
+    }
+    .progress-bar-bg {
+      background: #e2e8f0;
+      height: 16px;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 12px 0 8px 0;
+    }
+    .progress-bar-fill {
+      background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+      height: 100%;
+      border-radius: 10px;
+      transition: width 0.6s ease;
+    }
+
+    /* Badges & Scores Grid */
+    .learner-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+    @media (max-width: 768px) {
+      .learner-grid { grid-template-columns: 1fr; }
+    }
+
+    .learner-panel {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+      text-align: left;
+    }
+    .learner-panel h3 { margin: 0 0 18px 0; color: #1e1b4b; font-size: 1.2rem; }
+
+    /* Badge Grid */
+    .badges-flex {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+    }
+    .badge-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      transition: transform 0.2s ease;
+    }
+    .badge-card:hover { transform: translateY(-2px); }
+    .badge-icon { font-size: 2.5rem; margin-bottom: 6px; }
+    .badge-title { font-size: 0.85rem; font-weight: 700; color: #1e1b4b; margin-bottom: 4px; }
+    .badge-desc { font-size: 0.72rem; color: #64748b; }
+
+    /* High Scores List */
+    .scores-list { list-style: none; padding: 0; margin: 0; }
+    .scores-list li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 0.95rem;
+    }
+    .scores-game-name { font-weight: 600; color: #334155; }
+    .scores-value { font-weight: 800; color: #10b981; }
+
+    .btn-continue-learning {
+      background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+      color: #ffffff;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+      transition: all 0.2s ease;
+    }
+    .btn-continue-learning:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(79, 70, 229, 0.4);
+    }
+  </style>
+</head>
+
+<body>
+
+  <main>
+    <div class="learner-container">
+      
+      <!-- Top Banner -->
+      <div class="learner-hero-banner">
+        <div>
+          <h1 id="learner-welcome">வணக்கம்! 🌟</h1>
+          <p>உங்கள் தமிழ் கற்றல் பயணம் சிறப்படைய வாழ்த்துக்கள்!</p>
+        </div>
+        <div class="streak-badge-pill">
+          ⚡ <span id="streak-days">4</span>-நாள் தொடர் பயிற்சி!
+        </div>
+      </div>
+
+      <!-- Overall Progress Card -->
+      <div class="progress-overview-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div>
+            <h3 style="margin:0 0 4px 0; color:#1e1b4b; font-size:1.25rem;">📊 உங்கள் கற்றல் முன்னேற்றம்</h3>
+            <span style="color:#64748b; font-size:0.9rem;">30 தமிழ் பாடப்பகுதிகள் & விளையாட்டுகளில் உங்கள் நிலை</span>
+          </div>
+          <span style="font-size:1.3rem; font-weight:800; color:#10b981;" id="progress-percent">40%</span>
+        </div>
+
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progress-fill" style="width: 40%;"></div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:#64748b; margin-top:6px;">
+          <span>12/30 பகுதிகள் முடிந்தது</span>
+          <span>18 பகுதிகள் எஞ்சியுள்ளன</span>
+        </div>
+
+        <div style="margin-top:20px; text-align:right;">
+          <a href="09_form_words.html" class="btn-continue-learning">
+            ▶️ அடுத்த பாடத்தைத் தொடங்கு (Continue Learning)
+          </a>
+        </div>
+      </div>
+
+      <!-- Two-Column Grid: Badges & High Scores -->
+      <div class="learner-grid">
+        
+        <!-- Left: Achievement Badges -->
+        <div class="learner-panel">
+          <h3>🏆 சாதனைப் பதக்கங்கள் (Achievement Badges)</h3>
+          <div class="badges-flex" id="badges-container">
+            <!-- Dynamically Rendered -->
+          </div>
+        </div>
+
+        <!-- Right: My High Scores -->
+        <div class="learner-panel">
+          <h3>🎮 எனது சிறந்த சாதனைகள் (High Scores)</h3>
+          <ul class="scores-list" id="scores-container">
+            <!-- Dynamically Rendered -->
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <script src="/js/auth.js?v=20260723"></script>
+  <script>
+    TamilAuth.initPage();
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderLearnerDashboard();
+    });
+
+    function renderLearnerDashboard() {
+      const user = TamilAuth.getCurrentUser();
+      const progressData = TamilAuth.getLearnerProgress();
+
+      document.getElementById('learner-welcome').innerText = `வணக்கம், ${user.name}! 🌟`;
+      document.getElementById('streak-days').innerText = progressData.streakDays;
+
+      const totalMods = 30;
+      const completedCount = progressData.completedModules.length;
+      const pct = Math.round((completedCount / totalMods) * 100);
+
+      document.getElementById('progress-percent').innerText = `${pct}%`;
+      document.getElementById('progress-fill').style.width = `${pct}%`;
+
+      // Render Badges
+      const badgesDiv = document.getElementById('badges-container');
+      badgesDiv.innerHTML = progressData.badges.map(b => `
+        <div class="badge-card" style="opacity: ${b.unlocked ? '1' : '0.45'};">
+          <div class="badge-icon">${b.icon}</div>
+          <div class="badge-title">${b.name}</div>
+          <div class="badge-desc">${b.desc}</div>
+        </div>
+      `).join('');
+
+      // Render Scores
+      const scoresUl = document.getElementById('scores-container');
+      scoresUl.innerHTML = progressData.highScores.map(s => `
+        <li>
+          <div>
+            <div class="scores-game-name">${s.game}</div>
+            <div style="font-size:0.75rem; color:#94a3b8;">${s.date}</div>
+          </div>
+          <span class="scores-value">${s.score}</span>
+        </li>
+      `).join('');
+    }
+  </script>
+</body>
+
+</html>

@@ -10,6 +10,7 @@
   // Key Constants
   const STORAGE_KEY_USER = 'tamil_app_current_user';
   const STORAGE_KEY_USERS_DB = 'tamil_app_users_db';
+  const STORAGE_KEY_USER_PROGRESS = 'tamil_app_user_progress';
 
   // Role Definitions
   const ROLES = {
@@ -31,6 +32,8 @@
   const MODULE_ROLES = {
     'index.html': 'guest',
     'admin.html': 'admin',
+    'learner-dashboard.html': 'learner',
+    'teacher-dashboard.html': 'teacher',
     '01_alphabets_with_sound.html': 'guest',
     '02_mei_plus_uyir.html': 'guest',
     '03_letter_joining.html': 'guest',
@@ -99,12 +102,13 @@
       subscribe: 'சந்தா செலுத்துங்கள்',
       activeSubscriber: 'சந்தாதாரர்',
       adminDashboard: 'நிர்வாக பலகை',
+      learnerDashboard: 'எனது கற்றல் பலகை',
       emailLabel: 'மின்னஞ்சல் முகவரி',
       passwordLabel: 'கடவுச்சொல்',
       nameLabel: 'பெயர்',
       enterAsGuest: 'விருந்தினராக தொடரவும்',
       accessDeniedTitle: 'அணுகல் மறுக்கப்பட்டது 🔒',
-      accessDeniedMsg: 'இந்தப் பகுதியை அணுக உங்களுக்கு ஆசிரியர் / நிர்வாகி அனுமதி தேவை.',
+      accessDeniedMsg: 'இந்தப் பகுதியை அணுக உங்களுக்கு அனுமதி தேவை.',
       demoHeader: 'விரைவு சோதனை கணக்குகள் (Demo Accounts):',
       loginSuccess: 'வெற்றிகரமாக உள்நுழைந்தீர்கள்!',
       loginError: 'தவறான மின்னஞ்சல் அல்லது கடவுச்சொல்!',
@@ -156,7 +160,6 @@
 
       localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
 
-      // Sync to Firestore if available
       if (this.db) {
         users.forEach(u => {
           this.db.collection('users').doc(u.email.toLowerCase()).set(u, { merge: true }).catch(() => {});
@@ -205,7 +208,6 @@
           subscriptionStatus: found.role === ROLES.GUEST ? 'inactive' : 'active'
         };
 
-        // Save to local storage DB if missing
         if (!users.some(u => u.email.toLowerCase() === cleanEmail)) {
           users.push(found);
           localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
@@ -268,7 +270,8 @@
       const user = this.currentUser;
       const isGuest = user.role === ROLES.GUEST;
       const isAdmin = user.role === ROLES.ADMIN || user.role === ROLES.TEACHER;
-      const isSubscriber = user.role === ROLES.LEARNER || isAdmin;
+      const isLearner = user.role === ROLES.LEARNER;
+      const isSubscriber = isLearner || isAdmin;
       
       let roleLabel = I18N.ta.guest;
       if (user.role === ROLES.ADMIN) roleLabel = I18N.ta.admin;
@@ -289,9 +292,11 @@
             ${
               isAdmin
                 ? `<a href="admin.html" class="header-btn" style="background:#f59e0b; color:#fff;">📊 ${I18N.ta.adminDashboard}</a>`
-                : (!isSubscriber
-                  ? `<button class="header-btn header-btn-upgrade" onclick="TamilAuth.openCheckoutModal()">💳 ${I18N.ta.subscribe}</button>`
-                  : '')
+                : (isLearner
+                  ? `<a href="learner-dashboard.html" class="header-btn" style="background:#10b981; color:#fff;">🎓 ${I18N.ta.learnerDashboard}</a>`
+                  : (!isSubscriber
+                    ? `<button class="header-btn header-btn-upgrade" onclick="TamilAuth.openCheckoutModal()">💳 ${I18N.ta.subscribe}</button>`
+                    : ''))
             }
             ${
               isGuest
@@ -364,10 +369,11 @@
           <div class="access-denied-icon">🔒</div>
           <h2 class="access-denied-title">${I18N.ta.accessDeniedTitle}</h2>
           <p class="access-denied-desc">
-            "${currentFile}" பகுதியை அணுக <strong>ஆசிரியர் / நிர்வாகி</strong> அனுமதி தேவை.<br>
-            தயவுசெய்து ஆசிரியர் கணக்கில் உள்நுழையவும்.
+            "${currentFile}" பகுதியை அணுக <strong>தமிழ் கற்றல் சந்தா</strong> தேவை.<br>
+            தயவுசெய்து சந்தா செலுத்தவும் அல்லது கணக்கில் உள்நுழையவும்.
           </p>
           <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+            <button class="header-btn header-btn-upgrade" onclick="TamilAuth.openCheckoutModal()">💳 சந்தா செலுத்துங்கள் ($9.90/மாதம்)</button>
             <button class="header-btn" style="background:#4f46e5; color:#fff;" onclick="TamilAuth.openModal('login')">🔑 உள்நுழைவு</button>
             <a href="index.html" class="header-btn header-btn-secondary" style="background:#f3f4f6; color:#374151;">🏠 முகப்பு</a>
           </div>
@@ -395,7 +401,7 @@
             <form id="auth-form-login" onsubmit="TamilAuth.handleLogin(event)">
               <div class="auth-form-group">
                 <label>${I18N.ta.emailLabel}</label>
-                <input type="email" id="login-email" class="auth-form-input" placeholder="student@tamil.app" required />
+                <input type="email" id="login-email" class="auth-form-input" placeholder="student@tamilapp.com" required />
               </div>
               <div class="auth-form-group">
                 <label>${I18N.ta.passwordLabel}</label>
@@ -575,7 +581,13 @@
         this.showAlert(I18N.ta.loginSuccess, 'success');
         setTimeout(() => {
           this.closeModal('auth');
-          window.location.reload();
+          if (res.user.role === ROLES.LEARNER) {
+            window.location.href = 'learner-dashboard.html';
+          } else if (res.user.role === ROLES.ADMIN || res.user.role === ROLES.TEACHER) {
+            window.location.href = 'admin.html';
+          } else {
+            window.location.reload();
+          }
         }, 600);
       } else {
         this.showAlert(res.message, 'error');
@@ -635,9 +647,43 @@
         
         setTimeout(() => {
           this.closeModal('checkout');
-          window.location.reload();
+          window.location.href = 'learner-dashboard.html';
         }, 1200);
       }, 1000);
+    }
+
+    /* ---------- Learner Progress Helper ---------- */
+    getLearnerProgress() {
+      const defaultProgress = {
+        completedModules: [
+          '01_alphabets_with_sound.html',
+          '02_mei_plus_uyir.html',
+          '03_letter_joining.html',
+          '04_reading_words.html',
+          '05_english_to_tamil.html',
+          '06_matching_words.html',
+          '07_jumbled_letters.html',
+          '08_flip_match_cards.html',
+          '16_writing_alphabets.html',
+          '18_dictation.html',
+          '20_word_search.html',
+          '29_catch_correct_word.html'
+        ],
+        streakDays: 4,
+        totalPoints: 2850,
+        badges: [
+          { id: 'b1', name: 'எழுத்துச் சிற்பி', icon: '🥇', desc: 'தமிழ் எழுத்துக்களைக் கற்று முடித்தார்', unlocked: true },
+          { id: 'b2', name: 'சொல் வேந்தன்', icon: '🥈', desc: '100 தமிழ் வார்த்தைகளைப் பொருத்தியவர்', unlocked: true },
+          { id: 'b3', name: 'வேகப் புயல்', icon: '🥉', desc: '5 நிமிட வார்த்தை தேடலில் வெற்றி பெற்றவர்', unlocked: true },
+          { id: 'b4', name: 'இலக்கண மேதை', icon: '🎯', desc: 'இலக்கணப் பயிற்சிகளில் 100% மதிப்பெண்', unlocked: false }
+        ],
+        highScores: [
+          { game: '5 நிமிட வார்த்தை தேடல்', score: '1,450 புள்ளிகள்', date: 'இன்று' },
+          { game: 'சொல்வதை எழுதுதல் (Dictation)', score: '98% துல்லியம்', date: 'நேற்று' },
+          { game: 'நினைவில் நிற்பவை (Flip Match)', score: '28 வினாடிகள்', date: '3 நாட்களுக்கு முன்' }
+        ]
+      };
+      return defaultProgress;
     }
 
     /* ---------- Admin Analytics & Firestore User Management ---------- */
