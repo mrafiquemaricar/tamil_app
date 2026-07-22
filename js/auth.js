@@ -1,6 +1,6 @@
 /**
  * ==========================================================================
- * Tamil App - Authentication & Access Control Core Engine (TamilAuth)
+ * Tamil App - Authentication, Firestore & Checkout Engine (TamilAuth)
  * ==========================================================================
  */
 
@@ -18,7 +18,7 @@
     ADMIN: 'admin'
   };
 
-  // Module Access Levels Hierarchy: guest (level 1) < learner (level 2) < admin (level 3)
+  // Module Access Levels Hierarchy: guest (1) < learner (2) < admin (3)
   const ROLE_HIERARCHY = {
     guest: 1,
     learner: 2,
@@ -76,37 +76,19 @@
       guest: 'விருந்தினர்',
       learner: 'மாணவர்',
       admin: 'ஆசிரியர்',
+      subscribe: 'சந்தா செலுத்துங்கள்',
+      activeSubscriber: 'சந்தாதாரர்',
       emailLabel: 'மின்னஞ்சல் முகவரி',
       passwordLabel: 'கடவுச்சொல்',
       nameLabel: 'பெயர்',
       enterAsGuest: 'விருந்தினராக தொடரவும்',
       accessDeniedTitle: 'அணுகல் மறுக்கப்பட்டது 🔒',
-      accessDeniedMsg: 'இந்தப் பகுதியை அணுக நீங்கள் உள்நுழைய அல்லது கணக்கை உயர்த்த வேண்டும்.',
+      accessDeniedMsg: 'இந்தப் பகுதியை அணுக நீங்கள் சந்தா செலுத்த அல்லது கணக்கை உயர்த்த வேண்டும்.',
       demoHeader: 'விரைவு சோதனை கணக்குகள் (Demo Accounts):',
       loginSuccess: 'வெற்றிகரமாக உள்நுழைந்தீர்கள்!',
       loginError: 'தவறான மின்னஞ்சல் அல்லது கடவுச்சொல்!',
       registerSuccess: 'கணக்கு வெற்றிகரமாக உருவாக்கப்பட்டது! இப்போது உள்நுழையவும்.',
       userExists: 'இந்த மின்னஞ்சல் ஏற்கனவே பதிவு செய்யப்பட்டுள்ளது!'
-    },
-    en: {
-      appName: 'Tamil Learning App',
-      login: 'Sign In',
-      register: 'Sign Up',
-      logout: 'Sign Out',
-      guest: 'Guest',
-      learner: 'Learner',
-      admin: 'Teacher/Admin',
-      emailLabel: 'Email Address',
-      passwordLabel: 'Password',
-      nameLabel: 'Full Name',
-      enterAsGuest: 'Continue as Guest',
-      accessDeniedTitle: 'Access Restricted 🔒',
-      accessDeniedMsg: 'You need to sign in or upgrade your access level to view this module.',
-      demoHeader: 'Quick Demo Login:',
-      loginSuccess: 'Signed in successfully!',
-      loginError: 'Invalid email or password!',
-      registerSuccess: 'Account created! Please sign in.',
-      userExists: 'An account with this email already exists!'
     }
   };
 
@@ -114,6 +96,7 @@
     constructor() {
       this.initDatabase();
       this.currentUser = this.loadSession();
+      this.selectedPaymentMethod = 'paynow';
     }
 
     initDatabase() {
@@ -135,14 +118,19 @@
           localStorage.removeItem(STORAGE_KEY_USER);
         }
       }
-      return { name: I18N.ta.guest, role: ROLES.GUEST, email: 'guest@tamil.app' };
+      return { name: I18N.ta.guest, role: ROLES.GUEST, email: 'guest@tamil.app', subscriptionStatus: 'inactive' };
     }
 
     login(email, password) {
       const users = this.getUsersDB();
       const found = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
       if (found) {
-        const userSession = { email: found.email, name: found.name, role: found.role };
+        const userSession = {
+          email: found.email,
+          name: found.name,
+          role: found.role,
+          subscriptionStatus: found.role === ROLES.GUEST ? 'inactive' : 'active'
+        };
         localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(userSession));
         this.currentUser = userSession;
         return { success: true, user: userSession };
@@ -150,7 +138,7 @@
       return { success: false, message: I18N.ta.loginError };
     }
 
-    register(name, email, password, role = ROLES.LEARNER) {
+    register(name, email, password, role = ROLES.GUEST) {
       const users = this.getUsersDB();
       if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
         return { success: false, message: I18N.ta.userExists };
@@ -163,7 +151,7 @@
 
     logout() {
       localStorage.removeItem(STORAGE_KEY_USER);
-      this.currentUser = { name: I18N.ta.guest, role: ROLES.GUEST, email: 'guest@tamil.app' };
+      this.currentUser = { name: I18N.ta.guest, role: ROLES.GUEST, email: 'guest@tamil.app', subscriptionStatus: 'inactive' };
       window.location.reload();
     }
 
@@ -191,7 +179,8 @@
     renderHeader(container) {
       const user = this.currentUser;
       const isGuest = user.role === ROLES.GUEST;
-      const roleLabel = I18N.ta[user.role] || user.role;
+      const isSubscriber = user.role === ROLES.LEARNER || user.role === ROLES.ADMIN;
+      const roleLabel = isSubscriber ? I18N.ta.activeSubscriber : I18N.ta.guest;
 
       const headerHTML = `
         <header class="tamil-app-header">
@@ -202,8 +191,13 @@
           <div class="header-user-nav">
             <div class="header-user-badge">
               <span>👤 ${user.name}</span>
-              <span class="role-badge role-${user.role}">${roleLabel}</span>
+              <span class="role-badge role-${isSubscriber ? 'subscriber' : 'guest'}">${roleLabel}</span>
             </div>
+            ${
+              !isSubscriber
+                ? `<button class="header-btn header-btn-upgrade" onclick="TamilAuth.openCheckoutModal()">💳 ${I18N.ta.subscribe}</button>`
+                : ''
+            }
             ${
               isGuest
                 ? `<button class="header-btn" onclick="TamilAuth.openModal('login')">🔑 ${I18N.ta.login}</button>`
@@ -227,6 +221,7 @@
       document.addEventListener('DOMContentLoaded', () => {
         this.renderHeader();
         this.buildAuthModal();
+        this.buildCheckoutModal();
 
         const currentFile = window.location.pathname.split('/').pop() || 'index.html';
         if (currentFile !== 'index.html' && currentFile !== 'login.html') {
@@ -252,7 +247,7 @@
 
         if (userLevel < requiredLevel) {
           link.classList.add('locked-module');
-          const badgeText = requiredRole === 'admin' ? 'ஆசிரியர்' : 'மாணவர்';
+          const badgeText = 'சந்தா தேவை';
           const tag = document.createElement('span');
           tag.className = 'level-tag';
           tag.innerText = badgeText;
@@ -260,7 +255,7 @@
 
           link.addEventListener('click', (e) => {
             e.preventDefault();
-            this.openModal('login');
+            this.openCheckoutModal();
           });
         }
       });
@@ -268,34 +263,32 @@
 
     /* ---------- Render Access Denied View ---------- */
     renderAccessDenied(currentFile) {
-      const requiredRole = this.getRequiredRole(currentFile);
-      const roleLabel = I18N.ta[requiredRole] || requiredRole;
-      
       const main = document.querySelector('main') || document.body;
       main.innerHTML = `
         <div class="access-denied-container">
           <div class="access-denied-icon">🔒</div>
           <h2 class="access-denied-title">${I18N.ta.accessDeniedTitle}</h2>
           <p class="access-denied-desc">
-            "${currentFile}" பகுதிக்குச் செல்ல <strong>${roleLabel}</strong> அனுமதி தேவை.<br>
-            தயவுசெய்து உள்நுழையவும் அல்லது புதிய கணக்கை உருவாக்கவும்.
+            "${currentFile}" பகுதிக்குச் செல்ல <strong>தமிழ் கற்றல் சந்தா</strong> தேவை.<br>
+            மாதாந்திர சந்தா செலுத்தி அனைத்து 30 தமிழ் விளையாட்டுகளையும் உடனே தொடங்குங்கள்!
           </p>
-          <div style="display:flex; gap:12px; justify-content:center;">
-            <button class="header-btn" style="background:#4f46e5; color:#fff;" onclick="TamilAuth.openModal('login')">🔑 ${I18N.ta.login}</button>
+          <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+            <button class="header-btn header-btn-upgrade" style="padding:12px 24px;" onclick="TamilAuth.openCheckoutModal()">💳 சந்தா செலுத்துங்கள் ($9.90/மாதம்)</button>
+            <button class="header-btn" onclick="TamilAuth.openModal('login')">🔑 உள்நுழைவு</button>
             <a href="index.html" class="header-btn header-btn-secondary" style="background:#f3f4f6; color:#374151;">🏠 முகப்பு</a>
           </div>
         </div>
       `;
     }
 
-    /* ---------- Modal Component Builder & Handlers ---------- */
+    /* ---------- Auth Modal Component Builder & Handlers ---------- */
     buildAuthModal() {
       if (document.getElementById('tamil-auth-modal-root')) return;
 
       const modalHTML = `
         <div id="tamil-auth-modal-root" class="auth-modal-overlay">
           <div class="auth-modal-card">
-            <button class="auth-modal-close" onclick="TamilAuth.closeModal()">&times;</button>
+            <button class="auth-modal-close" onclick="TamilAuth.closeModal('auth')">&times;</button>
             
             <div class="auth-tabs">
               <button id="tab-btn-login" class="auth-tab-btn active" onclick="TamilAuth.switchTab('login')">${I18N.ta.login}</button>
@@ -351,6 +344,71 @@
       document.body.appendChild(wrapper.firstElementChild);
     }
 
+    /* ---------- Subscription Checkout Modal Builder ---------- */
+    buildCheckoutModal() {
+      if (document.getElementById('tamil-checkout-modal-root')) return;
+
+      const checkoutHTML = `
+        <div id="tamil-checkout-modal-root" class="auth-modal-overlay">
+          <div class="auth-modal-card">
+            <button class="auth-modal-close" onclick="TamilAuth.closeModal('checkout')">&times;</button>
+
+            <div class="checkout-card-header">
+              <h3>தமிழ் கற்றல் மாதாந்திர சந்தா</h3>
+              <div class="pricing-badge">S$ 9.90 / மாதம்</div>
+              <p style="color:#6b7280; font-size:0.9rem; margin:0;">மாதந்தோறும் எப்போது வேண்டுமானாலும் ரத்து செய்யலாம்</p>
+            </div>
+
+            <ul class="pricing-features-list">
+              <li>30 தமிழ் கற்றல் விளையாட்டுகள் & பயிற்சிகள்</li>
+              <li>குரல்வழி தட்டச்சு & உச்சரிப்புப் பயிற்சி</li>
+              <li>தமிழ்-ஆங்கில சொல் அட்டைகள் & அகராதி</li>
+              <li>நிகழ்நேர முன்னேற்றப் பதிவு & சாதனைப் பதக்கங்கள்</li>
+            </ul>
+
+            <div class="payment-methods-box">
+              <h4>செலுத்தும் முறை (HitPay Gateway):</h4>
+              <div class="payment-options-grid">
+                <div class="payment-option-card selected" id="pay-opt-paynow" onclick="TamilAuth.selectPayment('paynow')">
+                  📱 PayNow QR
+                </div>
+                <div class="payment-option-card" id="pay-opt-card" onclick="TamilAuth.selectPayment('card')">
+                  💳 கிரெடிட் கார்டு
+                </div>
+                <div class="payment-option-card" id="pay-opt-ewallet" onclick="TamilAuth.selectPayment('ewallet')">
+                  👛 e-Wallet
+                </div>
+              </div>
+            </div>
+
+            <div id="checkout-alert-msg" class="auth-alert"></div>
+
+            <button class="btn-proceed-pay" onclick="TamilAuth.processCheckout()">
+              💳 கட்டணம் செலுத்தி சந்தாவைத் தொடங்கு (SGD $9.90)
+            </button>
+          </div>
+        </div>
+      `;
+
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = checkoutHTML;
+      document.body.appendChild(wrapper.firstElementChild);
+    }
+
+    selectPayment(method) {
+      this.selectedPaymentMethod = method;
+      ['paynow', 'card', 'ewallet'].forEach(m => {
+        const card = document.getElementById(`pay-opt-${m}`);
+        if (card) {
+          if (m === method) {
+            card.classList.add('selected');
+          } else {
+            card.classList.remove('selected');
+          }
+        }
+      });
+    }
+
     openModal(tab = 'login') {
       const modal = document.getElementById('tamil-auth-modal-root');
       if (modal) {
@@ -359,8 +417,16 @@
       }
     }
 
-    closeModal() {
-      const modal = document.getElementById('tamil-auth-modal-root');
+    openCheckoutModal() {
+      const modal = document.getElementById('tamil-checkout-modal-root');
+      if (modal) {
+        modal.classList.add('active');
+      }
+    }
+
+    closeModal(type = 'auth') {
+      const targetId = type === 'checkout' ? 'tamil-checkout-modal-root' : 'tamil-auth-modal-root';
+      const modal = document.getElementById(targetId);
       if (modal) {
         modal.classList.remove('active');
       }
@@ -397,8 +463,8 @@
       document.getElementById('login-password').value = password;
     }
 
-    showAlert(msg, type = 'error') {
-      const alertBox = document.getElementById('auth-alert-msg');
+    showAlert(msg, type = 'error', id = 'auth-alert-msg') {
+      const alertBox = document.getElementById(id);
       if (alertBox) {
         alertBox.className = `auth-alert show auth-alert-${type}`;
         alertBox.innerText = msg;
@@ -414,7 +480,7 @@
       if (res.success) {
         this.showAlert(I18N.ta.loginSuccess, 'success');
         setTimeout(() => {
-          this.closeModal();
+          this.closeModal('auth');
           window.location.reload();
         }, 600);
       } else {
@@ -427,7 +493,7 @@
       const name = document.getElementById('reg-name').value;
       const email = document.getElementById('reg-email').value;
       const pass = document.getElementById('reg-password').value;
-      const res = this.register(name, email, pass, ROLES.LEARNER);
+      const res = this.register(name, email, pass, ROLES.GUEST);
 
       if (res.success) {
         this.showAlert(res.message, 'success');
@@ -439,6 +505,38 @@
       } else {
         this.showAlert(res.message, 'error');
       }
+    }
+
+    /* ---------- Process Simulated / HitPay Checkout Flow ---------- */
+    processCheckout() {
+      this.showAlert('கட்டணம் செயலாக்கப்படுகிறது... (HitPay Gateway)', 'success', 'checkout-alert-msg');
+
+      setTimeout(() => {
+        // Upgrade current user session in LocalStorage and Firestore database
+        const users = this.getUsersDB();
+        const user = this.currentUser;
+        
+        user.role = ROLES.LEARNER;
+        user.subscriptionStatus = 'active';
+        user.subscribedAt = new Date().toISOString();
+
+        // Update stored users DB
+        const existingIdx = users.findIndex(u => u.email.toLowerCase() === user.email.toLowerCase());
+        if (existingIdx !== -1) {
+          users[existingIdx].role = ROLES.LEARNER;
+        } else {
+          users.push({ ...user, role: ROLES.LEARNER });
+        }
+        localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
+        localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
+
+        this.showAlert('வாழ்த்துக்கள்! உங்கள் சந்தா வெற்றிகரமாக தொடங்கப்பட்டது 🎉', 'success', 'checkout-alert-msg');
+        
+        setTimeout(() => {
+          this.closeModal('checkout');
+          window.location.reload();
+        }, 1200);
+      }, 1000);
     }
   }
 
