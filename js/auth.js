@@ -104,9 +104,29 @@
     }
 
     initDatabase() {
-      if (!localStorage.getItem(STORAGE_KEY_USERS_DB)) {
-        localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(INITIAL_USERS));
+      let users = [];
+      try {
+        users = JSON.parse(localStorage.getItem(STORAGE_KEY_USERS_DB) || '[]');
+      } catch (e) {
+        users = [];
       }
+
+      // Ensure default demo accounts (admin, student) always exist
+      INITIAL_USERS.forEach(defaultUser => {
+        const exists = users.some(u => u.email.toLowerCase() === defaultUser.email.toLowerCase());
+        if (!exists) {
+          users.push(defaultUser);
+        } else {
+          // Sync role and password for default admin/student
+          const idx = users.findIndex(u => u.email.toLowerCase() === defaultUser.email.toLowerCase());
+          if (idx !== -1 && (defaultUser.email === 'admin@tamil.app' || defaultUser.email === 'student@tamil.app')) {
+            users[idx].password = defaultUser.password;
+            users[idx].role = defaultUser.role;
+          }
+        }
+      });
+
+      localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
     }
 
     getUsersDB() {
