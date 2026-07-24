@@ -1,0 +1,161 @@
+/* ==========================================================================
+   Tamil App - Kavin Mascot Floating Assistant Stylesheet
+   ========================================================================== */
+
+#kavin-mascot-root {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9990;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  pointer-events: none;
+}
+
+#kavin-mascot-root * {
+  pointer-events: auto;
+}
+
+/* Speech Bubble Card */
+.mascot-speech-bubble {
+  background: #ffffff;
+  color: #1e1b4b;
+  border-radius: 18px;
+  padding: 16px 20px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18), 0 4px 10px rgba(0, 0, 0, 0.08);
+  border: 2px solid #e0e7ff;
+  max-width: 300px;
+  margin-bottom: 12px;
+  position: relative;
+  transform-origin: bottom right;
+  animation: mascotPopIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  text-align: left;
+}
+
+.mascot-speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  right: 28px;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid #ffffff;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.05));
+}
+
+.mascot-bubble-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 6px;
+}
+
+.mascot-name-badge {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #4f46e5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mascot-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mascot-action-btn {
+  background: #f1f5f9;
+  border: none;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+  color: #475569;
+}
+
+.mascot-action-btn:hover {
+  background: #e2e8f0;
+  color: #1e1b4b;
+}
+
+.mascot-speech-text {
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: #334155;
+  margin: 0;
+}
+
+/* Floating Mascot Avatar Icon */
+.mascot-avatar-wrapper {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.mascot-avatar-wrapper:hover {
+  transform: scale(1.08) rotate(-3deg);
+}
+
+.mascot-avatar-img {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3.5px solid #4f46e5;
+  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.35);
+  background: #ffffff;
+  display: block;
+}
+
+/* Notification Pulse Ring */
+.mascot-pulse-ring {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 18px;
+  height: 18px;
+  background: #10b981;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  animation: mascotPulse 2s infinite;
+}
+
+@keyframes mascotPopIn {
+  0% { opacity: 0; transform: scale(0.6) translateY(20px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes mascotPulse {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* Mobile Responsive Positioning */
+@media (max-width: 640px) {
+  #kavin-mascot-root {
+    bottom: 16px;
+    right: 16px;
+  }
+  .mascot-speech-bubble {
+    max-width: 250px;
+    padding: 12px 14px;
+  }
+  .mascot-avatar-img {
+    width: 64px;
+    height: 64px;
+  }
+}
