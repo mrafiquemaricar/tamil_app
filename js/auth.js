@@ -28,6 +28,15 @@
     admin: 3
   };
 
+  // HitPay Gateway Configuration
+  const HITPAY_CONFIG = {
+    environment: 'sandbox', // 'sandbox' or 'production'
+    apiKey: '', // Paste HitPay API Key here or enter in Sandbox Modal
+    salt: '',   // Paste HitPay Salt here
+    sandboxEndpoint: 'https://api.sandbox.hit-pay.com/v1/payment-requests',
+    productionEndpoint: 'https://api.hit-pay.com/v1/payment-requests'
+  };
+
   // Module Access Mapping
   const MODULE_ROLES = {
     'index.html': 'guest',
@@ -259,7 +268,6 @@
       if (user && user.role === ROLES.LEARNER && user.expiryDate) {
         const expiry = new Date(user.expiryDate);
         if (new Date() > expiry) {
-          // Subscription Expired: Shift role to guest
           user.role = ROLES.GUEST;
           user.subscriptionStatus = 'expired';
           localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
@@ -441,6 +449,8 @@
         this.renderHeader();
         this.buildAuthModal();
         this.buildCheckoutModal();
+        this.buildHitPaySandboxPortalModal();
+        this.checkHitPayCallback();
 
         const currentFile = this.getNormalizedPath();
         if (currentFile !== 'index.html' && currentFile !== 'login.html') {
@@ -451,6 +461,49 @@
           this.applyDashboardLocks();
         }
       });
+    }
+
+    /* ---------- Check HitPay Callback Params ---------- */
+    checkHitPayCallback() {
+      const params = new URLSearchParams(window.location.search);
+      const status = params.get('hitpay_status') || params.get('status');
+      const ref = params.get('reference') || params.get('ref');
+      const plan = params.get('plan') || 'annual';
+
+      if (status === 'completed' || status === 'success') {
+        const user = this.currentUser;
+        const daysToAdd = plan === 'annual' ? 365 : 30;
+        const hitpayRef = ref || ('HITPAY-SB-' + Math.floor(100000 + Math.random() * 900000));
+
+        user.role = ROLES.LEARNER;
+        user.subscriptionStatus = 'active';
+        user.planType = plan;
+        user.subscribedAt = new Date().toISOString();
+        user.expiryDate = new Date(new Date().getTime() + daysToAdd * 24 * 60 * 60 * 1000).toISOString();
+        user.paymentReference = hitpayRef;
+
+        localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
+
+        const users = this.getUsersDB();
+        const idx = users.findIndex(u => u.email.toLowerCase() === user.email.toLowerCase());
+        if (idx !== -1) {
+          users[idx] = { ...user };
+          localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
+        }
+
+        if (this.db) {
+          this.db.collection('users').doc(user.email.toLowerCase()).set({
+            role: ROLES.LEARNER,
+            subscriptionStatus: 'active',
+            planType: plan,
+            expiryDate: user.expiryDate,
+            paymentReference: hitpayRef
+          }, { merge: true }).catch(() => {});
+        }
+
+        // Clean query params
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
     }
 
     /* ---------- Apply Lock Icons on index.html Grid ---------- */
@@ -563,7 +616,7 @@
       document.body.appendChild(wrapper.firstElementChild);
     }
 
-    /* ---------- Subscription Plan Selector & HitPay Sandbox Checkout Modal Builder ---------- */
+    /* ---------- Subscription Plan Selector Modal ---------- */
     buildCheckoutModal() {
       if (document.getElementById('tamil-checkout-modal-root')) return;
 
@@ -575,7 +628,7 @@
 
             <div class="checkout-card-header">
               <h3>${isEn ? 'Choose Your Tamil Learning Pass' : 'தமிழ் கற்றல் சந்தா திட்டத்தைத் தேர்ந்தெடுக்கவும்'}</h3>
-              <p style="color:#6b7280; font-size:0.9rem; margin:6px 0 0 0;">${isEn ? 'Powered by HitPay Payment Gateway (Sandbox Test Mode)' : 'HitPay கட்டண வாயில் மூலம் பாதுகாப்பாக செலுத்தலாம்'}</p>
+              <p style="color:#6b7280; font-size:0.9rem; margin:6px 0 0 0;">${isEn ? 'Powered by HitPay Payment Gateway (Sandbox Mode)' : 'HitPay கட்டண வாயில் மூலம் பாதுகாப்பாக செலுத்தலாம்'}</p>
             </div>
 
             <!-- Subscription Plan Selection (Monthly vs Annual) -->
@@ -598,11 +651,11 @@
               <li>${isEn ? 'All 36 Tamil Games & Learning Modules' : '36 தமிழ் கற்றல் விளையாட்டுகள் & பயிற்சிகள்'}</li>
               <li>${isEn ? 'Native Tamil Audio Pronunciation (251 Files)' : '251 தமிழ் எழுத்துகள் & வார்த்தைகள் ஒலி உச்சரிப்பு'}</li>
               <li>${isEn ? 'Voice Typing & Speech Recognition' : 'குரல்வழி தட்டச்சு & உச்சரிப்புப் பயிற்சி'}</li>
-              <li>${isEn ? 'Automated Subscription Expiry & Renewal Alerts' : 'தானியங்கி சந்தா முடிவு & புதுப்பித்தல் விழிப்பூட்டல்'}</li>
+              <li>${isEn ? 'Automated Expiry & Renewal Alerts' : 'தானியங்கி சந்தா முடிவு & புதுப்பித்தல் விழிப்பூட்டல்'}</li>
             </ul>
 
             <div class="payment-methods-box">
-              <h4>${isEn ? 'Select Payment Method (HitPay Sandbox):' : 'செலுத்தும் முறை (HitPay Sandbox):'}</h4>
+              <h4>${isEn ? 'Select Payment Method (HitPay Gateway):' : 'செலுத்தும் முறை (HitPay Gateway):'}</h4>
               <div class="payment-options-grid">
                 <div class="payment-option-card selected" id="pay-opt-paynow" onclick="TamilAuth.selectPayment('paynow')">
                   📱 PayNow QR
@@ -627,6 +680,55 @@
 
       const wrapper = document.createElement('div');
       wrapper.innerHTML = checkoutHTML;
+      document.body.appendChild(wrapper.firstElementChild);
+    }
+
+    /* ---------- Interactive HitPay Sandbox Payment Portal Modal Builder ---------- */
+    buildHitPaySandboxPortalModal() {
+      if (document.getElementById('hitpay-sandbox-portal-root')) return;
+
+      const portalHTML = `
+        <div id="hitpay-sandbox-portal-root" class="auth-modal-overlay">
+          <div class="auth-modal-card" style="max-width:440px; border-top: 5px solid #0052cc;">
+            <button class="auth-modal-close" onclick="TamilAuth.closeModal('hitpay-sandbox')">&times;</button>
+
+            <div style="text-align:center; margin-bottom:16px;">
+              <div style="background:#0052cc; color:#ffffff; font-weight:900; display:inline-block; padding:4px 12px; border-radius:6px; font-size:0.8rem; letter-spacing:1px; margin-bottom:8px;">
+                HITPAY SANDBOX TEST PORTAL
+              </div>
+              <h3 style="margin:4px 0; color:#1e1b4b;">HitPay Payment Checkout</h3>
+              <p style="font-size:0.85rem; color:#64748b; margin:0;" id="sandbox-amount-label">Amount: SGD $99.00</p>
+            </div>
+
+            <!-- PayNow Simulated QR View -->
+            <div id="hitpay-qr-view" style="background:#f8fafc; border:2px dashed #cbd5e1; border-radius:14px; padding:20px; text-align:center; margin-bottom:16px;">
+              <div style="font-size:2.5rem; margin-bottom:6px;">📱</div>
+              <div style="font-weight:700; color:#1e1b4b; margin-bottom:4px;">Scan with PayNow App (Sandbox)</div>
+              <div style="font-size:0.75rem; color:#64748b; margin-bottom:12px;">Reference: <span id="sandbox-ref-id">HITPAY-SB-981245</span></div>
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=HITPAY-SANDBOX-PAYNOW-TEST" alt="PayNow QR Sandbox" style="border-radius:10px; border:1px solid #cbd5e1;" />
+            </div>
+
+            <!-- Simulated Credit Card Inputs -->
+            <div id="hitpay-card-view" style="display:none; background:#f8fafc; border:1px solid #cbd5e1; border-radius:14px; padding:16px; margin-bottom:16px; text-align:left;">
+              <div style="font-size:0.8rem; font-weight:700; color:#475569; margin-bottom:8px;">HitPay Test Credit Card Details:</div>
+              <input type="text" class="auth-form-input" value="4111 1111 1111 1111" readonly style="margin-bottom:8px; font-family:monospace;" />
+              <div style="display:flex; gap:8px;">
+                <input type="text" class="auth-form-input" value="12 / 28" readonly style="font-family:monospace;" />
+                <input type="text" class="auth-form-input" value="123" readonly style="font-family:monospace;" />
+              </div>
+            </div>
+
+            <div id="sandbox-portal-alert" class="auth-alert"></div>
+
+            <button class="btn-proceed-pay" style="background:#10b981;" onclick="TamilAuth.completeHitPaySandboxPayment()">
+              ✅ Complete Sandbox Payment
+            </button>
+          </div>
+        </div>
+      `;
+
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = portalHTML;
       document.body.appendChild(wrapper.firstElementChild);
     }
 
@@ -660,6 +762,18 @@
           }
         }
       });
+
+      const qrView = document.getElementById('hitpay-qr-view');
+      const cardView = document.getElementById('hitpay-card-view');
+      if (qrView && cardView) {
+        if (method === 'card') {
+          qrView.style.display = 'none';
+          cardView.style.display = 'block';
+        } else {
+          qrView.style.display = 'block';
+          cardView.style.display = 'none';
+        }
+      }
     }
 
     openModal(tab = 'login') {
@@ -678,7 +792,10 @@
     }
 
     closeModal(type = 'auth') {
-      const targetId = type === 'checkout' ? 'tamil-checkout-modal-root' : 'tamil-auth-modal-root';
+      let targetId = 'tamil-auth-modal-root';
+      if (type === 'checkout') targetId = 'tamil-checkout-modal-root';
+      else if (type === 'hitpay-sandbox') targetId = 'hitpay-sandbox-portal-root';
+
       const modal = document.getElementById(targetId);
       if (modal) {
         modal.classList.remove('active');
@@ -768,21 +885,70 @@
       }
     }
 
-    /* ---------- Process HitPay Sandbox Payment & Subscription Expiry Calculation ---------- */
+    /* ---------- Trigger HitPay Sandbox Payment Flow ---------- */
     processCheckout() {
       const isEn = this.lang === 'en';
       const plan = this.selectedPlan; // 'monthly' or 'annual'
-      const planPrice = plan === 'annual' ? '$99.00' : '$9.90';
-      const daysToAdd = plan === 'annual' ? 365 : 30;
-
+      const amount = plan === 'annual' ? '99.00' : '9.90';
       const hitpayRef = 'HITPAY-SB-' + Math.floor(100000 + Math.random() * 900000);
-      
-      const msg = isEn 
-        ? `Processing HitPay Sandbox Payment (${hitpayRef})...` 
-        : `HitPay கட்டண வாயிலில் செயலாக்கப்படுகிறது (${hitpayRef})...`;
-      this.showAlert(msg, 'success', 'checkout-alert-msg');
+
+      // Check if user provided a Sandbox API Key
+      if (HITPAY_CONFIG.apiKey) {
+        this.showAlert(isEn ? 'Calling HitPay Sandbox API...' : 'HitPay API அழைக்கப்படுகிறது...', 'success', 'checkout-alert-msg');
+        
+        const params = new URLSearchParams();
+        params.append('amount', amount);
+        params.append('currency', 'SGD');
+        params.append('email', this.currentUser.email || 'student@tamilapp.com');
+        params.append('purpose', `Tamil Learning ${plan === 'annual' ? 'Annual' : 'Monthly'} Pass`);
+        params.append('redirect_url', `https://tamilapp-3b8bf.web.app/learner-dashboard?hitpay_status=completed&ref=${hitpayRef}&plan=${plan}`);
+
+        fetch(HITPAY_CONFIG.sandboxEndpoint, {
+          method: 'POST',
+          headers: {
+            'X-BUSINESS-API-KEY': HITPAY_CONFIG.apiKey,
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: params
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.url) {
+            window.location.href = data.url;
+          } else {
+            this.openHitPaySandboxPortal(hitpayRef, amount, plan);
+          }
+        })
+        .catch(() => {
+          this.openHitPaySandboxPortal(hitpayRef, amount, plan);
+        });
+      } else {
+        this.openHitPaySandboxPortal(hitpayRef, amount, plan);
+      }
+    }
+
+    openHitPaySandboxPortal(ref, amount, plan) {
+      this.closeModal('checkout');
+      this.currentSandboxRef = ref;
+      this.currentSandboxPlan = plan;
+
+      const portal = document.getElementById('hitpay-sandbox-portal-root');
+      if (portal) {
+        document.getElementById('sandbox-amount-label').innerText = `Amount: SGD $${amount} (${plan === 'annual' ? 'Annual Pass' : 'Monthly Pass'})`;
+        document.getElementById('sandbox-ref-id').innerText = ref;
+        portal.classList.add('active');
+      }
+    }
+
+    completeHitPaySandboxPayment() {
+      const isEn = this.lang === 'en';
+      this.showAlert(isEn ? 'Verifying Sandbox Payment...' : 'கட்டணம் சரிபார்க்கப்படுகிறது...', 'success', 'sandbox-portal-alert');
 
       setTimeout(() => {
+        const ref = this.currentSandboxRef || ('HITPAY-SB-' + Math.floor(100000 + Math.random() * 900000));
+        const plan = this.currentSandboxPlan || 'annual';
+        const daysToAdd = plan === 'annual' ? 365 : 30;
+
         const users = this.getUsersDB();
         const user = this.currentUser;
         
@@ -794,17 +960,11 @@
         user.planType = plan;
         user.subscribedAt = now.toISOString();
         user.expiryDate = expiry.toISOString();
-        user.paymentReference = hitpayRef;
-        user.paymentMethod = this.selectedPaymentMethod;
+        user.paymentReference = ref;
 
         const existingIdx = users.findIndex(u => u.email.toLowerCase() === user.email.toLowerCase());
         if (existingIdx !== -1) {
-          users[existingIdx].role = ROLES.LEARNER;
-          users[existingIdx].subscriptionStatus = 'active';
-          users[existingIdx].planType = plan;
-          users[existingIdx].subscribedAt = user.subscribedAt;
-          users[existingIdx].expiryDate = user.expiryDate;
-          users[existingIdx].paymentReference = hitpayRef;
+          users[existingIdx] = { ...user };
         } else {
           users.push({ ...user });
         }
@@ -818,21 +978,17 @@
             planType: plan,
             subscribedAt: user.subscribedAt,
             expiryDate: user.expiryDate,
-            paymentReference: hitpayRef
+            paymentReference: ref
           }, { merge: true }).catch(() => {});
         }
 
-        const successMsg = isEn 
-          ? `Congratulations! ${plan === 'annual' ? '1-Year Annual' : '1-Month'} Subscription Activated (${hitpayRef}) 🎉` 
-          : `வாழ்த்துக்கள்! உங்கள் ${plan === 'annual' ? 'ஆண்டறிக்கை' : 'மாதாந்திர'} சந்தா வெற்றிகரமாக தொடங்கியது (${hitpayRef}) 🎉`;
-        
-        this.showAlert(successMsg, 'success', 'checkout-alert-msg');
-        
+        this.showAlert(isEn ? `Success! Payment Confirmed (${ref}) 🎉` : `வெற்றி! கட்டணம் உறுதிசெய்யப்பட்டது (${ref}) 🎉`, 'success', 'sandbox-portal-alert');
+
         setTimeout(() => {
-          this.closeModal('checkout');
-          window.location.href = 'learner-dashboard.html';
-        }, 1200);
-      }, 1200);
+          this.closeModal('hitpay-sandbox');
+          window.location.href = 'learner-dashboard.html?hitpay_status=completed';
+        }, 1000);
+      }, 1000);
     }
 
     /* ---------- Teacher & Student Data Helpers ---------- */
