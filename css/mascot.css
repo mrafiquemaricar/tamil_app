@@ -1,8 +1,8 @@
 /* ==========================================================================
-   Tamil App - Kavin Mascot Floating Assistant Stylesheet
+   Tamil App - Sam Mascot Floating Assistant Stylesheet
    ========================================================================== */
 
-#kavin-mascot-root {
+#sam-mascot-root, #kavin-mascot-root {
   position: fixed;
   bottom: 24px;
   right: 24px;
@@ -14,7 +14,7 @@
   pointer-events: none;
 }
 
-#kavin-mascot-root * {
+#sam-mascot-root *, #kavin-mascot-root * {
   pointer-events: auto;
 }
 
@@ -146,7 +146,7 @@
 
 /* Mobile Responsive Positioning */
 @media (max-width: 640px) {
-  #kavin-mascot-root {
+  #sam-mascot-root, #kavin-mascot-root {
     bottom: 16px;
     right: 16px;
   }

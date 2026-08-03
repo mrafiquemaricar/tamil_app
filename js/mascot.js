@@ -1,6 +1,6 @@
 /**
  * ==========================================================================
- * Tamil App - Kavin Mascot Floating Tutor Companion Engine
+ * Tamil App - Sam Mascot Floating Tutor Companion Engine
  * ==========================================================================
  */
 
@@ -10,8 +10,8 @@
   // Speech Bubble Messages Map per Page/Module
   const MASCOT_MESSAGES = {
     'index.html': {
-      ta: 'வணக்கம்! நான் கவின் 👦. 30 விளையாட்டுகள் மூலம் எளிதாக தமிழ் கற்கலாம் வாங்க!',
-      en: 'Hello! I am Kavin 👦. Let\'s learn Tamil through 30 fun games!'
+      ta: 'வணக்கம்! நான் சாம் 👦. 36 விளையாட்டுகள் மூலம் எளிதாக தமிழ் கற்கலாம் வாங்க!',
+      en: 'Hello! I am Sam 👦. Let\'s learn Tamil through 36 fun games!'
     },
     'learner-dashboard.html': {
       ta: 'அற்புதம்! 🌟 உங்கள் 4-நாள் தொடர் பயிற்சியைப் பார்த்து மகிழ்ச்சி!',
@@ -50,42 +50,31 @@
       en: 'Click on any Tamil word to hear its pronunciation! 🔊'
     },
     '32_vaarthai_sakkaram.html': {
-      ta: 'வார்த்தைச் சக்கரத்தை சுழற்றி தமிழ் வார்த்தைகளை அமைப்போம்! 🎡',
-      en: 'Spin the word wheel to form correct Tamil words! 🎡'
+      ta: 'வார்த்தைச் சக்கரத்தைச் சுழற்றி புதிய சொற்களை உருவாக்குங்கள்! 🎡',
+      en: 'Spin the word wheel to discover and form new Tamil words! 🎡'
     },
     '33_vaarthai_rayil.html': {
-      ta: 'வார்த்தை ரயிலில் சரியான பெட்டிகளை இணைப்போம்! 🚂',
-      en: 'Connect the train coaches with correct Tamil words! 🚂'
+      ta: 'சரியான சொற்களை இணைத்து தமிழ் வார்த்தை ரயிலை இயக்குங்கள்! 🚂',
+      en: 'Connect matching letters to build the Tamil Word Train! 🚂'
     },
     '34_mithakkum_baloon.html': {
-      ta: 'மிதக்கும் பலூனைத் தொட்டு சரியான தமிழ் வார்த்தையைப் பிடியுங்கள்! 🎈',
-      en: 'Tap the floating balloons to catch correct Tamil words! 🎈'
+      ta: 'மிதக்கும் பலூன்களில் சரியான தமிழ் எழுத்தைப் பிடியுங்கள்! 🎈',
+      en: 'Pop the floating balloons containing the correct Tamil letters! 🎈'
     },
     '35_vinveli_vettai.html': {
-      ta: 'விண்வெளி வேட்டையில் தமிழ் வார்த்தைகளைக் கண்டுபிடியுங்கள்! 🚀',
-      en: 'Explore space and hunt for correct Tamil words! 🚀'
+      ta: 'விண்வெளியில் மறைந்துள்ள தமிழ் சொற்களைக் வேட்டையாடுங்கள்! 🚀',
+      en: 'Embark on a space hunt to discover hidden Tamil vocabulary! 🚀'
     },
     '36_common_letter.html': {
-      ta: 'வார்த்தைகளுக்கு இடையேயான பொதுவான எழுத்தைக் கண்டுபிடியுங்கள்! 🔍',
-      en: 'Find the common letter hidden across words! 🔍'
-    },
-    'default': {
-      ta: 'வாருங்கள்! இந்தப் பயிற்சியை மகிழ்ச்சியாக செய்து முடிப்போம் 🎯',
-      en: 'Come on! Let\'s complete this fun exercise together 🎯'
+      ta: 'கொடுக்கப்பட்டுள்ள சொற்களில் பொதுவான தமிழ் எழுத்தைக் கண்டுபிடியுங்கள்! 🔍',
+      en: 'Identify the common Tamil letter across the given words! 🔍'
     }
   };
 
-  class KavinMascot {
+  class SamMascot {
     constructor() {
       this.isCollapsed = false;
-      this.currentFile = this.getNormalizedFilename();
       this.init();
-    }
-
-    getNormalizedFilename() {
-      const file = window.location.pathname.split('/').pop().split('?')[0] || 'index.html';
-      if (file === '' || file === '/') return 'index.html';
-      return file.includes('.') ? file : file + '.html';
     }
 
     init() {
@@ -94,33 +83,45 @@
       });
     }
 
+    getPageFilename() {
+      const path = window.location.pathname;
+      let filename = path.split('/').pop().split('?')[0] || 'index.html';
+      if (filename === '' || filename === '/') filename = 'index.html';
+      if (!filename.includes('.')) filename = filename + '.html';
+      return filename;
+    }
+
     getCurrentMessage() {
+      const file = this.getPageFilename();
       const lang = window.TamilAuth ? window.TamilAuth.getLang() : 'ta';
-      const msgObj = MASCOT_MESSAGES[this.currentFile] || MASCOT_MESSAGES['default'];
+      const msgObj = MASCOT_MESSAGES[file] || {
+        ta: 'வாருங்கள்! தமிழைக் கற்று மகிழ்வோம்! 🌟',
+        en: 'Welcome! Let\'s enjoy learning Tamil together! 🌟'
+      };
       return msgObj[lang] || msgObj['ta'];
     }
 
     renderWidget() {
-      if (document.getElementById('kavin-mascot-root')) return;
+      if (document.getElementById('sam-mascot-root') || document.getElementById('kavin-mascot-root')) return;
 
       const message = this.getCurrentMessage();
       const mascotHTML = `
-        <div id="kavin-mascot-root">
+        <div id="sam-mascot-root">
           <div id="mascot-bubble" class="mascot-speech-bubble">
             <div class="mascot-bubble-header">
               <div class="mascot-name-badge">
-                <span>👦 கவின் (Kavin)</span>
+                <span>👦 சாம் (Sam)</span>
               </div>
               <div class="mascot-controls">
-                <button class="mascot-action-btn" title="Speak Speech" onclick="KavinMascotEngine.speakMessage()">🔊</button>
-                <button class="mascot-action-btn" title="Close" onclick="KavinMascotEngine.toggleBubble()">&times;</button>
+                <button class="mascot-action-btn" title="Speak Speech" onclick="SamMascotEngine.speakMessage()">🔊</button>
+                <button class="mascot-action-btn" title="Close" onclick="SamMascotEngine.toggleBubble()">&times;</button>
               </div>
             </div>
             <p class="mascot-speech-text" id="mascot-text">${message}</p>
           </div>
 
-          <div class="mascot-avatar-wrapper" onclick="KavinMascotEngine.onAvatarClick()">
-            <img src="/images/kavin_mascot.jpg" alt="Kavin Mascot" class="mascot-avatar-img" />
+          <div class="mascot-avatar-wrapper" onclick="SamMascotEngine.onAvatarClick()">
+            <img src="/images/sam_mascot.jpg" alt="Sam Mascot" class="mascot-avatar-img" />
             <div class="mascot-pulse-ring"></div>
           </div>
         </div>
@@ -179,5 +180,6 @@
   }
 
   // Export Singleton
-  window.KavinMascotEngine = new KavinMascot();
+  window.SamMascotEngine = new SamMascot();
+  window.KavinMascotEngine = window.SamMascotEngine; // Backward compatibility
 })(window);
