@@ -31,8 +31,8 @@
   // HitPay Gateway Configuration
   const HITPAY_CONFIG = {
     environment: 'sandbox', // 'sandbox' or 'production'
-    apiKey: '', // Paste HitPay API Key here or enter in Sandbox Modal
-    salt: '',   // Paste HitPay Salt here
+    apiKey: 'test_c4eb1bef1b86437521e1656b72bc78727617d3b604bebf3119f54170be4f9d69',
+    salt: 'NA9sBmI6TtcN1C2n6ghFn7hJkNhy1Y6KyUUlJbGnpvM0oHcgDFdqksFNG9UZPS3j',
     sandboxEndpoint: 'https://api.sandbox.hit-pay.com/v1/payment-requests',
     productionEndpoint: 'https://api.hit-pay.com/v1/payment-requests'
   };
