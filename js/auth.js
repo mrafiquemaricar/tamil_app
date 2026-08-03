@@ -103,10 +103,10 @@
     { email: 'admin@tamilapp.com', name: 'ஆசிரியர் (Admin)', password: 'admin123', role: ROLES.ADMIN, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, joinedAt: '2026-07-01' },
     { email: 'teacher@tamil.app', name: 'ஆசிரியர் (Teacher)', password: 'teacher123', role: ROLES.TEACHER, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, joinedAt: '2026-07-05' },
     { email: 'teacher@tamilapp.com', name: 'ஆசிரியர் (Teacher)', password: 'teacher123', role: ROLES.TEACHER, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, joinedAt: '2026-07-05' },
-    { email: 'student@tamil.app', name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, joinedAt: '2026-07-15' },
-    { email: 'student@tamilapp.com', name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, joinedAt: '2026-07-15' },
-    { email: 'user1@example.com', name: 'கார்த்திக் (Karthik)', password: 'user123', role: ROLES.LEARNER, subscriptionStatus: 'active', planType: 'monthly', subscribedAt: now.toISOString(), expiryDate: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(), joinedAt: '2026-07-18' },
-    { email: 'user2@example.com', name: 'பிரியா (Priya)', password: 'user123', role: ROLES.GUEST, subscriptionStatus: 'inactive', planType: 'none', joinedAt: '2026-07-20' }
+    { email: 'student@tamil.app', name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, isMinor: true, parentName: 'சுந்தரம் (Sundaram)', parentEmail: 'parent@gmail.com', joinedAt: '2026-07-15' },
+    { email: 'student@tamilapp.com', name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, isMinor: true, parentName: 'சுந்தரம் (Sundaram)', parentEmail: 'parent@gmail.com', joinedAt: '2026-07-15' },
+    { email: 'user1@example.com', name: 'கார்த்திக் (Karthik)', password: 'user123', role: ROLES.LEARNER, subscriptionStatus: 'active', planType: 'monthly', subscribedAt: now.toISOString(), expiryDate: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(), isMinor: true, parentName: 'சுந்தரம் (Sundaram)', parentEmail: 'parent@gmail.com', joinedAt: '2026-07-18' },
+    { email: 'user2@example.com', name: 'பிரியா (Priya)', password: 'user123', role: ROLES.GUEST, subscriptionStatus: 'inactive', planType: 'none', isMinor: true, parentName: 'சுந்தரம் (Sundaram)', parentEmail: 'parent@gmail.com', joinedAt: '2026-07-20' }
   ];
 
   // Comprehensive Localization Dictionary
@@ -233,6 +233,11 @@
             users[idx].expiryDate = defaultUser.expiryDate;
             users[idx].planType = defaultUser.planType;
           }
+          if (defaultUser.parentEmail && !users[idx].parentEmail) {
+            users[idx].parentEmail = defaultUser.parentEmail;
+            users[idx].parentName = defaultUser.parentName;
+            users[idx].isMinor = defaultUser.isMinor;
+          }
         }
       });
 
@@ -247,6 +252,14 @@
 
     getUsersDB() {
       return JSON.parse(localStorage.getItem(STORAGE_KEY_USERS_DB) || '[]');
+    }
+
+    /* ---------- Parent-Child Multi-Child Helper ---------- */
+    getChildrenByParentEmail(parentEmail) {
+      if (!parentEmail) return [];
+      const cleanEmail = parentEmail.trim().toLowerCase();
+      const users = this.getUsersDB();
+      return users.filter(u => u.parentEmail && u.parentEmail.trim().toLowerCase() === cleanEmail);
     }
 
     loadSession() {
@@ -302,7 +315,7 @@
         } else if ((cleanEmail.startsWith('teacher@') || cleanEmail.includes('teacher')) && password === 'teacher123') {
           found = { email: cleanEmail, name: 'ஆசிரியர் (Teacher)', password: 'teacher123', role: ROLES.TEACHER, subscriptionStatus: 'active', planType: 'annual', expiryDate: oneYearLater };
         } else if ((cleanEmail.startsWith('student@') || cleanEmail.includes('student')) && password === 'student123') {
-          found = { email: cleanEmail, name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active', planType: 'annual', expiryDate: oneYearLater };
+          found = { email: cleanEmail, name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active', planType: 'annual', expiryDate: oneYearLater, isMinor: true, parentName: 'சுந்தரம் (Sundaram)', parentEmail: 'parent@gmail.com' };
         }
       }
 
@@ -314,7 +327,10 @@
           subscriptionStatus: found.role === ROLES.GUEST ? 'inactive' : 'active',
           planType: found.planType || (found.role === ROLES.GUEST ? 'none' : 'annual'),
           subscribedAt: found.subscribedAt || new Date().toISOString(),
-          expiryDate: found.expiryDate || oneYearLater
+          expiryDate: found.expiryDate || oneYearLater,
+          isMinor: found.isMinor || false,
+          parentName: found.parentName || '',
+          parentEmail: found.parentEmail || ''
         };
 
         if (!users.some(u => u.email.toLowerCase() === cleanEmail)) {
@@ -334,12 +350,23 @@
       return { success: false, message: this.t('loginError') };
     }
 
-    register(name, email, password, role = ROLES.GUEST) {
+    register(name, email, password, role = ROLES.GUEST, parentInfo = {}) {
       const users = this.getUsersDB();
       if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
         return { success: false, message: this.t('userExists') };
       }
-      const newUser = { name, email, password, role, subscriptionStatus: 'inactive', planType: 'none', joinedAt: new Date().toISOString().split('T')[0] };
+      const newUser = { 
+        name, 
+        email, 
+        password, 
+        role, 
+        subscriptionStatus: 'inactive', 
+        planType: 'none', 
+        isMinor: parentInfo.isMinor || false,
+        parentName: parentInfo.parentName || '',
+        parentEmail: parentInfo.parentEmail || '',
+        joinedAt: new Date().toISOString().split('T')[0] 
+      };
       users.push(newUser);
       localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
 
@@ -552,10 +579,11 @@
       `;
     }
 
-    /* ---------- Auth Modal Component Builder ---------- */
+    /* ---------- Auth Modal Component Builder (With Parent-Child & Under 16 Fields) ---------- */
     buildAuthModal() {
       if (document.getElementById('tamil-auth-modal-root')) return;
 
+      const isEn = this.lang === 'en';
       const modalHTML = `
         <div id="tamil-auth-modal-root" class="auth-modal-overlay">
           <div class="auth-modal-card">
@@ -581,20 +609,40 @@
               <button type="submit" class="auth-submit-btn">${this.t('login')}</button>
             </form>
 
-            <!-- Register Form -->
+            <!-- Register Form with Under 16 & Parent Fields -->
             <form id="auth-form-register" style="display:none;" onsubmit="TamilAuth.handleRegister(event)">
               <div class="auth-form-group">
-                <label>${this.t('nameLabel')}</label>
-                <input type="text" id="reg-name" class="auth-form-input" placeholder="Your Name" required />
+                <label>${isEn ? 'Learner Full Name' : 'மாணவர் பெயர்'}</label>
+                <input type="text" id="reg-name" class="auth-form-input" placeholder="e.g. Karthik" required />
               </div>
               <div class="auth-form-group">
                 <label>${this.t('emailLabel')}</label>
-                <input type="email" id="reg-email" class="auth-form-input" placeholder="user@example.com" required />
+                <input type="email" id="reg-email" class="auth-form-input" placeholder="karthik@example.com" required />
               </div>
               <div class="auth-form-group">
                 <label>${this.t('passwordLabel')}</label>
                 <input type="password" id="reg-password" class="auth-form-input" placeholder="••••••••" required />
               </div>
+
+              <!-- Under 16 Checkbox & Parent Info Accordion -->
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px; margin-bottom:14px;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; font-size:0.9rem; color:#1e1b4b;">
+                  <input type="checkbox" id="reg-is-minor" onchange="TamilAuth.toggleParentFields(this.checked)" />
+                  👨‍👩‍👧 ${isEn ? 'Learner is under 16 years old' : 'மாணவர் 16 வயதிற்கு உட்பட்டவர்'}
+                </label>
+
+                <div id="reg-parent-fields" style="display:none; margin-top:12px; border-top:1px dashed #cbd5e1; padding-top:10px;">
+                  <div class="auth-form-group" style="margin-bottom:8px;">
+                    <label style="font-size:0.8rem; color:#475569;">${isEn ? 'Parent / Guardian Name' : 'பெற்றோர் / காப்பாளர் பெயர்'}</label>
+                    <input type="text" id="reg-parent-name" class="auth-form-input" placeholder="e.g. Sundaram" />
+                  </div>
+                  <div class="auth-form-group" style="margin-bottom:4px;">
+                    <label style="font-size:0.8rem; color:#475569;">${isEn ? 'Parent Email Address' : 'பெற்றோர் மின்னஞ்சல் முகவரி'}</label>
+                    <input type="email" id="reg-parent-email" class="auth-form-input" placeholder="parent@gmail.com" />
+                  </div>
+                </div>
+              </div>
+
               <button type="submit" class="auth-submit-btn">${this.t('register')}</button>
             </form>
 
@@ -614,6 +662,13 @@
       const wrapper = document.createElement('div');
       wrapper.innerHTML = modalHTML;
       document.body.appendChild(wrapper.firstElementChild);
+    }
+
+    toggleParentFields(isChecked) {
+      const parentDiv = document.getElementById('reg-parent-fields');
+      if (parentDiv) {
+        parentDiv.style.display = isChecked ? 'block' : 'none';
+      }
     }
 
     /* ---------- Subscription Plan Selector Modal ---------- */
@@ -883,10 +938,14 @@
       const name = document.getElementById('reg-name').value;
       const email = document.getElementById('reg-email').value;
       const pass = document.getElementById('reg-password').value;
-      const res = this.register(name, email, pass, ROLES.GUEST);
+      
+      const isMinor = document.getElementById('reg-is-minor') ? document.getElementById('reg-is-minor').checked : false;
+      const parentName = isMinor && document.getElementById('reg-parent-name') ? document.getElementById('reg-parent-name').value : '';
+      const parentEmail = isMinor && document.getElementById('reg-parent-email') ? document.getElementById('reg-parent-email').value : '';
+
+      const res = this.register(name, email, pass, ROLES.GUEST, { isMinor, parentName, parentEmail });
 
       if (res.success) {
-        // Automatically log user in
         this.login(email, pass);
         this.showAlert(res.message, 'success');
 

@@ -192,6 +192,19 @@
         </div>
       </div>
 
+      <!-- Parent / Guardian Contact & Linked Children Card -->
+      <div class="progress-overview-card" id="parent-info-card" style="background:#f8fafc; border-left: 5px solid #4f46e5; display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div>
+            <div style="font-weight:700; color:#1e1b4b; font-size:1.05rem;" id="parent-name-title">👨‍👩‍👧 பெற்றோர் / காப்பாளர் (Parent / Guardian)</div>
+            <div style="font-size:0.9rem; color:#64748b;" id="parent-email-desc">மின்னஞ்சல்: parent@gmail.com</div>
+          </div>
+          <div id="linked-children-pills" style="display:flex; gap:8px; flex-wrap:wrap;">
+            <!-- Dynamically Rendered Linked Children Pills -->
+          </div>
+        </div>
+      </div>
+
       <!-- Overall Progress Card -->
       <div class="progress-overview-card">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
@@ -265,6 +278,26 @@
 
       document.getElementById('sub-plan-title').innerText = planTitle;
       document.getElementById('sub-expiry-desc').innerText = `செல்லுபடியாகும் நாள்: ${expDate} (Expiry Date) • Reference: ${ref}`;
+
+      // Parent Contact & Multi-Child Linking Render
+      if (user.parentEmail || user.parentName) {
+        const parentCard = document.getElementById('parent-info-card');
+        if (parentCard) {
+          parentCard.style.display = 'block';
+          document.getElementById('parent-name-title').innerText = `👨‍👩‍👧 பெற்றோர் / காப்பாளர்: ${user.parentName || 'Parent'}`;
+          document.getElementById('parent-email-desc').innerText = `மின்னஞ்சல்: ${user.parentEmail || 'Not Provided'}`;
+
+          const children = TamilAuth.getChildrenByParentEmail(user.parentEmail);
+          const pillsDiv = document.getElementById('linked-children-pills');
+          if (pillsDiv && children.length > 0) {
+            pillsDiv.innerHTML = `<span style="font-size:0.8rem; font-weight:700; color:#475569; width:100%;">இணைக்கப்பட்ட குழந்தைகள் (Linked Children):</span>` + children.map(c => `
+              <span style="background:${c.email.toLowerCase() === user.email.toLowerCase() ? '#4f46e5' : '#e0e7ff'}; color:${c.email.toLowerCase() === user.email.toLowerCase() ? '#ffffff' : '#3730a3'}; padding:4px 10px; border-radius:20px; font-size:0.8rem; font-weight:700;">
+                👦 ${c.name}
+              </span>
+            `).join('');
+          }
+        }
+      }
 
       const totalMods = 36;
       const completedCount = progressData.completedModules.length;

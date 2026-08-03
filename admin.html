@@ -99,6 +99,7 @@
                 <tr>
                   <th>பெயர் (Name)</th>
                   <th>மின்னஞ்சல் (Email)</th>
+                  <th>பெற்றோர் தொடர்பு (Parent Contact)</th>
                   <th>பங்கு (Role)</th>
                   <th>சந்தா திட்டம் (Plan & Expiry)</th>
                   <th>செயல்கள் (Actions)</th>
@@ -171,11 +172,13 @@
         const isActive = user.subscriptionStatus === 'active' || user.role === 'learner' || user.role === 'teacher' || user.role === 'admin';
         const planName = user.planType === 'annual' ? '🌟 Annual ($99)' : (user.planType === 'monthly' ? '📅 Monthly ($9.90)' : '○ Free');
         const expStr = user.expiryDate ? new Date(user.expiryDate).toLocaleDateString('ta-IN', { year:'numeric', month:'short', day:'numeric' }) : 'N/A';
+        const parentContact = user.parentEmail ? `👨‍👩‍👧 ${user.parentName || 'Parent'}<br><span style="font-size:0.75rem; color:#64748b;">${user.parentEmail}</span>` : '<span style="color:#94a3b8; font-size:0.8rem;">Adult / Self</span>';
 
         return `
           <tr>
-            <td><strong>${user.name}</strong></td>
+            <td><strong>${user.name}</strong> ${user.isMinor ? '<span style="background:#e0e7ff; color:#3730a3; font-size:0.7rem; padding:1px 6px; border-radius:8px;">Under 16</span>' : ''}</td>
             <td>${user.email}</td>
+            <td>${parentContact}</td>
             <td>
               <span class="role-badge role-${roleBadgeClass}">
                 ${roleText}
