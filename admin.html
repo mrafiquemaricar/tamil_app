@@ -100,7 +100,7 @@
                   <th>பெயர் (Name)</th>
                   <th>மின்னஞ்சல் (Email)</th>
                   <th>பங்கு (Role)</th>
-                  <th>சந்தா (Status)</th>
+                  <th>சந்தா திட்டம் (Plan & Expiry)</th>
                   <th>செயல்கள் (Actions)</th>
                 </tr>
               </thead>
@@ -120,20 +120,20 @@
               <span class="role-badge role-learner">1,240 plays</span>
             </li>
             <li>
-              <span><span class="module-leaderboard-rank">2</span> வார்த்தை பொருத்துதல் (06)</span>
+              <span><span class="module-leaderboard-rank">2</span> வார்த்தைகள் படிப்போம் (04)</span>
               <span class="role-badge role-learner">980 plays</span>
             </li>
             <li>
-              <span><span class="module-leaderboard-rank">3</span> நினைவில் நிற்பவை (08)</span>
-              <span class="role-badge role-learner">840 plays</span>
+              <span><span class="module-leaderboard-rank">3</span> சொல்வதை எழுதுதல் (18)</span>
+              <span class="role-badge role-learner">850 plays</span>
             </li>
             <li>
-              <span><span class="module-leaderboard-rank">4</span> குரல் → தமிழ் தட்டச்சு (17)</span>
-              <span class="role-badge role-subscriber">620 plays</span>
+              <span><span class="module-leaderboard-rank">4</span> 5 நிமிட வார்த்தை தேடல் (20)</span>
+              <span class="role-badge role-learner">720 plays</span>
             </li>
             <li>
-              <span><span class="module-leaderboard-rank">5</span> வார்த்தை தேடல் (20)</span>
-              <span class="role-badge role-subscriber">510 plays</span>
+              <span><span class="module-leaderboard-rank">5</span> வார்த்தைச் சக்கரம் (32)</span>
+              <span class="role-badge role-learner">690 plays</span>
             </li>
           </ul>
         </div>
@@ -144,6 +144,7 @@
   </main>
 
   <script src="/js/auth.js?v=20260723"></script>
+  <script src="/js/mascot.js?v=20260724"></script>
   <script>
     TamilAuth.initPage();
 
@@ -168,6 +169,8 @@
         else if (user.role === 'learner') { roleBadgeClass = 'subscriber'; roleText = 'மாணவர்'; }
 
         const isActive = user.subscriptionStatus === 'active' || user.role === 'learner' || user.role === 'teacher' || user.role === 'admin';
+        const planName = user.planType === 'annual' ? '🌟 Annual ($99)' : (user.planType === 'monthly' ? '📅 Monthly ($9.90)' : '○ Free');
+        const expStr = user.expiryDate ? new Date(user.expiryDate).toLocaleDateString('ta-IN', { year:'numeric', month:'short', day:'numeric' }) : 'N/A';
 
         return `
           <tr>
@@ -179,21 +182,27 @@
               </span>
             </td>
             <td>
-              <span style="color: ${isActive ? '#10b981' : '#6b7280'}; font-weight:700;">
-                ${isActive ? '● Active Pass' : '○ Free'}
+              <span style="color: ${isActive ? '#10b981' : '#6b7280'}; font-weight:700; font-size:0.85rem;">
+                ${planName}
               </span>
+              <div style="font-size:0.75rem; color:#64748b;">Exp: ${expStr}</div>
             </td>
             <td>
-              <button class="action-btn" onclick="handleToggleRole('${user.email}')">
-                ${user.role === 'admin' ? 'Change Role' : '👑 Make Admin/Teacher'}
+              <button class="action-btn" style="padding:4px 8px; font-size:0.75rem;" onclick="handleExtendSub('${user.email}')">
+                ➕ Extend (+30d)
               </button>
-              <button class="action-btn" onclick="handleToggleSub('${user.email}')">
-                ${user.role === 'guest' ? '💳 Grant Sub' : 'Revoke'}
+              <button class="action-btn" style="padding:4px 8px; font-size:0.75rem;" onclick="handleToggleSub('${user.email}')">
+                ${user.role === 'guest' ? '💳 Grant' : 'Revoke'}
               </button>
             </td>
           </tr>
         `;
       }).join('');
+    }
+
+    function handleExtendSub(email) {
+      TamilAuth.extendSubscription(email, 30);
+      renderDashboard();
     }
 
     function handleToggleRole(email) {

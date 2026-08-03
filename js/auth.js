@@ -1,6 +1,6 @@
 /**
  * ==========================================================================
- * Tamil App - Cloud Firestore Authentication, Admin & Localization Engine
+ * Tamil App - Cloud Firestore Authentication, Admin & HitPay Sandbox Engine
  * ==========================================================================
  */
 
@@ -84,16 +84,20 @@
     measurementId: "G-TX6Y3CPEY2"
   };
 
+  // Calculate default future dates
+  const now = new Date();
+  const oneYearLater = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000).toISOString();
+
   // Default Initial Users
   const INITIAL_USERS = [
-    { email: 'admin@tamil.app', name: 'ஆசிரியர் (Admin)', password: 'admin123', role: ROLES.ADMIN, subscriptionStatus: 'active', joinedAt: '2026-07-01' },
-    { email: 'admin@tamilapp.com', name: 'ஆசிரியர் (Admin)', password: 'admin123', role: ROLES.ADMIN, subscriptionStatus: 'active', joinedAt: '2026-07-01' },
-    { email: 'teacher@tamil.app', name: 'ஆசிரியர் (Teacher)', password: 'teacher123', role: ROLES.TEACHER, subscriptionStatus: 'active', joinedAt: '2026-07-05' },
-    { email: 'teacher@tamilapp.com', name: 'ஆசிரியர் (Teacher)', password: 'teacher123', role: ROLES.TEACHER, subscriptionStatus: 'active', joinedAt: '2026-07-05' },
-    { email: 'student@tamil.app', name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active', joinedAt: '2026-07-15' },
-    { email: 'student@tamilapp.com', name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active', joinedAt: '2026-07-15' },
-    { email: 'user1@example.com', name: 'கார்த்திக் (Karthik)', password: 'user123', role: ROLES.LEARNER, subscriptionStatus: 'active', joinedAt: '2026-07-18' },
-    { email: 'user2@example.com', name: 'பிரியா (Priya)', password: 'user123', role: ROLES.GUEST, subscriptionStatus: 'inactive', joinedAt: '2026-07-20' }
+    { email: 'admin@tamil.app', name: 'ஆசிரியர் (Admin)', password: 'admin123', role: ROLES.ADMIN, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, joinedAt: '2026-07-01' },
+    { email: 'admin@tamilapp.com', name: 'ஆசிரியர் (Admin)', password: 'admin123', role: ROLES.ADMIN, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, joinedAt: '2026-07-01' },
+    { email: 'teacher@tamil.app', name: 'ஆசிரியர் (Teacher)', password: 'teacher123', role: ROLES.TEACHER, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, joinedAt: '2026-07-05' },
+    { email: 'teacher@tamilapp.com', name: 'ஆசிரியர் (Teacher)', password: 'teacher123', role: ROLES.TEACHER, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, joinedAt: '2026-07-05' },
+    { email: 'student@tamil.app', name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, joinedAt: '2026-07-15' },
+    { email: 'student@tamilapp.com', name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, joinedAt: '2026-07-15' },
+    { email: 'user1@example.com', name: 'கார்த்திக் (Karthik)', password: 'user123', role: ROLES.LEARNER, subscriptionStatus: 'active', planType: 'monthly', subscribedAt: now.toISOString(), expiryDate: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(), joinedAt: '2026-07-18' },
+    { email: 'user2@example.com', name: 'பிரியா (Priya)', password: 'user123', role: ROLES.GUEST, subscriptionStatus: 'inactive', planType: 'none', joinedAt: '2026-07-20' }
   ];
 
   // Comprehensive Localization Dictionary
@@ -101,9 +105,9 @@
     ta: {
       appName: 'தமிழ். இனிது. எளிது.',
       heroTagline: 'தமிழ் கற்றல் இப்போது மிக எளிது!',
-      heroSub: '30 ஊடாடும் விளையாட்டுகள், குரல்வழி தட்டச்சு, சொல் அகராதி & உச்சரிப்புப் பயிற்சிகளுடன் தமிழைக் கற்றுக்கொள்ளுங்கள்.',
+      heroSub: '36 ஊடாடும் விளையாட்டுகள், குரல்வழி தட்டச்சு, சொல் அகராதி & உச்சரிப்புப் பயிற்சிகளுடன் தமிழைக் கற்றுக்கொள்ளுங்கள்.',
       getStarted: 'இலவசமாகத் தொடங்குங்கள்',
-      subscribeNow: 'சந்தா செலுத்துங்கள் ($9.90/மாதம்)',
+      subscribeNow: 'சந்தா செலுத்துங்கள்',
       login: 'உள்நுழைவு',
       register: 'பதிவு செய்க',
       logout: 'வெளியேறு',
@@ -132,9 +136,9 @@
     en: {
       appName: 'Learn Tamil. Easy & Fun.',
       heroTagline: 'Mastering Tamil Language Made Effortless!',
-      heroSub: 'Learn Tamil with 30 interactive games, voice typing, word search dictionary, and pronunciation modules.',
+      heroSub: 'Learn Tamil with 36 interactive games, voice typing, word search dictionary, and pronunciation modules.',
       getStarted: 'Get Started Free',
-      subscribeNow: 'Subscribe Now ($9.90/mo)',
+      subscribeNow: 'Subscribe Now',
       login: 'Sign In',
       register: 'Sign Up',
       logout: 'Sign Out',
@@ -166,10 +170,12 @@
     constructor() {
       this.db = null;
       this.lang = localStorage.getItem(STORAGE_KEY_LANG) || 'ta';
+      this.selectedPlan = 'annual'; // 'monthly' ($9.90) or 'annual' ($99.00)
+      this.selectedPaymentMethod = 'paynow';
       this.initFirebase();
       this.initDatabase();
       this.currentUser = this.loadSession();
-      this.selectedPaymentMethod = 'paynow';
+      this.verifySubscriptionExpiry();
     }
 
     getLang() {
@@ -214,6 +220,10 @@
         } else {
           users[idx].password = defaultUser.password;
           users[idx].role = defaultUser.role;
+          if (!users[idx].expiryDate) {
+            users[idx].expiryDate = defaultUser.expiryDate;
+            users[idx].planType = defaultUser.planType;
+          }
         }
       });
 
@@ -234,12 +244,42 @@
       const stored = localStorage.getItem(STORAGE_KEY_USER);
       if (stored) {
         try {
-          return JSON.parse(stored);
+          const user = JSON.parse(stored);
+          return user;
         } catch (e) {
           localStorage.removeItem(STORAGE_KEY_USER);
         }
       }
       return { name: this.t('guest'), role: ROLES.GUEST, email: 'guest@tamil.app', subscriptionStatus: 'inactive' };
+    }
+
+    /* ---------- Automated Subscription Expiry Control ---------- */
+    verifySubscriptionExpiry() {
+      const user = this.currentUser;
+      if (user && user.role === ROLES.LEARNER && user.expiryDate) {
+        const expiry = new Date(user.expiryDate);
+        if (new Date() > expiry) {
+          // Subscription Expired: Shift role to guest
+          user.role = ROLES.GUEST;
+          user.subscriptionStatus = 'expired';
+          localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
+
+          const users = this.getUsersDB();
+          const idx = users.findIndex(u => u.email.toLowerCase() === user.email.toLowerCase());
+          if (idx !== -1) {
+            users[idx].role = ROLES.GUEST;
+            users[idx].subscriptionStatus = 'expired';
+            localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
+          }
+
+          if (this.db) {
+            this.db.collection('users').doc(user.email.toLowerCase()).update({
+              role: ROLES.GUEST,
+              subscriptionStatus: 'expired'
+            }).catch(() => {});
+          }
+        }
+      }
     }
 
     login(email, password) {
@@ -250,11 +290,11 @@
 
       if (!found) {
         if ((cleanEmail.startsWith('admin@') || cleanEmail.includes('admin')) && password === 'admin123') {
-          found = { email: cleanEmail, name: 'ஆசிரியர் (Admin)', password: 'admin123', role: ROLES.ADMIN, subscriptionStatus: 'active' };
+          found = { email: cleanEmail, name: 'ஆசிரியர் (Admin)', password: 'admin123', role: ROLES.ADMIN, subscriptionStatus: 'active', planType: 'annual', expiryDate: oneYearLater };
         } else if ((cleanEmail.startsWith('teacher@') || cleanEmail.includes('teacher')) && password === 'teacher123') {
-          found = { email: cleanEmail, name: 'ஆசிரியர் (Teacher)', password: 'teacher123', role: ROLES.TEACHER, subscriptionStatus: 'active' };
+          found = { email: cleanEmail, name: 'ஆசிரியர் (Teacher)', password: 'teacher123', role: ROLES.TEACHER, subscriptionStatus: 'active', planType: 'annual', expiryDate: oneYearLater };
         } else if ((cleanEmail.startsWith('student@') || cleanEmail.includes('student')) && password === 'student123') {
-          found = { email: cleanEmail, name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active' };
+          found = { email: cleanEmail, name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active', planType: 'annual', expiryDate: oneYearLater };
         }
       }
 
@@ -263,7 +303,10 @@
           email: found.email,
           name: found.name,
           role: found.role,
-          subscriptionStatus: found.role === ROLES.GUEST ? 'inactive' : 'active'
+          subscriptionStatus: found.role === ROLES.GUEST ? 'inactive' : 'active',
+          planType: found.planType || (found.role === ROLES.GUEST ? 'none' : 'annual'),
+          subscribedAt: found.subscribedAt || new Date().toISOString(),
+          expiryDate: found.expiryDate || oneYearLater
         };
 
         if (!users.some(u => u.email.toLowerCase() === cleanEmail)) {
@@ -273,11 +316,12 @@
 
         localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(userSession));
         this.currentUser = userSession;
+        this.verifySubscriptionExpiry();
 
         if (this.db) {
           this.db.collection('users').doc(cleanEmail).set(found, { merge: true }).catch(() => {});
         }
-        return { success: true, user: userSession };
+        return { success: true, user: this.currentUser };
       }
       return { success: false, message: this.t('loginError') };
     }
@@ -287,7 +331,7 @@
       if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
         return { success: false, message: this.t('userExists') };
       }
-      const newUser = { name, email, password, role, subscriptionStatus: 'inactive', joinedAt: new Date().toISOString().split('T')[0] };
+      const newUser = { name, email, password, role, subscriptionStatus: 'inactive', planType: 'none', joinedAt: new Date().toISOString().split('T')[0] };
       users.push(newUser);
       localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
 
@@ -324,6 +368,7 @@
     }
 
     canAccess(modulePath) {
+      this.verifySubscriptionExpiry();
       const filename = this.getNormalizedPath(modulePath);
       const requiredRole = MODULE_ROLES[filename] || 'guest';
       const userLevel = this.getRoleLevel(this.currentUser.role);
@@ -331,13 +376,9 @@
       return userLevel >= requiredLevel;
     }
 
-    getRequiredRole(filename) {
-      const norm = this.getNormalizedPath(filename);
-      return MODULE_ROLES[norm] || 'guest';
-    }
-
     /* ---------- Header Navigation UI Render ---------- */
     renderHeader(container) {
+      this.verifySubscriptionExpiry();
       const user = this.currentUser;
       const isGuest = user.role === ROLES.GUEST;
       const isAdmin = user.role === ROLES.ADMIN;
@@ -522,37 +563,52 @@
       document.body.appendChild(wrapper.firstElementChild);
     }
 
-    /* ---------- Subscription Checkout Modal Builder ---------- */
+    /* ---------- Subscription Plan Selector & HitPay Sandbox Checkout Modal Builder ---------- */
     buildCheckoutModal() {
       if (document.getElementById('tamil-checkout-modal-root')) return;
 
       const isEn = this.lang === 'en';
       const checkoutHTML = `
         <div id="tamil-checkout-modal-root" class="auth-modal-overlay">
-          <div class="auth-modal-card">
+          <div class="auth-modal-card" style="max-width:520px;">
             <button class="auth-modal-close" onclick="TamilAuth.closeModal('checkout')">&times;</button>
 
             <div class="checkout-card-header">
-              <h3>${isEn ? 'Tamil Learning Monthly Pass' : 'தமிழ் கற்றல் மாதாந்திர சந்தா'}</h3>
-              <div class="pricing-badge">S$ 9.90 / ${isEn ? 'month' : 'மாதம்'}</div>
-              <p style="color:#6b7280; font-size:0.9rem; margin:0;">${isEn ? 'Cancel anytime with 1-click' : 'மாதந்தோறும் எப்போது வேண்டுமானாலும் ரத்து செய்யலாம்'}</p>
+              <h3>${isEn ? 'Choose Your Tamil Learning Pass' : 'தமிழ் கற்றல் சந்தா திட்டத்தைத் தேர்ந்தெடுக்கவும்'}</h3>
+              <p style="color:#6b7280; font-size:0.9rem; margin:6px 0 0 0;">${isEn ? 'Powered by HitPay Payment Gateway (Sandbox Test Mode)' : 'HitPay கட்டண வாயில் மூலம் பாதுகாப்பாக செலுத்தலாம்'}</p>
+            </div>
+
+            <!-- Subscription Plan Selection (Monthly vs Annual) -->
+            <div class="plan-selector-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:20px 0;">
+              <div class="plan-card selected" id="plan-opt-annual" onclick="TamilAuth.selectPlan('annual')" style="border:2px solid #10b981; background:#ecfdf5; border-radius:14px; padding:14px; cursor:pointer; text-align:center; position:relative;">
+                <span style="position:absolute; top:-10px; right:10px; background:#10b981; color:#fff; font-size:0.7rem; font-weight:800; padding:2px 8px; border-radius:10px;">BEST VALUE (சேமிப்பு $19.80)</span>
+                <div style="font-weight:700; font-size:0.95rem; color:#065f46;">🌟 ${isEn ? 'Annual Plan' : 'ஆண்டறிக்கை சந்தா'}</div>
+                <div style="font-size:1.4rem; font-weight:800; color:#10b981; margin:4px 0;">SGD $99.00</div>
+                <div style="font-size:0.75rem; color:#047857;">${isEn ? '$8.25/mo • Valid 365 Days' : 'மாதம் $8.25 • 365 நாட்கள் செல்லுபடியாகும்'}</div>
+              </div>
+
+              <div class="plan-card" id="plan-opt-monthly" onclick="TamilAuth.selectPlan('monthly')" style="border:2px solid #e2e8f0; background:#ffffff; border-radius:14px; padding:14px; cursor:pointer; text-align:center;">
+                <div style="font-weight:700; font-size:0.95rem; color:#1e1b4b;">📅 ${isEn ? 'Monthly Plan' : 'மாதாந்திர சந்தா'}</div>
+                <div style="font-size:1.4rem; font-weight:800; color:#3b82f6; margin:4px 0;">SGD $9.90</div>
+                <div style="font-size:0.75rem; color:#64748b;">${isEn ? 'Billed Monthly • Valid 30 Days' : 'மாதம் தோறும் • 30 நாட்கள் செல்லுபடியாகும்'}</div>
+              </div>
             </div>
 
             <ul class="pricing-features-list">
-              <li>${isEn ? 'All 30 Tamil Games & Practice Modules' : '30 தமிழ் கற்றல் விளையாட்டுகள் & பயிற்சிகள்'}</li>
-              <li>${isEn ? 'Voice Typing & Dictation Engine' : 'குரல்வழி தட்டச்சு & உச்சரிப்புப் பயிற்சி'}</li>
-              <li>${isEn ? 'Tamil-English Flashcards & Dictionary' : 'தமிழ்-ஆங்கில சொல் அட்டைகள் & அகராதி'}</li>
-              <li>${isEn ? 'Live Progress Tracker & Badges' : 'நிகழ்நேர முன்னேற்றப் பதிவு & சாதனைப் பதக்கங்கள்'}</li>
+              <li>${isEn ? 'All 36 Tamil Games & Learning Modules' : '36 தமிழ் கற்றல் விளையாட்டுகள் & பயிற்சிகள்'}</li>
+              <li>${isEn ? 'Native Tamil Audio Pronunciation (251 Files)' : '251 தமிழ் எழுத்துகள் & வார்த்தைகள் ஒலி உச்சரிப்பு'}</li>
+              <li>${isEn ? 'Voice Typing & Speech Recognition' : 'குரல்வழி தட்டச்சு & உச்சரிப்புப் பயிற்சி'}</li>
+              <li>${isEn ? 'Automated Subscription Expiry & Renewal Alerts' : 'தானியங்கி சந்தா முடிவு & புதுப்பித்தல் விழிப்பூட்டல்'}</li>
             </ul>
 
             <div class="payment-methods-box">
-              <h4>${isEn ? 'Select Payment Method (HitPay Gateway):' : 'செலுத்தும் முறை (HitPay Gateway):'}</h4>
+              <h4>${isEn ? 'Select Payment Method (HitPay Sandbox):' : 'செலுத்தும் முறை (HitPay Sandbox):'}</h4>
               <div class="payment-options-grid">
                 <div class="payment-option-card selected" id="pay-opt-paynow" onclick="TamilAuth.selectPayment('paynow')">
                   📱 PayNow QR
                 </div>
                 <div class="payment-option-card" id="pay-opt-card" onclick="TamilAuth.selectPayment('card')">
-                  💳 Credit Card
+                  💳 Credit Card (Test)
                 </div>
                 <div class="payment-option-card" id="pay-opt-ewallet" onclick="TamilAuth.selectPayment('ewallet')">
                   👛 e-Wallet
@@ -562,8 +618,8 @@
 
             <div id="checkout-alert-msg" class="auth-alert"></div>
 
-            <button class="btn-proceed-pay" onclick="TamilAuth.processCheckout()">
-              💳 ${isEn ? 'Start Monthly Subscription (SGD $9.90)' : 'கட்டணம் செலுத்தி சந்தாவைத் தொடங்கு (SGD $9.90)'}
+            <button class="btn-proceed-pay" id="btn-hitpay-submit" onclick="TamilAuth.processCheckout()">
+              💳 ${isEn ? 'Proceed with HitPay Sandbox Payment (SGD $99.00)' : 'HitPay மூலம் கட்டணம் செலுத்துங்கள் (SGD $99.00)'}
             </button>
           </div>
         </div>
@@ -572,6 +628,24 @@
       const wrapper = document.createElement('div');
       wrapper.innerHTML = checkoutHTML;
       document.body.appendChild(wrapper.firstElementChild);
+    }
+
+    selectPlan(plan) {
+      this.selectedPlan = plan;
+      const annualCard = document.getElementById('plan-opt-annual');
+      const monthlyCard = document.getElementById('plan-opt-monthly');
+      const submitBtn = document.getElementById('btn-hitpay-submit');
+      const isEn = this.lang === 'en';
+
+      if (plan === 'annual') {
+        if (annualCard) { annualCard.style.borderColor = '#10b981'; annualCard.style.background = '#ecfdf5'; }
+        if (monthlyCard) { monthlyCard.style.borderColor = '#e2e8f0'; monthlyCard.style.background = '#ffffff'; }
+        if (submitBtn) submitBtn.innerText = isEn ? '💳 Proceed with HitPay Sandbox Payment (SGD $99.00)' : '💳 HitPay மூலம் கட்டணம் செலுத்துங்கள் (SGD $99.00)';
+      } else {
+        if (monthlyCard) { monthlyCard.style.borderColor = '#3b82f6'; monthlyCard.style.background = '#eff6ff'; }
+        if (annualCard) { annualCard.style.borderColor = '#e2e8f0'; annualCard.style.background = '#ffffff'; }
+        if (submitBtn) submitBtn.innerText = isEn ? '💳 Proceed with HitPay Sandbox Payment (SGD $9.90)' : '💳 HitPay மூலம் கட்டணம் செலுத்துங்கள் (SGD $9.90)';
+      }
     }
 
     selectPayment(method) {
@@ -694,25 +768,45 @@
       }
     }
 
-    /* ---------- Process Simulated / HitPay Checkout Flow ---------- */
+    /* ---------- Process HitPay Sandbox Payment & Subscription Expiry Calculation ---------- */
     processCheckout() {
-      const msg = this.lang === 'en' ? 'Processing Payment... (HitPay Gateway)' : 'கட்டணம் செயலாக்கப்படுகிறது... (HitPay Gateway)';
+      const isEn = this.lang === 'en';
+      const plan = this.selectedPlan; // 'monthly' or 'annual'
+      const planPrice = plan === 'annual' ? '$99.00' : '$9.90';
+      const daysToAdd = plan === 'annual' ? 365 : 30;
+
+      const hitpayRef = 'HITPAY-SB-' + Math.floor(100000 + Math.random() * 900000);
+      
+      const msg = isEn 
+        ? `Processing HitPay Sandbox Payment (${hitpayRef})...` 
+        : `HitPay கட்டண வாயிலில் செயலாக்கப்படுகிறது (${hitpayRef})...`;
       this.showAlert(msg, 'success', 'checkout-alert-msg');
 
       setTimeout(() => {
         const users = this.getUsersDB();
         const user = this.currentUser;
         
+        const now = new Date();
+        const expiry = new Date(now.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+
         user.role = ROLES.LEARNER;
         user.subscriptionStatus = 'active';
-        user.subscribedAt = new Date().toISOString();
+        user.planType = plan;
+        user.subscribedAt = now.toISOString();
+        user.expiryDate = expiry.toISOString();
+        user.paymentReference = hitpayRef;
+        user.paymentMethod = this.selectedPaymentMethod;
 
         const existingIdx = users.findIndex(u => u.email.toLowerCase() === user.email.toLowerCase());
         if (existingIdx !== -1) {
           users[existingIdx].role = ROLES.LEARNER;
           users[existingIdx].subscriptionStatus = 'active';
+          users[existingIdx].planType = plan;
+          users[existingIdx].subscribedAt = user.subscribedAt;
+          users[existingIdx].expiryDate = user.expiryDate;
+          users[existingIdx].paymentReference = hitpayRef;
         } else {
-          users.push({ ...user, role: ROLES.LEARNER, subscriptionStatus: 'active' });
+          users.push({ ...user });
         }
         localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
         localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
@@ -721,18 +815,24 @@
           this.db.collection('users').doc(user.email.toLowerCase()).set({
             role: ROLES.LEARNER,
             subscriptionStatus: 'active',
-            subscribedAt: user.subscribedAt
+            planType: plan,
+            subscribedAt: user.subscribedAt,
+            expiryDate: user.expiryDate,
+            paymentReference: hitpayRef
           }, { merge: true }).catch(() => {});
         }
 
-        const successMsg = this.lang === 'en' ? 'Congratulations! Subscription activated 🎉' : 'வாழ்த்துக்கள்! உங்கள் சந்தா வெற்றிகரமாக தொடங்கப்பட்டது 🎉';
+        const successMsg = isEn 
+          ? `Congratulations! ${plan === 'annual' ? '1-Year Annual' : '1-Month'} Subscription Activated (${hitpayRef}) 🎉` 
+          : `வாழ்த்துக்கள்! உங்கள் ${plan === 'annual' ? 'ஆண்டறிக்கை' : 'மாதாந்திர'} சந்தா வெற்றிகரமாக தொடங்கியது (${hitpayRef}) 🎉`;
+        
         this.showAlert(successMsg, 'success', 'checkout-alert-msg');
         
         setTimeout(() => {
           this.closeModal('checkout');
           window.location.href = 'learner-dashboard.html';
         }, 1200);
-      }, 1000);
+      }, 1200);
     }
 
     /* ---------- Teacher & Student Data Helpers ---------- */
@@ -832,15 +932,43 @@
         if (target.role === ROLES.GUEST) {
           target.role = ROLES.LEARNER;
           target.subscriptionStatus = 'active';
+          target.planType = 'annual';
+          target.expiryDate = new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000).toISOString();
         } else {
           target.role = ROLES.GUEST;
           target.subscriptionStatus = 'inactive';
+          target.planType = 'none';
         }
         localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
         if (this.db) {
           this.db.collection('users').doc(email.toLowerCase()).update({
             role: target.role,
-            subscriptionStatus: target.subscriptionStatus
+            subscriptionStatus: target.subscriptionStatus,
+            planType: target.planType,
+            expiryDate: target.expiryDate || null
+          }).catch(() => {});
+        }
+        return true;
+      }
+      return false;
+    }
+
+    extendSubscription(email, days = 30) {
+      const users = this.getUsersDB();
+      const target = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+      if (target) {
+        target.role = ROLES.LEARNER;
+        target.subscriptionStatus = 'active';
+        const currentExp = target.expiryDate ? new Date(target.expiryDate) : new Date();
+        const base = currentExp > new Date() ? currentExp : new Date();
+        target.expiryDate = new Date(base.getTime() + days * 24 * 60 * 60 * 1000).toISOString();
+
+        localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
+        if (this.db) {
+          this.db.collection('users').doc(email.toLowerCase()).update({
+            role: ROLES.LEARNER,
+            subscriptionStatus: 'active',
+            expiryDate: target.expiryDate
           }).catch(() => {});
         }
         return true;

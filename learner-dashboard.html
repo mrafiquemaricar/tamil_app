@@ -41,6 +41,21 @@
       align-items: center;
       gap: 8px;
     }
+
+    /* Subscription Status Info Card */
+    .sub-status-card {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+      color: #ffffff;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 20px rgba(30, 27, 75, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
     
     /* Progress Overview Bar */
     .progress-overview-card {
@@ -158,12 +173,31 @@
         </div>
       </div>
 
+      <!-- Active Subscription & HitPay Expiry Info Card -->
+      <div class="sub-status-card" id="sub-card-container">
+        <div>
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+            <span style="font-size:1.1rem; font-weight:800;" id="sub-plan-title">🌟 ஆண்டறிக்கை சந்தா (Annual Pass)</span>
+            <span style="background:#10b981; color:#fff; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:10px;" id="sub-status-badge">ACTIVE</span>
+          </div>
+          <div style="font-size:0.9rem; opacity:0.9;" id="sub-expiry-desc">
+            முடிவடையும் நாள்: 3 ஆகஸ்ட் 2027 (Expiry Date) • Reference: HITPAY-SB-892134
+          </div>
+        </div>
+
+        <div>
+          <button class="header-btn header-btn-upgrade" onclick="TamilAuth.openCheckoutModal()">
+            💳 சந்தா புதுப்பிப்பு / திட்ட மாற்றம் (HitPay)
+          </button>
+        </div>
+      </div>
+
       <!-- Overall Progress Card -->
       <div class="progress-overview-card">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
           <div>
             <h3 style="margin:0 0 4px 0; color:#1e1b4b; font-size:1.25rem;">📊 உங்கள் கற்றல் முன்னேற்றம்</h3>
-            <span style="color:#64748b; font-size:0.9rem;">30 தமிழ் பாடப்பகுதிகள் & விளையாட்டுகளில் உங்கள் நிலை</span>
+            <span style="color:#64748b; font-size:0.9rem;">36 தமிழ் பாடப்பகுதிகள் & விளையாட்டுகளில் உங்கள் நிலை</span>
           </div>
           <span style="font-size:1.3rem; font-weight:800; color:#10b981;" id="progress-percent">40%</span>
         </div>
@@ -173,8 +207,8 @@
         </div>
 
         <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:#64748b; margin-top:6px;">
-          <span>12/30 பகுதிகள் முடிந்தது</span>
-          <span>18 பகுதிகள் எஞ்சியுள்ளன</span>
+          <span>14/36 பகுதிகள் முடிந்தது</span>
+          <span>22 பகுதிகள் எஞ்சியுள்ளன</span>
         </div>
 
         <div style="margin-top:20px; text-align:right;">
@@ -224,7 +258,15 @@
       document.getElementById('learner-welcome').innerText = `வணக்கம், ${user.name}! 🌟`;
       document.getElementById('streak-days').innerText = progressData.streakDays;
 
-      const totalMods = 30;
+      // Update Subscription Expiry Card
+      const planTitle = user.planType === 'monthly' ? '📅 மாதாந்திர சந்தா (Monthly Pass)' : '🌟 ஆண்டறிக்கை சந்தா (Annual Pass)';
+      const expDate = user.expiryDate ? new Date(user.expiryDate).toLocaleDateString('ta-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : '365 நாட்கள்';
+      const ref = user.paymentReference || 'HITPAY-SB-SANDBOX';
+
+      document.getElementById('sub-plan-title').innerText = planTitle;
+      document.getElementById('sub-expiry-desc').innerText = `செல்லுபடியாகும் நாள்: ${expDate} (Expiry Date) • Reference: ${ref}`;
+
+      const totalMods = 36;
       const completedCount = progressData.completedModules.length;
       const pct = Math.round((completedCount / totalMods) * 100);
 
