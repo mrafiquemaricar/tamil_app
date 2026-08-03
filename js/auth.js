@@ -785,6 +785,18 @@
     }
 
     openCheckoutModal() {
+      const user = this.currentUser;
+      if (!user || user.role === ROLES.GUEST) {
+        this.pendingCheckoutAfterAuth = true;
+        this.openModal('register');
+        this.showAlert(
+          this.lang === 'en' 
+            ? '🔑 Please create a quick account first so your subscription pass can be activated for you.' 
+            : '🔑 உங்கள் சந்தாவை இணைக்க முதலில் கணக்கு ஒன்றை உருவாக்கவும்.', 
+          'info'
+        );
+        return;
+      }
       const modal = document.getElementById('tamil-checkout-modal-root');
       if (modal) {
         modal.classList.add('active');
@@ -874,12 +886,23 @@
       const res = this.register(name, email, pass, ROLES.GUEST);
 
       if (res.success) {
+        // Automatically log user in
+        this.login(email, pass);
         this.showAlert(res.message, 'success');
-        setTimeout(() => {
-          this.switchTab('login');
-          document.getElementById('login-email').value = email;
-          document.getElementById('login-password').value = pass;
-        }, 1000);
+
+        if (this.pendingCheckoutAfterAuth) {
+          this.pendingCheckoutAfterAuth = false;
+          setTimeout(() => {
+            this.closeModal('auth');
+            this.openCheckoutModal();
+          }, 800);
+        } else {
+          setTimeout(() => {
+            this.switchTab('login');
+            document.getElementById('login-email').value = email;
+            document.getElementById('login-password').value = pass;
+          }, 1000);
+        }
       } else {
         this.showAlert(res.message, 'error');
       }
