@@ -25,6 +25,7 @@
             font-size: 18px;
             padding: 5px;
             margin: 5px;
+            text-align: center;
         }
 
         #tileContainer {
@@ -86,12 +87,6 @@
             border-radius: 15px;
         }
     </style>
-
-  <link rel="stylesheet" href="css/auth.css" />
-  <script src="js/auth.js"></script>
-  <script>
-    TamilAuth.initPage();
-  </script>
 </head>
 
 <body>
@@ -157,7 +152,7 @@
             words = filtered.sort(() => 0.5 - Math.random()).slice(0, 5).map(w => w.word);
 
             const listDiv = document.getElementById("wordList");
-            listDiv.innerHTML = "<b>10 வினாடிகள்! வார்த்தைகளை ஞாபகம் வைத்துக் கொள்க...<b> <br>" 
+            listDiv.innerHTML = "<b>10 வினாடிகள்! வார்த்தைகளை ஞாபகம் வைத்துக் கொள்க...<b> <p>" 
             listDiv.innerHTML += words.join(", ");
             setTimeout(() => { listDiv.innerHTML = ""; showTiles(); }, 10000);
         }

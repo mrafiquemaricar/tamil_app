@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>மிதக்கும் பலூன்</title>
+    <link rel="stylesheet" href="/css/auth.css?v=20260723" />
+    <link rel="stylesheet" href="/css/mascot.css?v=20260724" />
+    <script src="/js/auth.js?v=20260723"></script>
+    <script src="/js/mascot.js?v=20260724"></script>
+    <script>
+      TamilAuth.initPage();
+    </script>
+    <style>
+        :root {
+            --sky-top: #a1c4fd;
+            --sky-bottom: #c2e9fb;
+            --sea: #0077b6;
+            --ui-bg: rgba(255, 255, 255, 0.95);
+            --text-dark: #1d3557;
+            --danger: #e63946;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* background: linear-gradient(to bottom, var(--sky-top), var(--sky-bottom)); */
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+
+
+        .home {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        #home {
+            text-decoration: none;
+            background-color: #0000ff;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 15px;
+        }
+
+
+        /* --- UI TOP PANEL --- */
+        .header-panel {
+            margin-top: 15px;
+            z-index: 10;
+            width: 90%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .target-box {
+            background: var(--ui-bg);
+            border: 3px solid var(--text-dark);
+            border-radius: 12px;
+            padding: 10px 30px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--text-dark);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-box {
+            background: var(--ui-bg);
+            border-radius: 20px;
+            padding: 8px 25px;
+            display: flex;
+            gap: 25px;
+            font-weight: bold;
+            color: var(--text-dark);
+            font-size: 1.1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* --- GAME STAGE --- */
+        .game-stage {
+            position: relative;
+            flex-grow: 1;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .sea-floor {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 25vh;
+            background: linear-gradient(to bottom, #0096c7, var(--sea));
+            z-index: 1;
+        }
+
+        /* --- BALLOONS --- */
+        .balloon {
+            position: absolute;
+            bottom: -150px;
+            width: 110px;
+            height: 130px;
+            border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            box-shadow: inset -10px -10px 20px rgba(0, 0, 0, 0.15), 0 10px 20px rgba(0, 0, 0, 0.1);
+            animation: floatUp linear forwards;
+        }
+
+        .balloon-text {
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            z-index: 10;
+            position: relative;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6), -1px -1px 3px rgba(0, 0, 0, 0.6);
+            text-align: center;
+            padding: 5px;
+            width: 100%;
+
+            /* --- CHANGES FOR TEXT WRAPPING --- */
+            white-space: normal;
+            /* Allows text to break onto a new line naturally */
+            overflow-wrap: break-word;
+            /* Forces long words to break if they exceed balloon width */
+            word-break: break-word;
+            /* Extra insurance for older browser compatibility */
+            /* Remove text-overflow: ellipsis; if it was previously forcing dots */
+        }
+
+        .balloon::after {
+            content: "";
+            position: absolute;
+            bottom: -8px;
+            left: calc(50% - 7px);
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            border-bottom: 10px solid currentColor;
+            filter: brightness(0.85);
+            z-index: 2;
+        }
+
+        .balloon-string {
+            position: absolute;
+            bottom: -35px;
+            left: calc(50% - 1px);
+            width: 2px;
+            height: 30px;
+            background: rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-50vh) rotate(3deg);
+            }
+
+            100% {
+                transform: translateY(-120vh) rotate(-3deg);
+            }
+        }
+
+        /* --- OVERLAYS --- */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(29, 53, 87, 0.9);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+        }
+
+        .overlay h2 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .overlay p {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+        }
+
+        .btn-start {
+            background: #ffb703;
+            color: #1d3557;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 183, 3, 0.4);
+        }
+
+        /* --- PARTICLES FOR POPPING EFFECT --- */
+        .particle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            z-index: 6;
+            pointer-events: none;
+            animation: explode 0.5s ease-out forwards;
+        }
+
+        @keyframes explode {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(var(--x), var(--y)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        h1 {
+            color: blue
+        }
+    </style>
+</head>
+
+
+
+<body>
+    <div class="home">
+        <a id="home" href="index.html"> ◀ முகப்பு</a>
+    </div>
+
+    <h1>மிதக்கும் பலூன்</h1>
+
+    <div class="header-panel">
+        <div class="target-box"><span id="target-word">---</span></div>
+        <div class="stats-box">
+            <div>மதிப்பெண் : <span id="score-val">0</span></div>
+            <div>வாய்ப்புகள் : <span id="lives-val">3</span></div>
+        </div>
+    </div>
+
+    <div class="game-stage" id="stage">
+        <div class="sea-floor"></div>
+    </div>
+
+    <div class="overlay" id="menu-overlay">
+        <h2>மிதக்கும் பலூன்</h2>
+        <p>சரியான தமிழ் வார்த்தையைக் கண்டுபிடி!</p>
+        <button class="btn-start" onclick="startGame()">விளையாடலாம்</button>
+    </div>
+
+    <script>
+        // DATASET
+
+        const wordList = [
+            { tamil: 'அம்மா', english: 'Mother' },
+            { tamil: 'அப்பா', english: 'Father' },
+            { tamil: 'அக்கா', english: 'Sister' },
+            { tamil: 'ஆடு', english: 'Goat' },
+            { tamil: 'ஆறு', english: 'River' },
+            { tamil: 'ஆலமரம்', english: 'Banyan Tree' },
+            { tamil: 'இலை', english: 'Leaf' },
+            { tamil: 'இரவு', english: 'Night' },
+            { tamil: 'இடம்', english: 'Place' },
+            { tamil: 'ஈரம்', english: 'Moisture' },
+            { tamil: 'ஈக்கள்', english: 'Flies' },
+            { tamil: 'உப்பு', english: 'Salt' },
+            { tamil: 'உணவு', english: 'Food' },
+            { tamil: 'உலகம்', english: 'World' },
+            { tamil: 'ஊர்', english: 'Town' },
+            { tamil: 'ஊதா', english: 'Purple' },
+            { tamil: 'ஊஞ்சல்', english: 'Swing' },
+            { tamil: 'எலி', english: 'Rat' },
+            { tamil: 'எறும்பு', english: 'Ant' },
+            { tamil: 'எண்ணெய்', english: 'Oil' },
+            { tamil: 'ஏணி', english: 'Ladder' },
+            { tamil: 'ஏரி', english: 'Lake' },
+            { tamil: 'ஏழு', english: 'Seven' },
+            { tamil: 'ஐந்து', english: 'Five' },
+            { tamil: 'ஐயம்', english: 'Doubt' },
+            { tamil: 'ஐவர்', english: 'Five People' },
+            { tamil: 'ஒலி', english: 'Sound' },
+            { tamil: 'ஒளி', english: 'Light' },
+            { tamil: 'ஒட்டகம்', english: 'Camel' },
+            { tamil: 'ஓடு', english: 'Tile' },
+            { tamil: 'ஓடை', english: 'Stream' },
+            { tamil: 'ஓடம்', english: 'Boat' },
+            { tamil: 'ஔடதம்', english: 'Medicine' },
+            { tamil: 'ஔவையார்', english: 'Avvaiyar' },
+            { tamil: 'அஃது', english: 'That one' },
+            { tamil: 'மக்கள்', english: 'People' },
+            { tamil: 'பக்கம்', english: 'Side' },
+            { tamil: 'தக்காளி', english: 'Tomato' },
+            { tamil: 'திங்கள்', english: 'Monday' },
+            { tamil: 'மங்கை', english: 'Maiden' },
+            { tamil: 'கங்கை', english: 'Ganges' },
+            { tamil: 'பச்சை', english: 'Green' },
+            { tamil: 'அச்சம்', english: 'Fear' },
+            { tamil: 'கச்சிதம்', english: 'Perfect' },
+            { tamil: 'நஞ்சு', english: 'Poison' },
+            { tamil: 'கஞ்சி', english: 'Porridge' },
+            { tamil: 'மஞ்சள்', english: 'Yellow' },
+            { tamil: 'பட்டு', english: 'Silk' },
+            { tamil: 'பட்டம்', english: 'Kite' },
+            { tamil: 'கட்டம்', english: 'Square' },
+            { tamil: 'கண்', english: 'Eye' },
+            { tamil: 'மண்', english: 'Soil' },
+            { tamil: 'உண்', english: 'Eat' },
+            { tamil: 'பத்து', english: 'Ten' },
+            { tamil: 'கத்தி', english: 'Knife' },
+            { tamil: 'சத்தம்', english: 'Noise' },
+            { tamil: 'பந்து', english: 'Ball' },
+            { tamil: 'சந்தை', english: 'Market' },
+            { tamil: 'தந்தம்', english: 'Ivory' },
+            { tamil: 'கப்பல்', english: 'Ship' },
+            { tamil: 'கம்பி', english: 'Wire' },
+            { tamil: 'தம்பி', english: 'Brother' },
+            { tamil: 'தாய்', english: 'Mother' },
+            { tamil: 'வாய்', english: 'Mouth' },
+            { tamil: 'காய்', english: 'Fruit' },
+            { tamil: 'நீர்', english: 'Water' },
+            { tamil: 'கார்', english: 'Car' },
+            { tamil: 'பார்', english: 'See' },
+            { tamil: 'பால்', english: 'Milk' },
+            { tamil: 'கால்', english: 'Leg' },
+            { tamil: 'வால்', english: 'Tail' },
+            { tamil: 'இவ்வழி', english: 'This way' },
+            { tamil: 'அவ்வாறு', english: 'That way' },
+            { tamil: 'செவ்வாய்', english: 'Tuesday' },
+            { tamil: 'தாழ்வு', english: 'Lowliness' },
+            { tamil: 'வாழ்க்கை', english: 'Life' },
+            { tamil: 'முள்', english: 'Thorn' },
+            { tamil: 'வாள்', english: 'Sword' },
+            { tamil: 'பள்ளம்', english: 'Pit' },
+            { tamil: 'முற்றம்', english: 'Courtyard' },
+            { tamil: 'கற்றல்', english: 'Learning' },
+            { tamil: 'நற்றமிழ்', english: 'Good Tamil' },
+            { tamil: 'மன்னன்', english: 'King' },
+            { tamil: 'கன்னம்', english: 'Cheek' },
+            { tamil: 'பின்னல்', english: 'Braid' },
+            { tamil: 'கடல்', english: 'Sea' },
+            { tamil: 'கதவு', english: 'Door' },
+            { tamil: 'கரும்பு', english: 'Sugarcane' },
+            { tamil: 'காடு', english: 'Forest' },
+            { tamil: 'காலை', english: 'Morning' },
+            { tamil: 'காகம்', english: 'Crow' },
+            { tamil: 'கிளி', english: 'Parrot' },
+            { tamil: 'கிணறு', english: 'Well' },
+            { tamil: 'கிரீடம்', english: 'Crown' },
+            { tamil: 'கீரை', english: 'Spinach' },
+            { tamil: 'கீழே', english: 'Below' },
+            { tamil: 'கீதம்', english: 'Song' },
+            { tamil: 'குரங்கு', english: 'Monkey' },
+            { tamil: 'குதிரை', english: 'Horse' },
+            { tamil: 'குழந்தை', english: 'Child' },
+            { tamil: 'கூடு', english: 'Nest' },
+            { tamil: 'கூந்தல்', english: 'Hair' },
+            { tamil: 'கூட்டம்', english: 'Crowd' },
+            { tamil: 'கெட்டி', english: 'Clever' },
+            { tamil: 'கெஞ்சு', english: 'Beg' },
+            { tamil: 'கெண்டை', english: 'Carp' },
+            { tamil: 'கேணி', english: 'Well' },
+            { tamil: 'கேள்வி', english: 'Question' },
+            { tamil: 'கேடயம்', english: 'Shield' },
+            { tamil: 'கைகள்', english: 'Hands' },
+            { tamil: 'கைப்பை', english: 'Handbag' },
+            { tamil: 'கைவினை', english: 'Handicraft' },
+            { tamil: 'கொடி', english: 'Flag' },
+            { tamil: 'கொஞ்சம்', english: 'Little' },
+            { tamil: 'கொண்டை', english: 'Hair-bun' },
+            { tamil: 'கோழி', english: 'Hen' },
+            { tamil: 'கோபம்', english: 'Anger' },
+            { tamil: 'கோயில்', english: 'Temple' },
+            { tamil: 'கௌதாரி', english: 'Spurfowl' },
+            { tamil: 'கௌரவம்', english: 'Honor' },
+            { tamil: 'சதுரம்', english: 'Square' },
+            { tamil: 'சமையல்', english: 'Cooking' },
+            { tamil: 'சந்திரன்', english: 'Moon' },
+            { tamil: 'சாவி', english: 'Key' },
+            { tamil: 'சாலை', english: 'Road' },
+            { tamil: 'சாப்பாடு', english: 'Food' },
+            { tamil: 'சிறகு', english: 'Wing' },
+            { tamil: 'சிங்கம்', english: 'Lion' },
+            { tamil: 'சிரிப்பு', english: 'Laugh' },
+            { tamil: 'சீர்', english: 'Status' },
+            { tamil: 'சீடன்', english: 'Disciple' },
+            { tamil: 'சீட்டு', english: 'Card' },
+            { tamil: 'சுவர்', english: 'Wall' },
+            { tamil: 'சுண்டெலி', english: 'Mouse' },
+            { tamil: 'சுற்றுலா', english: 'Tourism' },
+            { tamil: 'சூடு', english: 'Heat' },
+            { tamil: 'சூழல்', english: 'Environment' },
+            { tamil: 'சூரியன்', english: 'Sun' },
+            { tamil: 'செம்மை', english: 'Fairness' },
+            { tamil: 'செல்வம்', english: 'Wealth' },
+            { tamil: 'செந்தமிழ்', english: 'Classical Tamil' },
+            { tamil: 'சேலை', english: 'Saree' },
+            { tamil: 'சேவல்', english: 'Rooster' },
+            { tamil: 'சேட்டை', english: 'Mischief' },
+            { tamil: 'சைகை', english: 'Gesture' },
+            { tamil: 'சைவம்', english: 'Vegetarian' },
+            { tamil: 'சொல்', english: 'Word' },
+            { tamil: 'சொட்டு', english: 'Drop' },
+            { tamil: 'சொர்க்கம்', english: 'Heaven' },
+            { tamil: 'சோறு', english: 'Rice' },
+            { tamil: 'சோலை', english: 'Grove' },
+            { tamil: 'சோதனை', english: 'Test' },
+            { tamil: 'சௌகரியம்', english: 'Comfort' },
+            { tamil: 'மடம்', english: 'Monastery' },
+            { tamil: 'படம்', english: 'Picture' },
+            { tamil: 'அண்டா', english: 'Vessel' },
+            { tamil: 'வாடாமலர்', english: 'Unfading flower' },
+            { tamil: 'காண்டாமிருகம்', english: 'Rhino' },
+            { tamil: 'மடி', english: 'Lap' },
+            { tamil: 'படி', english: 'Step' },
+            { tamil: 'குடி', english: 'Drink' },
+            { tamil: 'லட்டு', english: 'Laddoo' },
+            { tamil: 'கட்டு', english: 'Tie' },
+            { tamil: 'காட்டு', english: 'Show' },
+            { tamil: 'கண்டெடுத்தான்', english: 'He found it' },
+            { tamil: 'விடை', english: 'Answer' },
+            { tamil: 'அடை', english: 'Get' },
+            { tamil: 'படை', english: 'Army' },
+            { tamil: 'நாடோடி', english: 'Nomad' },
+            { tamil: 'குண்டோதரன்', english: 'Big-bellied giant' },
+            { tamil: 'பண்', english: 'Song' },
+            { tamil: 'அண்ணா', english: 'Brother' },
+            { tamil: 'கண்ணாடி', english: 'Mirror' },
+            { tamil: 'மணி', english: 'Bell' },
+            { tamil: 'அணி', english: 'Dress up' },
+            { tamil: 'பணி', english: 'Work' },
+            { tamil: 'அņu', english: 'Atom' },
+            { tamil: 'நுணுக்கம்', english: 'Nuance' },
+            { tamil: 'கணுக்கால்', english: 'Ankle' },
+            { tamil: 'கண்ணெதிரே', english: 'In front of eyes' },
+            { tamil: 'பெண்ணே', english: 'O Girl!' },
+            { tamil: 'கணேசன்', english: 'Ganesan' },
+            { tamil: 'மணை', english: 'Low seat' },
+            { tamil: 'திண்ணை', english: 'Verandah' },
+            { tamil: 'தலை', english: 'Head' },
+            { tamil: 'தமிழ்', english: 'Tamil' },
+            { tamil: 'தண்ணீர்', english: 'Water' },
+            { tamil: 'தாடி', english: 'Beard' },
+            { tamil: 'தாமரை', english: 'Lotus' },
+            { tamil: 'திரை', english: 'Screen' },
+            { tamil: 'திருவிழா', english: 'Festival' },
+            { tamil: 'தீ', english: 'Fire' },
+            { tamil: 'தீபம்', english: 'Lamp' },
+            { tamil: 'தீர்வு', english: 'Solution' },
+            { tamil: 'துணி', english: 'Cloth' },
+            { tamil: 'துள்ளல்', english: 'Bounciness' },
+            { tamil: 'துடைப்பம்', english: 'Broom' },
+            { tamil: 'தூரம்', english: 'Distance' },
+            { tamil: 'தூய்மை', english: 'Purity' },
+            { tamil: 'தூக்கம்', english: 'Sleep' },
+            { tamil: 'தெரு', english: 'Street' },
+            { tamil: 'தெளிவு', english: 'Clarity' },
+            { tamil: 'தென்றல்', english: 'Breeze' },
+            { tamil: 'தேன்', english: 'Honey' },
+            { tamil: 'தேசம்', english: 'Country' },
+            { tamil: 'தேங்காய்', english: 'Coconut' },
+            { tamil: 'தையல்', english: 'Stitch' },
+            { tamil: 'விந்தை', english: 'Wonder' },
+            { tamil: 'தொட்டி', english: 'Tub' },
+            { tamil: 'தொழில்', english: 'Profession' },
+            { tamil: 'தொலைவு', english: 'Distance' },
+            { tamil: 'தோல்', english: 'Skin' },
+            { tamil: 'தோட்டம்', english: 'Garden' },
+            { tamil: 'தோழன்', english: 'Friend' },
+            { tamil: 'நண்டு', english: 'Crab' },
+            { tamil: 'நகரம்', english: 'City' },
+            { tamil: 'நடனம்', english: 'Dance' },
+            { tamil: 'நாய்', english: 'Dog' },
+            { tamil: 'நாடு', english: 'Country' },
+            { tamil: 'நாகம்', english: 'Cobra' },
+            { tamil: 'நிலா', english: 'Moon' },
+            { tamil: 'நிலம்', english: 'Land' },
+            { tamil: 'நிழல்', english: 'Shadow' },
+            { tamil: 'நீலம்', english: 'Blue' },
+            { tamil: 'நீந்து', english: 'Swim' },
+            { tamil: 'நுரை', english: 'Foam' },
+            { tamil: 'நுழைவு', english: 'Entry' },
+            { tamil: 'நூல்', english: 'Thread' },
+            { tamil: 'நூறு', english: 'Hundred' },
+            { tamil: 'நூலகம்', english: 'Library' },
+            { tamil: 'நெல்', english: 'Paddy' },
+            { tamil: 'நெஞ்சு', english: 'Heart' },
+            { tamil: 'நெருப்பு', english: 'Fire' },
+            { tamil: 'நேர்மை', english: 'Honesty' },
+            { tamil: 'நேயம்', english: 'Affection' },
+            { tamil: 'நேரம்', english: 'Time' },
+            { tamil: 'நொடி', english: 'Second' },
+            { tamil: 'நோய்', english: 'Disease' },
+            { tamil: 'நோன்பு', english: 'Fasting' },
+            { tamil: 'நோக்கம்', english: 'Vision' },
+            { tamil: 'பழம்', english: 'Fruit' },
+            { tamil: 'பாம்பு', english: 'Snake' },
+            { tamil: 'பாகம்', english: 'Part' },
+            { tamil: 'பின்', english: 'Back' },
+            { tamil: 'பிறை', english: 'Crescent' },
+            { tamil: 'பித்து', english: 'Craze' },
+            { tamil: 'பீடை', english: 'Misfortune' },
+            { tamil: 'பீங்கான்', english: 'Porcelain' },
+            { tamil: 'பீர்க்கங்காய்', english: 'Ridge Gourd' },
+            { tamil: 'புதிது', english: 'New' },
+            { tamil: 'புதினம்', english: 'Novel' },
+            { tamil: 'புத்தகம்', english: 'Book' },
+            { tamil: 'பூனை', english: 'Cat' },
+            { tamil: 'பூக்கள்', english: 'Flowers' },
+            { tamil: 'பூங்கொத்து', english: 'Bouquet' },
+            { tamil: 'பெண்', english: 'Woman' },
+            { tamil: 'பெரிது', english: 'Big' },
+            { tamil: 'பெட்டி', english: 'Box' },
+            { tamil: 'பேனா', english: 'Pen' },
+            { tamil: 'பேச்சு', english: 'Speech' },
+            { tamil: 'பேரிடர்', english: 'Disaster' },
+            { tamil: 'அகப்பை', english: 'Ladle' },
+            { tamil: 'பைந்தமிழ்', english: 'Pure Tamil' },
+            { tamil: 'பொன்', english: 'Gold' },
+            { tamil: 'பொடி', english: 'Powder' },
+            { tamil: 'பொதுவான', english: 'Common' },
+            { tamil: 'போர்', english: 'War' },
+            { tamil: 'போதும்', english: 'Enough' },
+            { tamil: 'போட்டி', english: 'Match' },
+            { tamil: 'பௌர்ணமி', english: 'Full Moon' },
+            { tamil: 'மரம்', english: 'Tree' },
+            { tamil: 'மாடு', english: 'Cow' },
+            { tamil: 'மாண்பு', english: 'Dignity' },
+            { tamil: 'மாமரம்', english: 'Mango Tree' },
+            { tamil: 'மிச்சம்', english: 'Leftover' },
+            { tamil: 'மின்னல்', english: 'Lightning' },
+            { tamil: 'மிளகாய்', english: 'Chilli' },
+            { tamil: 'மீன்', english: 'Fish' },
+            { tamil: 'மீதம்', english: 'Balance' },
+            { tamil: 'மீண்டும்', english: 'Again' },
+            { tamil: 'முயல்', english: 'Rabbit' },
+            { tamil: 'முத்து', english: 'Pearl' },
+            { tamil: 'முகம்', english: 'Face' },
+            { tamil: 'மூன்று', english: 'Three' },
+            { tamil: 'மூப்பு', english: 'Old Age' },
+            { tamil: 'மூங்கில்', english: 'Bamboo' },
+            { tamil: 'மெத்தை', english: 'Bed' },
+            { tamil: 'மெல்லிசை', english: 'Soft Music' },
+            { tamil: 'மெழுகுவர்த்தி', english: 'Candle' },
+            { tamil: 'மேடை', english: 'Stage' },
+            { tamil: 'மேகம்', english: 'Cloud' },
+            { tamil: 'இமை', english: 'Eyelash' },
+            { tamil: 'மையம்', english: 'Center' },
+            { tamil: 'மொழி', english: 'Language' },
+            { tamil: 'மொட்டு', english: 'Bud' },
+            { tamil: 'மொத்தம்', english: 'Total' },
+            { tamil: 'மோர்', english: 'Buttermilk' },
+            { tamil: 'மோதிரம்', english: 'Ring' },
+            { tamil: 'மோப்பம்', english: 'Sniff' },
+            { tamil: 'மௌனம்', english: 'Silence' },
+            { tamil: 'புயல்', english: 'Storm' },
+            { tamil: 'பயணம்', english: 'Journey' },
+            { tamil: 'இயற்கை', english: 'Nature' },
+            { tamil: 'யானை', english: 'Elephant' },
+            { tamil: 'நியாயம்', english: 'Justice' },
+            { tamil: 'வியாபாரம்', english: 'Business' },
+            { tamil: 'குயில்', english: 'Cuckoo' },
+            { tamil: 'மயில்', english: 'Peacock' },
+            { tamil: 'விவசாயி', english: 'Farmer' },
+            { tamil: 'நுரையீரல்', english: 'Lungs' },
+            { tamil: 'யுகம்', english: 'Era' },
+            { tamil: 'வாயு', english: 'Gas' },
+            { tamil: 'ஆயுதம்', english: 'Weapon' },
+            { tamil: 'யூகம்', english: 'Guess' },
+            { tamil: 'கையெழுத்து', english: 'Handwriting' },
+            { tamil: 'மெய்யெழுத்து', english: 'Consonant' },
+            { tamil: 'வெளியேறு', english: 'Exit' },
+            { tamil: 'செய்யேல்', english: 'Do not do' },
+            { tamil: 'ஆசிரியை', english: 'Teacher' },
+            { tamil: 'கவலையை', english: 'Worry' },
+            { tamil: 'மொழியை', english: 'Language' },
+            { tamil: 'கையொப்பம்', english: 'Signature' },
+            { tamil: 'மெய்யொலி', english: 'Consonant Sound' },
+            { tamil: 'யோகம்', english: 'Luck' },
+            { tamil: 'யோசனை', english: 'Thought' },
+            { tamil: 'அயோத்தி', english: 'Ayodhya' },
+            { tamil: 'ரசம்', english: 'Soup' },
+            { tamil: 'அரசன்', english: 'King' },
+            { tamil: 'ராணி', english: 'Queen' },
+            { tamil: 'ஆரவாரம்', english: 'Uproar' },
+            { tamil: 'இராணுவம்', english: 'Army' },
+            { tamil: 'நரி', english: 'Fox' },
+            { tamil: 'அரிசி', english: 'Rice' },
+            { tamil: 'சரித்திரம்', english: 'History' },
+            { tamil: 'அசரிரீ', english: 'Divine Voice' },
+            { tamil: 'சரீரம்', english: 'Body' },
+            { tamil: 'ருசி', english: 'Taste' },
+            { tamil: 'கருப்பு', english: 'Black' },
+            { tamil: 'பருந்து', english: 'Eagle' },
+            { tamil: 'ரூபாய்', english: 'Rupees' },
+            { tamil: 'அரூபம்', english: 'Formless' },
+            { tamil: 'குரூரம்', english: 'Cruelty' },
+            { tamil: 'ரெங்கன்', english: 'Rengan' },
+            { tamil: 'ஒரே', english: 'Same' },
+            { tamil: 'ரேகை', english: 'Line' },
+            { tamil: 'வரைபடம்', english: 'Map' },
+            { tamil: 'ரொட்டி', english: 'Bread' },
+            { tamil: 'ரொக்கம்', english: 'Cash' },
+            { tamil: 'ரோஜா', english: 'Rose' },
+            { tamil: 'துரோகம்', english: 'Betrayal' },
+            { tamil: 'குரோதம்', english: 'Hatred' },
+            { tamil: 'ரௌத்திரம்', english: 'Fury' },
+            { tamil: 'கலகம்', english: 'Feud' },
+            { tamil: 'லாபம்', english: 'Profit' },
+            { tamil: 'வெண்ணிலா', english: 'Moonlight' },
+            { tamil: 'பலாப்பழம்', english: 'Jackfruit' },
+            { tamil: 'வலி', english: 'Pain' },
+            { tamil: 'புலி', english: 'Tiger' },
+            { tamil: 'எலுமிச்சை', english: 'Lemon' },
+            { tamil: 'பாலுண்ணி', english: 'Warts' },
+            { tamil: 'கல்லூரி', english: 'College' },
+            { tamil: 'பாலூட்டி', english: 'Mammal' },
+            { tamil: 'வேலை', english: 'Work' },
+            { tamil: 'உலை', english: 'Hearth' },
+            { tamil: 'அலை', english: 'Wave' },
+            { tamil: 'நல்லொழுக்கம்', english: 'Good character' },
+            { tamil: 'உலோபி', english: 'Miser' },
+            { tamil: 'உலோகம்', english: 'Metal' },
+            { tamil: 'லௌகீகம்', english: 'Worldliness' },
+            { tamil: 'வண்டு', english: 'Beetle' },
+            { tamil: 'வரிசை', english: 'Order' },
+            { tamil: 'வண்டி', english: 'Cart' },
+            { tamil: 'வாசல்', english: 'Entrance' },
+            { tamil: 'வானம்', english: 'Sky' },
+            { tamil: 'வார்த்தை', english: 'Word' },
+            { tamil: 'வில்', english: 'Bow' },
+            { tamil: 'வித்தை', english: 'Skill' },
+            { tamil: 'விமானம்', english: 'Airplane' },
+            { tamil: 'வீடு', english: 'House' },
+            { tamil: 'வீதி', english: 'Street' },
+            { tamil: 'வீரன்', english: 'Warrior' },
+            { tamil: 'அறிவு', english: 'Knowledge' },
+            { tamil: 'இவ்வூர்', english: 'This village' },
+            { tamil: 'வெற்றி', english: 'Victory' },
+            { tamil: 'வெள்ளி', english: 'Silver' },
+            { tamil: 'வெள்ளை', english: 'White' },
+            { tamil: 'வேர்', english: 'Root' },
+            { tamil: 'வேகம்', english: 'Speed' },
+            { tamil: 'வைரம்', english: 'Diamond' },
+            { tamil: 'வைகாசி', english: 'Tamil month' },
+            { tamil: 'வைகறை', english: 'Dawn' },
+            { tamil: 'இவ்வொன்று', english: 'This item' },
+            { tamil: 'வருவோர்', english: 'Comers' },
+            { tamil: 'போவோர்', english: 'Goers' },
+            { tamil: 'வௌவால்', english: 'Bat' },
+            { tamil: 'வழி', english: 'Way' },
+            { tamil: 'அழகு', english: 'Beauty' },
+            { tamil: 'விழா', english: 'Festival' },
+            { tamil: 'குழாய்', english: 'Pipe' },
+            { tamil: 'செழிப்பு', english: 'Prosperity' },
+            { tamil: 'வழிகாட்டி', english: 'Guide' },
+            { tamil: 'முழு', english: 'Full' },
+            { tamil: 'புழு', english: 'Worm' },
+            { tamil: 'குழு', english: 'Group' },
+            { tamil: 'கீழூற்று', english: 'Spring' },
+            { tamil: 'மழை', english: 'Rain' },
+            { tamil: 'ஏழை', english: 'Poor' },
+            { tamil: 'உழைப்பு', english: 'Hard work' },
+            { tamil: 'புகழொடு', english: 'With fame' },
+            { tamil: 'தமிழொலி', english: 'Tamil sound' },
+            { tamil: 'புகழோங்கு', english: 'Fame growing' },
+            { tamil: 'தமிழோடு', english: 'With Tamil' },
+            { tamil: 'களம்', english: 'Field' },
+            { tamil: 'குளம்', english: 'Pond' },
+            { tamil: 'தாளம்', english: 'Rhythm' },
+            { tamil: 'காளான்', english: 'Mushroom' },
+            { tamil: 'காளாஞ்சி', english: 'Ceremonial plate' },
+            { tamil: 'புளி', english: 'Tamarind' },
+            { tamil: 'குளிர்', english: 'Cold' },
+            { tamil: 'தள்ளு', english: 'Push' },
+            { tamil: 'கொள்ளு', english: 'Horsegram' },
+            { tamil: 'வள்ளுவர்', english: 'Valluvar' },
+            { tamil: 'உள்ளூற', english: 'Inwardly' },
+            { tamil: 'முள்ளூன்றிய', english: 'Deeply rooted thorn' },
+            { tamil: 'வெள்ளெலி', english: 'White rat' },
+            { tamil: 'உள்ளெரிச்சல்', english: 'Internal burning' },
+            { tamil: 'மெள்ளென', english: 'Softly' },
+            { tamil: 'உள்ளே', english: 'Inside' },
+            { tamil: 'வெளியே', english: 'Outside' },
+            { tamil: 'அவளே', english: 'She herself' },
+            { tamil: 'நாளை', english: 'Tomorrow' },
+            { tamil: 'பிள்ளை', english: 'Child' },
+            { tamil: 'விளையாட்டு', english: 'Game' },
+            { tamil: 'வெள்ளொளி', english: 'White light' },
+            { tamil: 'உள்ளொன்று', english: 'Inwardly' },
+            { tamil: 'அவளோ', english: 'She?' },
+            { tamil: 'இவளோ', english: 'This girl?' },
+            { tamil: 'மறம்', english: 'Valor' },
+            { tamil: 'அறம்', english: 'Virtue' },
+            { tamil: 'பறவை', english: 'Bird' },
+            { tamil: 'கற்றான்', english: 'Learned man' },
+            { tamil: 'நூற்றாண்டு', english: 'Century' },
+            { tamil: 'நெற்றி', english: 'Forehead' },
+            { tamil: 'கற்றீர்', english: 'You learned' },
+            { tamil: 'பெற்றீர்', english: 'You obtained' },
+            { tamil: 'உறுப்பு', english: 'Organ' },
+            { tamil: 'காற்று', english: 'Wind' },
+            { tamil: 'நேற்று', english: 'Yesterday' },
+            { tamil: 'சிற்றூர்', english: 'Small village' },
+            { tamil: 'கற்றூண்', english: 'Stone pillar' },
+            { tamil: 'சிற்றெறும்பு', english: 'Small ant' },
+            { tamil: 'பெற்றெடுத்த', english: 'Gave birth to' },
+            { tamil: 'அன்றே', english: 'That day itself' },
+            { tamil: 'இன்றே', english: 'Today itself' },
+            { tamil: 'கற்றேன்', english: 'I learned' },
+            { tamil: 'கறை', english: 'Stain' },
+            { tamil: 'அறை', english: 'Room' },
+            { tamil: 'நிறை', english: 'Fullness' },
+            { tamil: 'சிற்றொலி', english: 'Small sound' },
+            { tamil: 'மற்றொன்று', english: 'Another one' },
+            { tamil: 'மற்றோர்', english: 'Others' },
+            { tamil: 'கற்றோர்', english: 'Learned scholars' },
+            { tamil: 'பெற்றோர்', english: 'Parents' },
+            { tamil: 'மனம்', english: 'Mind' },
+            { tamil: 'சன்னல்', english: 'Window' },
+            { tamil: 'கனா', english: 'Dream' },
+            { tamil: 'வினா', english: 'Question' },
+            { tamil: 'தனி', english: 'Alone' },
+            { tamil: 'கனி', english: 'Fruit' },
+            { tamil: 'பனி', english: 'Dew' },
+            { tamil: 'தேனீ', english: 'Honeybee' },
+            { tamil: 'நன்னீர்', english: 'Fresh water' },
+            { tamil: 'மனு', english: 'Petition' },
+            { tamil: 'அவனுடன்', english: 'With him' },
+            { tamil: 'முன்னூறு', english: 'Three Hundred' },
+            { tamil: 'நன்னூல்', english: 'Grammar book' },
+            { tamil: 'நன்னெறி', english: 'Good path' },
+            { tamil: 'முன்னே', english: 'In front' },
+            { tamil: 'பின்னே', english: 'Behind' },
+            { tamil: 'என்னே', english: 'What a wonder' },
+            { tamil: 'அவனை', english: 'Him' },
+            { tamil: 'என்னை', english: 'Me' },
+            { tamil: 'பின்னொன்று', english: 'Another one' },
+            { tamil: 'பொன்னொளி', english: 'Golden light' },
+            { tamil: 'பின்னோடு', english: 'Behind' },
+            { tamil: 'என்னோடு', english: 'With me' }
+        ];
+
+        const colors = ['#e63946', '#3a86ff', '#e07a5f', '#2ec4b6', '#9b5de5', '#ff007f'];
+
+        let score = 0;
+        let lives = 3;
+        let gameActive = false;
+        let currentTarget = null;
+        let spawnTimer = null;
+        let targetChangeTimer = null;
+        let currentSpeed = 6;
+
+        const stage = document.getElementById('stage');
+        const targetWordDisplay = document.getElementById('target-word');
+        const scoreDisplay = document.getElementById('score-val');
+        const livesDisplay = document.getElementById('lives-val');
+        const menuOverlay = document.getElementById('menu-overlay');
+
+        function startGame() {
+            score = 0;
+            lives = 3;
+            currentSpeed = 6;
+            gameActive = true;
+            scoreDisplay.innerText = score;
+            updateLivesDisplay();
+            menuOverlay.style.display = 'none';
+
+            pickNewTarget();
+
+            // Standard background loop to spawn random filler words
+            spawnTimer = setInterval(() => {
+                if (gameActive) spawnBalloon(null);
+            }, 1400);
+
+            // Turn on auto-rotate timer for prompts if user takes too long
+            targetChangeTimer = setInterval(pickNewTarget, 9000);
+        }
+
+        function pickNewTarget() {
+            if (!gameActive) return;
+
+            // Select new target word
+            const randomItem = wordList[Math.floor(Math.random() * wordList.length)];
+            currentTarget = randomItem;
+            targetWordDisplay.innerText = currentTarget.english;
+
+            // GUARANTEE: Instantly spawn the correct matching balloon so it is visible inside 3 seconds
+            spawnBalloon(currentTarget);
+        }
+
+        function updateLivesDisplay() {
+            livesDisplay.innerText = lives;
+        }
+
+        // specificWordObj allows us to bypass random selection and force spawn the correct target
+        function spawnBalloon(specificWordObj = null) {
+            if (!gameActive) return;
+
+            // Use the forced target data, or grab a random one if null
+            const wordData = specificWordObj ? specificWordObj : wordList[Math.floor(Math.random() * wordList.length)];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+            const balloon = document.createElement('div');
+            balloon.className = 'balloon';
+            balloon.style.backgroundColor = randomColor;
+            balloon.style.color = randomColor;
+
+            const textContainer = document.createElement('div');
+            textContainer.className = 'balloon-text';
+            textContainer.innerText = wordData.tamil;
+            balloon.appendChild(textContainer);
+
+            const randomX = Math.floor(Math.random() * (stage.offsetWidth - 120));
+            balloon.style.left = `${randomX}px`;
+            balloon.style.animationDuration = `${currentSpeed}s`;
+
+            const stringEl = document.createElement('div');
+            stringEl.className = 'balloon-string';
+            balloon.appendChild(stringEl);
+
+            balloon.addEventListener('mousedown', (e) => handlePop(balloon, wordData, e));
+            balloon.addEventListener('touchstart', (e) => handlePop(balloon, wordData, e));
+
+            balloon.addEventListener('animationend', () => {
+                if (wordData.english === currentTarget.english && gameActive) {
+                    loseLife();
+                }
+                balloon.remove();
+            });
+
+            stage.appendChild(balloon);
+        }
+
+        function handlePop(balloonEl, wordData, event) {
+            if (!gameActive) return;
+            event.preventDefault();
+
+            createBurst(balloonEl.offsetLeft + 55, balloonEl.offsetTop + 65, balloonEl.style.backgroundColor);
+
+            if (wordData.english === currentTarget.english) {
+                score += 50;
+                scoreDisplay.innerText = score;
+
+                if (score % 200 === 0 && currentSpeed > 3.5) {
+                    currentSpeed -= 0.5;
+                }
+
+                // Clear prompt rotation timer so player gets a fresh 9 seconds for the next word
+                clearInterval(targetChangeTimer);
+                targetChangeTimer = setInterval(pickNewTarget, 9000);
+
+                pickNewTarget();
+            } else {
+                loseLife();
+            }
+
+            balloonEl.remove();
+        }
+
+        function createBurst(x, y, color) {
+            for (let i = 0; i < 12; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.backgroundColor = color;
+                p.style.left = `${x}px`;
+                p.style.top = `${y}px`;
+
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 80 + 40;
+                p.style.setProperty('--x', `${Math.cos(angle) * distance}px`);
+                p.style.setProperty('--y', `${Math.sin(angle) * distance}px`);
+
+                stage.appendChild(p);
+                setTimeout(() => p.remove(), 500);
+            }
+        }
+
+        function loseLife() {
+            lives--;
+            updateLivesDisplay();
+            if (lives <= 0) endGame();
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(spawnTimer);
+            clearInterval(targetChangeTimer);
+            document.querySelectorAll('.balloon').forEach(b => b.remove());
+
+            menuOverlay.querySelector('h2').innerText = "Game Over 🎈";
+            menuOverlay.querySelector('p').innerText = `Final Score: ${score} points!`;
+            menuOverlay.querySelector('.btn-start').innerText = "Try Again";
+            menuOverlay.style.display = 'flex';
+        }
+    </script>
+</body>
+
+</html>

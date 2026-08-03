@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>வார்த்தைச் சக்கரம்</title>
+
+    <link rel="stylesheet" href="/css/auth.css?v=20260723" />
+    <link rel="stylesheet" href="/css/mascot.css?v=20260724" />
+    <script src="/js/auth.js?v=20260723"></script>
+    <script src="/js/mascot.js?v=20260724"></script>
+    <script>
+      TamilAuth.initPage();
+    </script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial;
+            text-align: center;
+            color: #000;
+        }
+
+        #home {
+            text-decoration: none;
+            background-color: #0000ff;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 15px;
+        }
+
+        h1 {
+            color: #00f;
+            text-align: center;
+        }
+
+        #currentPlayer {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        #scoreboard {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 10px;
+        }
+
+        .playerCard {
+            min-width: 120px;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            margin-right: 10px;
+        }
+
+        .active {
+            outline: 8px solid #000000;
+            transform: scale(1.1);
+        }
+
+        #wheelContainer {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            margin: 20px auto;
+        }
+
+        #pointer {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 32px;
+            color: yellow;
+            text-shadow: 0 0 10px black;
+            z-index: 10;
+        }
+
+        #wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            border: 10px solid #222;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+        }
+
+        #result {
+            font-size: 75px;
+            margin-top: 10px;
+            font-weight: bold;
+            min-height: 90px;
+        }
+
+        button {
+            padding: 12px 20px;
+            margin: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background-color: #ccc !important;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+    <a id="home" href="index.html"> ◀ முகப்பு</a>
+
+    <h1>வார்த்தைச் சக்கரம்</h1>
+
+    <p> சக்கரத்தை சுழற்றி, வரும் எழுத்தைக் கொண்ட வார்த்தை ஒன்று சொல்</p>
+    <div id="scoreboard"></div>
+
+    <div id="wheelContainer">
+        <div id="pointer">▼</div>
+        <div id="wheel"></div>
+    </div>
+
+    <div id="result">?</div>
+
+    <button id="correctBtn" onclick="correct()" style="display:none;background:green;color:white;">வார்த்தை சரி</button>
+    <button id="wrongBtn" onclick="wrong()" style="display:none;background:red;color:white;">வார்த்தை தவறு</button>
+
+    <div id="currentPlayer"></div>
+
+    <button id="spinBtn" onclick="spin()">SPIN</button>
+
+    <br>
+
+    <script>
+        let letters = [
+            'அ', 'ஆ', 'இ', 'ஈ', 'உ', 'ஊ', 'எ', 'ஏ',
+            'க', 'கா', 'கி', 'கீ', 'கு', 'கூ', 'கெ', 'கே', 'கொ', 'கோ',
+            'ச', 'சா', 'சி', 'சீ', 'சு', 'சூ', 'செ', 'சே', 'சொ', 'சோ',
+            'த', 'தா', 'தி', 'தீ', 'து', 'தூ', 'தெ', 'தே', 'தொ', 'தோ',
+            'ப', 'பா', 'பி', 'பீ', 'பு', 'பூ', 'பெ', 'பே', 'பொ', 'போ',
+            'ட', 'டா', 'டி', 'டு',
+            'ந', 'நா', 'நி', 'நீ', 'நு', 'நூ',
+            'ம', 'மா', 'மி', 'மீ', 'மு', 'மூ', 'மெ', 'மே',
+            'ர', 'ரா', 'ரி', 'ரீ', 'ரு', 'ரூ',
+            'ல', 'லா', 'லி',
+            'வ', 'வா', 'வி', 'வீ',
+            'ற', 'று',
+            'ன', 'னா', 'னி'
+        ];
+
+        let colors = [
+            // --- The Hot & Fiery Side ---
+            "#ff3366", // Candy Red
+            "#ff007f", // Neon Pink
+            "#f72585", // Laser Purple/Deep Magenta
+
+            // --- The Cool & Deep Side ---
+            "#9d4edd", // Bright Violet
+            "#7b2cbf", // Vivid Purple
+            "#3a0ca3", // Intense Royal Blue
+            "#00b4d8", // Deep Sky Blue
+
+            // --- The Bright & Fresh Side ---
+            "#00f5d4", // Electric Cyan
+            "#70e000", // Apple Green
+            "#ccff00", // Lemon Lime
+            "#ffbe0b", // Sunny Yellow
+            "#ff5400"  // Hot Coral (bridges cleanly back into Candy Red!)
+        ];
+
+        // Shuffle colors array randomly on load using Fisher-Yates algorithm
+        for (let i = colors.length - 1; i > 0; i--) {
+            let j = Math.floor(Math.random() * (i + 1));
+            let temp = colors[i];
+            colors[i] = colors[j];
+            colors[j] = temp;
+        }
+
+        // Generate dynamic random stripes for the visual wheel background
+        let wheel = document.getElementById("wheel");
+        let gradientParts = [];
+        let degreeStep = 360 / colors.length;
+
+        for (let i = 0; i < colors.length; i++) {
+            let startDeg = i * degreeStep;
+            let endDeg = (i + 1) * degreeStep;
+            gradientParts.push(`${colors[i]} ${startDeg}deg ${endDeg}deg`);
+        }
+        wheel.style.background = `conic-gradient(${gradientParts.join(', ')})`;
+
+        let players = [];
+        let scores = [];
+        let current = 0;
+        let selectedLetter = "";
+
+        let count = parseInt(prompt("2 அல்லது 3 விளையாட்டாளர்கள்?"));
+        for (let i = 0; i < count; i++) {
+            let name = prompt("விளையாட்டாளர் " + (i + 1) + " பெயர் :");
+            players.push(name);
+            scores.push(0);
+        }
+
+        updateBoard();
+
+        function updateBoard() {
+            let board = document.getElementById("scoreboard");
+            board.innerHTML = "";
+
+            for (let i = 0; i < players.length; i++) {
+                let card = document.createElement("div");
+                card.className = "playerCard";
+                card.style.background = "#ff3366";
+                if (i === current) card.classList.add("active");
+
+                card.innerText = players[i] + "\n" + scores[i];
+                board.appendChild(card);
+            }
+
+            document.getElementById("currentPlayer").innerText = "விளையாட்டாளர்கள் : " + players[current];
+            document.getElementById("spinBtn").innerText = "சுழற்று  - " + players[current];
+        }
+
+        let rotation = 0;
+
+        function spin() {
+            document.getElementById("spinBtn").disabled = true;
+            document.getElementById("correctBtn").style.display = "none";
+            document.getElementById("wrongBtn").style.display = "none";
+            document.getElementById("result").innerText = "?";
+
+            // Choose a letter first 
+            let selectedIndex = Math.floor(Math.random() * letters.length);
+            selectedLetter = letters[selectedIndex];
+
+            // Random spin duration between 5 to 7 seconds
+            let spinDuration = Math.floor(Math.random() * 2001) + 5000;
+
+            // Dynamic random fast spins
+            let extraRotation = Math.floor(Math.random() * 360) + 2880;
+            rotation += extraRotation;
+
+            wheel.style.transition = `transform ${spinDuration}ms ease-out`;
+            wheel.style.transform = "rotate(" + rotation + "deg)";
+
+            setTimeout(showResult, spinDuration);
+        }
+
+        function showResult() {
+            document.getElementById("result").innerText = selectedLetter;
+            document.getElementById("correctBtn").style.display = "inline-block";
+            document.getElementById("wrongBtn").style.display = "inline-block";
+            document.getElementById("spinBtn").disabled = false;
+        }
+
+        function correct() {
+            scores[current] += 100;
+            clearTurn();
+            next();
+        }
+
+        function wrong() {
+            scores[current] -= 50;
+            clearTurn();
+            next();
+        }
+
+        function clearTurn() {
+            document.getElementById("correctBtn").style.display = "none";
+            document.getElementById("wrongBtn").style.display = "none";
+            document.getElementById("result").innerText = "?";
+        }
+
+        function next() {
+            current++;
+            if (current >= players.length) current = 0;
+            updateBoard();
+        }
+    </script>
+
+</body>
+
+</html>

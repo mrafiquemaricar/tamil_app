@@ -134,6 +134,31 @@
             color: #495057;
         }
 
+        .sentence {
+            position: relative;
+            cursor: help;
+        }
+
+        #translateTooltip {
+            position: fixed;
+            display: none;
+            max-width: 260px;
+            background: #222;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            line-height: 1.3;
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+            pointer-events: none;
+        }
+
+        #translateTooltip.loading {
+            font-style: italic;
+            opacity: 0.8;
+        }
+
         /* Scrollbar styling */
         #leftBox::-webkit-scrollbar,
         #rightBox::-webkit-scrollbar,
@@ -176,12 +201,6 @@
             }
         }
     </style>
-
-  <link rel="stylesheet" href="css/auth.css" />
-  <script src="js/auth.js"></script>
-  <script>
-    TamilAuth.initPage();
-  </script>
 </head>
 
 <body>
@@ -191,6 +210,8 @@
     </div>
 
     <h1>எத்தனை சரியான வாக்கியம் அமைக்க முடியும்?</h1>
+
+    <div id="translateTooltip"></div>
 
     <div id="container">
         <div id="leftBox" aria-label="Word chunks list" role="list"></div>
@@ -219,10 +240,11 @@
             "நன்றாக", "இருக்கிறது", "இன்று", "நேரமாக", "சென்றாள்",
             "வேலை", "செய்து", "முடித்தேன்", "சுறுசுறுப்பாக", "தமிழ்",
             "மொழி", "சோம்பல்", "கணினி", "சென்றான்", "சென்றார்", "பார்க்கிறான்",
+            "பார்க்கிறாள்", "மாலை", "மதிய", 
             "குருவி", "பூனை", "நூலகத்திற்குச்", "கடைக்குச்", "கடற்கரைக்குச்",
             "விளையாட்டு மைதானத்துக்குச்", "தொலைக்காட்சி", "பார்க்கிறார்",
             "பார்க்கிறாள்", "அம்மா", "தாத்தா", "பாட்டி", "மாமா", "அத்தை",
-            "சித்தப்பா", "சித்தி"
+            "சித்தப்பா", "சித்தி", "மரங்கள்"
         ];
 
         function shuffleArray(array) {
@@ -240,6 +262,57 @@
         const confirmBtn = document.getElementById('confirmBtn');
         const bottomBox = document.getElementById('bottomBox');
         const sentenceCount = document.getElementById('sentenceCount');
+        const translateTooltip = document.getElementById('translateTooltip');
+
+        // ---- Google Translate (unofficial, free endpoint) helpers ----
+        const translationCache = new Map();
+
+        async function translateToEnglish(text) {
+            if (translationCache.has(text)) return translationCache.get(text);
+            const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=ta&tl=en&dt=t&q=' + encodeURIComponent(text);
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('Translation request failed');
+            const data = await res.json();
+            const translated = data[0].map(part => part[0]).join('');
+            translationCache.set(text, translated);
+            return translated;
+        }
+
+        function positionTooltip(e) {
+            const offset = 14;
+            let x = e.clientX + offset;
+            let y = e.clientY + offset;
+            const rect = translateTooltip.getBoundingClientRect();
+            if (x + rect.width > window.innerWidth) x = e.clientX - rect.width - offset;
+            if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - offset;
+            translateTooltip.style.left = x + 'px';
+            translateTooltip.style.top = y + 'px';
+        }
+
+        function attachTranslateHover(sentenceDiv, tamilText) {
+            sentenceDiv.addEventListener('mouseenter', async (e) => {
+                translateTooltip.textContent = '...மொழிபெயர்க்கிறது';
+                translateTooltip.classList.add('loading');
+                translateTooltip.style.display = 'block';
+                positionTooltip(e);
+                try {
+                    const english = await translateToEnglish(tamilText);
+                    translateTooltip.textContent = english;
+                    translateTooltip.classList.remove('loading');
+                } catch (err) {
+                    translateTooltip.textContent = 'மொழிபெயர்ப்பு கிடைக்கவில்லை';
+                    translateTooltip.classList.remove('loading');
+                }
+            });
+
+            sentenceDiv.addEventListener('mousemove', (e) => {
+                if (translateTooltip.style.display === 'block') positionTooltip(e);
+            });
+
+            sentenceDiv.addEventListener('mouseleave', () => {
+                translateTooltip.style.display = 'none';
+            });
+        }
 
         // Shuffle words before displaying
         shuffleArray(uniqueWords);
@@ -369,6 +442,7 @@
             p.className = 'sentence';
             p.textContent = sentenceText;
             bottomBox.appendChild(p);
+            attachTranslateHover(p, sentenceText);
 
             rightBox.innerHTML = '';
 

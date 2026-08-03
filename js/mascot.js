@@ -45,6 +45,30 @@
       ta: 'மைக் பட்டனை அழுத்தி தமிழில் பேசுங்கள், கணினி தட்டச்சு செய்யும்! 🎤',
       en: 'Tap the mic button and speak in Tamil - AI will type for you! 🎤'
     },
+    '31_tamil_words_with_sound.html': {
+      ta: 'ஒவ்வொரு தமிழ் வார்த்தையின் மீதும் கிளிக் செய்து ஒலி கேட்கலாம்! 🔊',
+      en: 'Click on any Tamil word to hear its pronunciation! 🔊'
+    },
+    '32_vaarthai_sakkaram.html': {
+      ta: 'வார்த்தைச் சக்கரத்தை சுழற்றி தமிழ் வார்த்தைகளை அமைப்போம்! 🎡',
+      en: 'Spin the word wheel to form correct Tamil words! 🎡'
+    },
+    '33_vaarthai_rayil.html': {
+      ta: 'வார்த்தை ரயிலில் சரியான பெட்டிகளை இணைப்போம்! 🚂',
+      en: 'Connect the train coaches with correct Tamil words! 🚂'
+    },
+    '34_mithakkum_baloon.html': {
+      ta: 'மிதக்கும் பலூனைத் தொட்டு சரியான தமிழ் வார்த்தையைப் பிடியுங்கள்! 🎈',
+      en: 'Tap the floating balloons to catch correct Tamil words! 🎈'
+    },
+    '35_vinveli_vettai.html': {
+      ta: 'விண்வெளி வேட்டையில் தமிழ் வார்த்தைகளைக் கண்டுபிடியுங்கள்! 🚀',
+      en: 'Explore space and hunt for correct Tamil words! 🚀'
+    },
+    '36_common_letter.html': {
+      ta: 'வார்த்தைகளுக்கு இடையேயான பொதுவான எழுத்தைக் கண்டுபிடியுங்கள்! 🔍',
+      en: 'Find the common letter hidden across words! 🔍'
+    },
     'default': {
       ta: 'வாருங்கள்! இந்தப் பயிற்சியை மகிழ்ச்சியாக செய்து முடிப்போம் 🎯',
       en: 'Come on! Let\'s complete this fun exercise together 🎯'

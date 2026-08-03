@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>தமிழ் வார்த்தைகள் - கணினி ஒலியுடன்</title>
+
+    <link rel="stylesheet" href="/css/auth.css?v=20260723" />
+    <link rel="stylesheet" href="/css/mascot.css?v=20260724" />
+    <script src="/js/auth.js?v=20260723"></script>
+    <script src="/js/mascot.js?v=20260724"></script>
+    <script>
+      TamilAuth.initPage();
+    </script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 10px;
+            margin: 0;
+            background: #fdfdfd;
+        }
+
+        .home {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        #home {
+            text-decoration: none;
+            background-color: #0000ff;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 15px;
+        }
+
+        h1 {
+            color: #00f;
+            text-align: center;
+        }
+
+        h2 {
+            color: #4b0082;
+        }
+
+        .section {
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+
+        .voice-toggle {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .uyir-buttons,
+        .mei-buttons,
+        .uyirmei-buttons,
+        #aythaButtons {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+        }
+
+        /* --- 3D Flip Card Container Styling --- */
+        .card-container {
+            perspective: 1000px;
+            height: 140px;
+            background: transparent;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .card {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .front, .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 12px;
+            box-sizing: border-box;
+            padding: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .back {
+            transform: rotateY(180deg);
+            background-color: #f9f9f9 !important;
+            border: 2px dashed #bbb;
+        }
+
+        .letter-main {
+            font-size: 42px;
+            font-weight: bold;
+        }
+
+        .letter-word, .translation-word {
+            font-size: 13px;
+            line-height: 1.4;
+            margin-top: 2px;
+        }
+
+        .translation-word {
+            color: #555;
+            font-style: italic;
+        }
+
+        .highlight {
+            background: yellow;
+            padding: 2px;
+            border-radius: 3px;
+            color: #000;
+        }
+
+        /* --- Theme Color Maps --- */
+        .uyir-button .front { background: #ffdddd; }
+        .mei-button .front { background: #ddeeff; }
+        .uyirmei-button .front { background: #ddffdd; }
+        .aytha-button .front { background: #fff0db; }
+
+        .disabled-btn {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="home">
+        <a id="home" href="index.html"> ◀ முகப்பு</a>
+    </div>
+
+    <h1>தமிழ் வார்த்தைகள் - கணினி ஒலியுடன்</h1>
+
+    <div class="voice-toggle">
+        <input type="checkbox" id="voiceToggle" checked>
+        <label for="voiceToggle">🔊 கணினி ஒலி</label>
+    </div>
+
+    <div class="section">
+        <h2>உயிர் எழுத்துக்கள்</h2>
+        <div class="uyir-buttons" id="uyirButtons"></div>
+    </div>
+
+    <div class="section">
+        <h2>ஆய்த எழுத்து - 1</h2>
+        <div id="aythaButtons"></div>
+    </div>
+
+    <div class="section">
+        <h2>மெய் எழுத்துக்கள்</h2>
+        <div class="mei-buttons" id="meiButtons"></div>
+    </div>
+
+    <div class="section">
+        <h2>உயிர் மெய் எழுத்துக்கள்</h2>
+        <div class="uyirmei-buttons" id="uyirmeiButtons"></div>
+    </div>
+
+    <script>
+        /* ===================== DATA ===================== */
+        const uyirLetters = ['அ', 'ஆ', 'இ', 'ஈ', 'உ', 'ஊ', 'எ', 'ஏ', 'ஐ', 'ஒ', 'ஓ', 'ஔ'];
+        const meiLetters = ['க்', 'ங்', 'ச்', 'ஞ்', 'ட்', 'ண்', 'த்', 'ந்', 'ப்', 'ம்', 'ய்', 'ர்', 'ல்', 'வ்', 'ழ்', 'ள்', 'ற்', 'ன்'];
+        const uyirmeiLetters = ['க', 'கா', 'கி', 'கீ', 'கு', 'கூ', 'கெ', 'கே', 'கை', 'கொ', 'கோ', 'கௌ', '-ங', '-ஙா', '-ஙி', '-ஙீ', '-ஙு', '-ஙூ', '-ஙெ', '-ஙே', '-ஙை', '-ங', '-ங', '-ங', 'ச', 'சா', 'சி', 'சீ', 'சு', 'சூ', 'செ', 'சே', 'சை', 'சொ', 'சோ', 'சௌ', '-ஞ', '-ஞா', '-ஞி', '-ஞீ', '-ஞு', '-ஞூ', '-ஞெ', '-ஞே', '-ஞை', '-ஞொ', '-ஞோ', '-ஞௌ', 'ட', 'டா', 'டி', 'டீ', 'டு', 'டூ', 'டெ', 'டே', 'டை', 'டொ', 'டோ', '-டௌ', 'ண', 'ணா', 'ணி', 'ணீ', 'ணு', 'ணூ', 'ணெ', 'ணே', 'ணை', 'ணொ', 'ணோ', '-ணௌ', 'த', 'தா', 'தி', 'தீ', 'து', 'தூ', 'தெ', 'தே', 'தை', 'தொ', 'தோ', '-தௌ', 'ந', 'நா', 'நி', 'நீ', 'நு', 'நூ', 'நெ', 'நே', 'நை', 'நொ', 'நோ', '-நௌ', 'ப', 'பா', 'பி', 'பீ', 'பு', 'பூ', 'பெ', 'பே', 'பை', 'பொ', 'போ', 'பௌ', 'ம', 'மா', 'மி', 'மீ', 'மு', 'மூ', 'மெ', 'மே', 'மை', 'மொ', 'மோ', 'மௌ', 'ய', 'யா', 'யி', 'யீ', 'யு', 'யூ', 'யெ', 'யே', 'யை', 'யொ', 'யோ', '-யௌ', 'ர', 'ரா', 'ரி', 'ரீ', 'ரு', 'ரூ', 'ரெ', 'ரே', 'ரை', 'ரொ', 'ரோ', 'ரௌ', 'ல', 'லா', 'லி', 'லீ', 'லு', 'லூ', 'லெ', 'லே', 'லை', 'லொ', 'லோ', 'லௌ', 'வ', 'வா', 'வி', 'வீ', 'வு', 'வூ', 'வெ', 'வே', 'வை', 'வொ', 'வோ', 'வௌ', 'ழ', 'ழா', 'ழி', 'ழீ', 'ழு', 'ழூ', 'ழெ', 'ழே', 'ழை', 'ழொ', 'ழோ', '-ழௌ', 'ள', 'ளா', 'ளி', 'ளீ', 'ளு', 'ளூ', 'ளெ', 'ளே', 'ளை', 'ளொ', 'ளோ', '-ளௌ', 'ற', 'றா', 'றி', 'றீ', 'று', 'றூ', 'றெ', 'றே', 'றை', 'றொ', 'றோ', '-றௌ', 'ன', 'னா', 'னி', 'னீ', 'னு', 'னூ', 'னெ', 'னே', 'னை', 'னொ', 'னோ', '-னௌ'];
+        const aythaLetter = ['ஃ'];
+
+        /* Unified Wordmap Structure: [ { tamil: '...', english: '...' }, ... ] */
+        const wordMap = {
+            'அ': [{ tamil: 'அம்மா', english: 'Mother' }, { tamil: 'அப்பா', english: 'Father' }, { tamil: 'அக்கா', english: 'Sister' }],
+            'ஆ': [{ tamil: 'ஆடு', english: 'Goat' }, { tamil: 'ஆறு', english: 'River' }, { tamil: 'ஆலமரம்', english: 'Banyan Tree' }],
+            'இ': [{ tamil: 'இலை', english: 'Leaf' }, { tamil: 'இரவு', english: 'Night' }, { tamil: 'இடம்', english: 'Place' }],
+            'ஈ': [{ tamil: 'ஈரம்', english: 'Moisture' }, { tamil: 'ஈக்கள்', english: 'Flies' }],
+            'உ': [{ tamil: 'உப்பு', english: 'Salt' }, { tamil: 'உணவு', english: 'Food' }, { tamil: 'உலகம்', english: 'World' }],
+            'ஊ': [{ tamil: 'ஊர்', english: 'Town' }, { tamil: 'ஊதா', english: 'Purple' }, { tamil: 'ஊஞ்சல்', english: 'Swing' }],
+            'எ': [{ tamil: 'எலி', english: 'Rat' }, { tamil: 'எறும்பு', english: 'Ant' }, { tamil: 'எண்ணெய்', english: 'Oil' }],
+            'ஏ': [{ tamil: 'ஏணி', english: 'Ladder' }, { tamil: 'ஏரி', english: 'Lake' }, { tamil: 'ஏழு', english: 'Seven' }],
+            'ஐ': [{ tamil: 'ஐந்து', english: 'Five' }, { tamil: 'ஐயம்', english: 'Doubt' }, { tamil: 'ஐவர்', english: 'Five People' }],
+            'ஒ': [{ tamil: 'ஒலி', english: 'Sound' }, { tamil: 'ஒளி', english: 'Light' }, { tamil: 'ஒட்டகம்', english: 'Camel' }],
+            'ஓ': [{ tamil: 'ஓடு', english: 'Tile' }, { tamil: 'ஓடை', english: 'Stream' }, { tamil: 'ஓடம்', english: 'Boat' }],
+            'ஔ': [{ tamil: 'ஔடதம்', english: 'Medicine' }, { tamil: 'ஔவையார்', english: 'Avvaiyar' }],
+            'ஃ': [{ tamil: 'அஃது', english: 'That one' }],
+            'க்': [{ tamil: 'மக்கள்', english: 'People' }, { tamil: 'பக்கம்', english: 'Side' }, { tamil: 'தக்காளி', english: 'Tomato' }],
+            'ங்': [{ tamil: 'திங்கள்', english: 'Monday' }, { tamil: 'மங்கை', english: 'Maiden' }, { tamil: 'கங்கை', english: 'Ganges' }],
+            'ச்': [{ tamil: 'பச்சை', english: 'Green' }, { tamil: 'அச்சம்', english: 'Fear' }, { tamil: 'கச்சிதம்', english: 'Perfect' }],
+            'ஞ்': [{ tamil: 'நஞ்சு', english: 'Poison' }, { tamil: 'கஞ்சி', english: 'Porridge' }, { tamil: 'மஞ்சள்', english: 'Yellow' }],
+            'ட்': [{ tamil: 'பட்டு', english: 'Silk' }, { tamil: 'பட்டம்', english: 'Kite' }, { tamil: 'கட்டம்', english: 'Square' }],
+            'ண்': [{ tamil: 'கண்', english: 'Eye' }, { tamil: 'மண்', english: 'Soil' }, { tamil: 'உண்', english: 'Eat' }],
+            'த்': [{ tamil: 'பத்து', english: 'Ten' }, { tamil: 'கத்தி', english: 'Knife' }, { tamil: 'சத்தம்', english: 'Noise' }],
+            'ந்': [{ tamil: 'பந்து', english: 'Ball' }, { tamil: 'சந்தை', english: 'Market' }, { tamil: 'தந்தம்', english: 'Ivory' }],
+            'ப்': [{ tamil: 'உப்பு', english: 'Salt' }, { tamil: 'அப்பா', english: 'Father' }, { tamil: 'கப்பல்', english: 'Ship' }],
+            'ம்': [{ tamil: 'அம்மா', english: 'Mother' }, { tamil: 'கம்பி', english: 'Wire' }, { tamil: 'தம்பி', english: 'Brother' }],
+            'ய்': [{ tamil: 'தாய்', english: 'Mother' }, { tamil: 'வாய்', english: 'Mouth' }, { tamil: 'காய்', english: 'Fruit' }],
+            'ர்': [{ tamil: 'நீர்', english: 'Water' }, { tamil: 'கார்', english: 'Car' }, { tamil: 'பார்', english: 'See' }],
+            'ல்': [{ tamil: 'பால்', english: 'Milk' }, { tamil: 'கால்', english: 'Leg' }, { tamil: 'வால்', english: 'Tail' }],
+            'வ்': [{ tamil: 'இவ்வழி', english: 'This way' }, { tamil: 'அவ்வாறு', english: 'That way' }, { tamil: 'செவ்வாய்', english: 'Tuesday' }],
+            'ழ்': [{ tamil: 'தாழ்வு', english: 'Lowliness' }, { tamil: 'வாழ்க்கை', english: 'Life' }],
+            'ள்': [{ tamil: 'முள்', english: 'Thorn' }, { tamil: 'வாள்', english: 'Sword' }, { tamil: 'பள்ளம்', english: 'Pit' }],
+            'ற்': [{ tamil: 'முற்றம்', english: 'Courtyard' }, { tamil: 'கற்றல்', english: 'Learning' }, { tamil: 'நற்றமிழ்', english: 'Good Tamil' }],
+            'ன்': [{ tamil: 'மன்னன்', english: 'King' }, { tamil: 'கன்னம்', english: 'Cheek' }, { tamil: 'பின்னல்', english: 'Braid' }],
+            'க': [{ tamil: 'கடல்', english: 'Sea' }, { tamil: 'கதவு', english: 'Door' }, { tamil: 'கரும்பு', english: 'Sugarcane' }],
+            'கா': [{ tamil: 'காடு', english: 'Forest' }, { tamil: 'காலை', english: 'Morning' }, { tamil: 'காகம்', english: 'Crow' }],
+            'கி': [{ tamil: 'கிளி', english: 'Parrot' }, { tamil: 'கிணறு', english: 'Well' }, { tamil: 'கிரீடம்', english: 'Crown' }],
+            'கீ': [{ tamil: 'கீரை', english: 'Spinach' }, { tamil: 'கீழே', english: 'Below' }, { tamil: 'கீதம்', english: 'Song' }],
+            'கு': [{ tamil: 'குரங்கு', english: 'Monkey' }, { tamil: 'குதிரை', english: 'Horse' }, { tamil: 'குழந்தை', english: 'Child' }],
+            'கூ': [{ tamil: 'கூடு', english: 'Nest' }, { tamil: 'கூந்தல்', english: 'Hair' }, { tamil: 'கூட்டம்', english: 'Crowd' }],
+            'கெ': [{ tamil: 'கெட்டி', english: 'Clever' }, { tamil: 'கெஞ்சு', english: 'Beg' }, { tamil: 'கெண்டை', english: 'Carp' }],
+            'கே': [{ tamil: 'கேணி', english: 'Well' }, { tamil: 'கேள்வி', english: 'Question' }, { tamil: 'கேடயம்', english: 'Shield' }],
+            'கை': [{ tamil: 'கைகள்', english: 'Hands' }, { tamil: 'கைப்பை', english: 'Handbag' }, { tamil: 'கைவினை', english: 'Handicraft' }],
+            'கொ': [{ tamil: 'கொடி', english: 'Flag' }, { tamil: 'கொஞ்சம்', english: 'Little' }, { tamil: 'கொண்டை', english: 'Hair-bun' }],
+            'கோ': [{ tamil: 'கோழி', english: 'Hen' }, { tamil: 'கோபம்', english: 'Anger' }, { tamil: 'கோயில்', english: 'Temple' }],
+            'கௌ': [{ tamil: 'கௌதாரி', english: 'Spurfowl' }, { tamil: 'கௌரவம்', english: 'Honor' }],
+            'ச': [{ tamil: 'சதுரம்', english: 'Square' }, { tamil: 'சமையல்', english: 'Cooking' }, { tamil: 'சந்திரன்', english: 'Moon' }],
+            'சா': [{ tamil: 'சாவி', english: 'Key' }, { tamil: 'சாலை', english: 'Road' }, { tamil: 'சாப்பாடு', english: 'Food' }],
+            'சி': [{ tamil: 'சிறகு', english: 'Wing' }, { tamil: 'சிங்கம்', english: 'Lion' }, { tamil: 'சிரிப்பு', english: 'Laugh' }],
+            'சீ': [{ tamil: 'சீர்', english: 'Status' }, { tamil: 'சீடன்', english: 'Disciple' }, { tamil: 'சீட்டு', english: 'Card' }],
+            'சு': [{ tamil: 'சுவர்', english: 'Wall' }, { tamil: 'சுண்டெலி', english: 'Mouse' }, { tamil: 'சுற்றுலா', english: 'Tourism' }],
+            'சூ': [{ tamil: 'சூடு', english: 'Heat' }, { tamil: 'சூழல்', english: 'Environment' }, { tamil: 'சூரியன்', english: 'Sun' }],
+            'செ': [{ tamil: 'செம்மை', english: 'Fairness' }, { tamil: 'செல்வம்', english: 'Wealth' }, { tamil: 'செந்தமிழ்', english: 'Classical Tamil' }],
+            'சே': [{ tamil: 'சேலை', english: 'Saree' }, { tamil: 'சேவல்', english: 'Rooster' }, { tamil: 'சேட்டை', english: 'Mischief' }],
+            'சை': [{ tamil: 'சைகை', english: 'Gesture' }, { tamil: 'சைவம்', english: 'Vegetarian' }, { tamil: 'பச்சை', english: 'Green' }],
+            'சொ': [{ tamil: 'சொல்', english: 'Word' }, { tamil: 'சொட்டு', english: 'Drop' }, { tamil: 'சொர்க்கம்', english: 'Heaven' }],
+            'சோ': [{ tamil: 'சோறு', english: 'Rice' }, { tamil: 'சோலை', english: 'Grove' }, { tamil: 'சோதனை', english: 'Test' }],
+            'சௌ': [{ tamil: 'சௌகரியம்', english: 'Comfort' }],
+            'ட': [{ tamil: 'கடல்', english: 'Sea' }, { tamil: 'மடம்', english: 'Monastery' }, { tamil: 'படம்', english: 'Picture' }],
+            'டா': [{ tamil: 'அண்டா', english: 'Vessel' }, { tamil: 'வாடாமலர்', english: 'Unfading flower' }, { tamil: 'காண்டாமிருகம்', english: 'Rhino' }],
+            'டி': [{ tamil: 'மடி', english: 'Lap' }, { tamil: 'படி', english: 'Step' }, { tamil: 'குடி', english: 'Drink' }],
+            'டு': [{ tamil: 'லட்டு', english: 'Laddoo' }, { tamil: 'கட்டு', english: 'Tie' }, { tamil: 'காட்டு', english: 'Show' }],
+            'டெ': [{ tamil: 'கண்டெடுத்தான்', english: 'He found it' }],
+            'டை': [{ tamil: 'விடை', english: 'Answer' }, { tamil: 'அடை', english: 'Get' }, { tamil: 'படை', english: 'Army' }],
+            'டோ': [{ tamil: 'நாடோடி', english: 'Nomad' }, { tamil: 'குண்டோதரன்', english: 'Big-bellied giant' }],
+            'ண': [{ tamil: 'கண்', english: 'Eye' }, { tamil: 'மண்', english: 'Soil' }, { tamil: 'பண்', english: 'Song' }],
+            'ணா': [{ tamil: 'அண்ணா', english: 'Brother' }, { tamil: 'கண்ணாடி', english: 'Mirror' }],
+            'ணி': [{ tamil: 'மணி', english: 'Bell' }, { tamil: 'அணி', english: 'Dress up' }, { tamil: 'பணி', english: 'Work' }],
+            'ணு': [{ tamil: 'அணு', english: 'Atom' }, { tamil: 'நுணுக்கம்', english: 'Nuance' }, { tamil: 'கணுக்கால்', english: 'Ankle' }],
+            'ணெ': [{ tamil: 'எண்ணெய்', english: 'Oil' }, { tamil: 'கண்ணெதிரே', english: 'In front of eyes' }],
+            'ணே': [{ tamil: 'பெண்ணே', english: 'O Girl!' }, { tamil: 'கணேசன்', english: 'Ganesan' }],
+            'ணை': [{ tamil: 'மணை', english: 'Low seat' }, { tamil: 'திண்ணை', english: 'Verandah' }],
+            'த': [{ tamil: 'தலை', english: 'Head' }, { tamil: 'தமிழ்', english: 'Tamil' }, { tamil: 'தண்ணீர்', english: 'Water' }],
+            'தா': [{ tamil: 'தாய்', english: 'Mother' }, { tamil: 'தாடி', english: 'Beard' }, { tamil: 'தாமரை', english: 'Lotus' }],
+            'தி': [{ tamil: 'திரை', english: 'Screen' }, { tamil: 'திங்கள்', english: 'Monday' }, { tamil: 'திருவிழா', english: 'Festival' }],
+            'தீ': [{ tamil: 'தீ', english: 'Fire' }, { tamil: 'தீபம்', english: 'Lamp' }, { tamil: 'தீர்வு', english: 'Solution' }],
+            'து': [{ tamil: 'துணி', english: 'Cloth' }, { tamil: 'துள்ளல்', english: 'Bounciness' }, { tamil: 'துடைப்பம்', english: 'Broom' }],
+            'தூ': [{ tamil: 'தூரம்', english: 'Distance' }, { tamil: 'தூய்மை', english: 'Purity' }, { tamil: 'தூக்கம்', english: 'Sleep' }],
+            'தெ': [{ tamil: 'தெரு', english: 'Street' }, { tamil: 'தெளிவு', english: 'Clarity' }, { tamil: 'தென்றல்', english: 'Breeze' }],
+            'தே': [{ tamil: 'தேன்', english: 'Honey' }, { tamil: 'தேசம்', english: 'Country' }, { tamil: 'தேங்காய்', english: 'Coconut' }],
+            'ை': [{ tamil: 'தையல்', english: 'Stitch' }, { tamil: 'விந்தை', english: 'Wonder' }, { tamil: 'சந்தை', english: 'Market' }],
+            'தொ': [{ tamil: 'தொட்டி', english: 'Tub' }, { tamil: 'தொழில்', english: 'Profession' }, { tamil: 'தொலைவு', english: 'Distance' }],
+            'தோ': [{ tamil: 'தோல்', english: 'Skin' }, { tamil: 'தோட்டம்', english: 'Garden' }, { tamil: 'தோழன்', english: 'Friend' }],
+            'ந': [{ tamil: 'நண்டு', english: 'Crab' }, { tamil: 'நகரம்', english: 'City' }, { tamil: 'நடனம்', english: 'Dance' }],
+            'நா': [{ tamil: 'நாய்', english: 'Dog' }, { tamil: 'நாடு', english: 'Country' }, { tamil: 'நாகம்', english: 'Cobra' }],
+            'நி': [{ tamil: 'நிலா', english: 'Moon' }, { tamil: 'நிலம்', english: 'Land' }, { tamil: 'நிழல்', english: 'Shadow' }],
+            'நீ': [{ tamil: 'நீர்', english: 'Water' }, { tamil: 'நீலம்', english: 'Blue' }, { tamil: 'நீந்து', english: 'Swim' }],
+            'நு': [{ tamil: 'நுரை', english: 'Foam' }, { tamil: 'நுழைவு', english: 'Entry' }, { tamil: 'நுணுக்கம்', english: 'Nuance' }],
+            'நூ': [{ tamil: 'நூல்', english: 'Thread' }, { tamil: 'நூறு', english: 'Hundred' }, { tamil: 'நூலகம்', english: 'Library' }],
+            'நெ': [{ tamil: 'நெல்', english: 'Paddy' }, { tamil: 'நெஞ்சு', english: 'Heart' }, { tamil: 'நெருப்பு', english: 'Fire' }],
+            'நே': [{ tamil: 'நேர்மை', english: 'Honesty' }, { tamil: 'நேயம்', english: 'Affection' }, { tamil: 'நேரம்', english: 'Time' }],
+            'நொ': [{ tamil: 'நொடி', english: 'Second' }],
+            'நோ': [{ tamil: 'நோய்', english: 'Disease' }, { tamil: 'நோன்பு', english: 'Fasting' }, { tamil: 'நோக்கம்', english: 'Vision' }],
+            'ப': [{ tamil: 'பழம்', english: 'Fruit' }, { tamil: 'பச்சை', english: 'Green' }, { tamil: 'பக்கம்', english: 'Side' }],
+            'பா': [{ tamil: 'பார்', english: 'See' }, { tamil: 'பாம்பு', english: 'Snake' }, { tamil: 'பாகம்', english: 'Part' }],
+            'பி': [{ tamil: 'பின்', english: 'Back' }, { tamil: 'பிறை', english: 'Crescent' }, { tamil: 'பித்து', english: 'Craze' }],
+            'பீ': [{ tamil: 'பீடை', english: 'Misfortune' }, { tamil: 'பீங்கான்', english: 'Porcelain' }, { tamil: 'பீர்க்கங்காய்', english: 'Ridge Gourd' }],
+            'பு': [{ tamil: 'புதிது', english: 'New' }, { tamil: 'புதினம்', english: 'Novel' }, { tamil: 'புத்தகம்', english: 'Book' }],
+            'பூ': [{ tamil: 'பூனை', english: 'Cat' }, { tamil: 'பூக்கள்', english: 'Flowers' }, { tamil: 'பூங்கொத்து', english: 'Bouquet' }],
+            'பெ': [{ tamil: 'பெண்', english: 'Woman' }, { tamil: 'பெரிது', english: 'Big' }, { tamil: 'பெட்டி', english: 'Box' }],
+            'பே': [{ tamil: 'பேனா', english: 'Pen' }, { tamil: 'பேச்சு', english: 'Speech' }, { tamil: 'பேரிடர்', english: 'Disaster' }],
+            'பை': [{ tamil: 'கைப்பை', english: 'Handbag' }, { tamil: 'அகப்பை', english: 'Ladle' }, { tamil: 'பைந்தமிழ்', english: 'Pure Tamil' }],
+            'பொ': [{ tamil: 'பொன்', english: 'Gold' }, { tamil: 'பொடி', english: 'Powder' }, { tamil: 'பொதுவான', english: 'Common' }],
+            'போ': [{ tamil: 'போர்', english: 'War' }, { tamil: 'போதும்', english: 'Enough' }, { tamil: 'போட்டி', english: 'Match' }],
+            'பௌ': [{ tamil: 'பௌர்ணமி', english: 'Full Moon' }],
+            'ம': [{ tamil: 'மரம்', english: 'Tree' }, { tamil: 'மக்கள்', english: 'People' }, { tamil: 'மண்', english: 'Soil' }],
+            'மா': [{ tamil: 'மாடு', english: 'Cow' }, { tamil: 'மாண்பு', english: 'Dignity' }, { tamil: 'மாமரம்', english: 'Mango Tree' }],
+            'மி': [{ tamil: 'மிச்சம்', english: 'Leftover' }, { tamil: 'மின்னல்', english: 'Lightning' }, { tamil: 'மிளகாய்', english: 'Chilli' }],
+            'மீ': [{ tamil: 'மீன்', english: 'Fish' }, { tamil: 'மீதம்', english: 'Balance' }, { tamil: 'மீண்டும்', english: 'Again' }],
+            'மு': [{ tamil: 'முயல்', english: 'Rabbit' }, { tamil: 'முத்து', english: 'Pearl' }, { tamil: 'முகம்', english: 'Face' }],
+            'மூ': [{ tamil: 'மூன்று', english: 'Three' }, { tamil: 'மூப்பு', english: 'Old Age' }, { tamil: 'மூங்கில்', english: 'Bamboo' }],
+            'மெ': [{ tamil: 'மெத்தை', english: 'Bed' }, { tamil: 'மெல்லிசை', english: 'Soft Music' }, { tamil: 'மெழுகுவர்த்தி', english: 'Candle' }],
+            'மே': [{ tamil: 'மேடை', english: 'Stage' }, { tamil: 'மேகம்', english: 'Cloud' }, { tamil: 'மேலே', english: 'Above' }],
+            'மை': [{ tamil: 'இமை', english: 'Eyelash' }, { tamil: 'மையம்', english: 'Center' }, { tamil: 'சமையல்', english: 'Cooking' }],
+            'மொ': [{ tamil: 'மொழி', english: 'Language' }, { tamil: 'மொட்டு', english: 'Bud' }, { tamil: 'மொத்தம்', english: 'Total' }],
+            'மோ': [{ tamil: 'மோர்', english: 'Buttermilk' }, { tamil: 'மோதிரம்', english: 'Ring' }, { tamil: 'மோப்பம்', english: 'Sniff' }],
+            'மௌ': [{ tamil: 'மௌனம்', english: 'Silence' }],
+            'ய': [{ tamil: 'புயல்', english: 'Storm' }, { tamil: 'பயணம்', english: 'Journey' }, { tamil: 'இயற்கை', english: 'Nature' }],
+            'யா': [{ tamil: 'யானை', english: 'Elephant' }, { tamil: 'நியாயம்', english: 'Justice' }, { tamil: 'வியாபாரம்', english: 'Business' }],
+            'யி': [{ tamil: 'குயில்', english: 'Cuckoo' }, { tamil: 'மயில்', english: 'Peacock' }, { tamil: 'விவசாயி', english: 'Farmer' }],
+            'யீ': [{ tamil: 'நுரையீரல்', english: 'Lungs' }],
+            'யு': [{ tamil: 'யுகம்', english: 'Era' }, { tamil: 'வாயு', english: 'Gas' }, { tamil: 'ஆயுதம்', english: 'Weapon' }],
+            'யூ': [{ tamil: 'யூகம்', english: 'Guess' }],
+            'யெ': [{ tamil: 'கையெழுத்து', english: 'Handwriting' }, { tamil: 'மெய்யெழுத்து', english: 'Consonant' }],
+            'யே': [{ tamil: 'வெளியேறு', english: 'Exit' }, { tamil: 'செய்யேல்', english: 'Do not do' }],
+            'யை': [{ tamil: 'ஆசிரியை', english: 'Teacher' }, { tamil: 'கவலையை', english: 'Worry' }, { tamil: 'மொழியை', english: 'Language' }],
+            'யொ': [{ tamil: 'கையொப்பம்', english: 'Signature' }, { tamil: 'மெய்யொலி', english: 'Consonant Sound' }],
+            'யோ': [{ tamil: 'யோகம்', english: 'Luck' }, { tamil: 'யோசனை', english: 'Thought' }, { tamil: 'அயோத்தி', english: 'Ayodhya' }],
+            'ர': [{ tamil: 'ரசம்', english: 'Soup' }, { tamil: 'அரசன்', english: 'King' }, { tamil: 'குரங்கு', english: 'Monkey' }],
+            'ரா': [{ tamil: 'ராணி', english: 'Queen' }, { tamil: 'ஆரவாரம்', english: 'Uproar' }, { tamil: 'இராணுவம்', english: 'Army' }],
+            'ரி': [{ tamil: 'நரி', english: 'Fox' }, { tamil: 'அரிசி', english: 'Rice' }, { tamil: 'சரித்திரம்', english: 'History' }],
+            'ரீ': [{ tamil: 'அசரிரீ', english: 'Divine Voice' }, { tamil: 'சரீரம்', english: 'Body' }, { tamil: 'கிரீடம்', english: 'Crown' }],
+            'ரு': [{ tamil: 'ருசி', english: 'Taste' }, { tamil: 'கருப்பு', english: 'Black' }, { tamil: 'பருந்து', english: 'Eagle' }],
+            'ரூ': [{ tamil: 'ரூபாய்', english: 'Rupees' }, { tamil: 'அரூபம்', english: 'Formless' }, { tamil: 'குரூரம்', english: 'Cruelty' }],
+            'ரெ': [{ tamil: 'ரெங்கன்', english: 'Rengan' }],
+            'ரே': [{ tamil: 'ஒரே', english: 'Same' }, { tamil: 'ரேகை', english: 'Line' }, { tamil: 'எதிரே', english: 'Opposite' }],
+            'ரை': [{ tamil: 'கீரை', english: 'Spinach' }, { tamil: 'குதிரை', english: 'Horse' }, { tamil: 'வரைபடம்', english: 'Map' }],
+            'ரொ': [{ tamil: 'ரொட்டி', english: 'Bread' }, { tamil: 'ரொக்கம்', english: 'Cash' }],
+            'ரோ': [{ tamil: 'ரோஜா', english: 'Rose' }, { tamil: 'துரோகம்', english: 'Betrayal' }, { tamil: 'குரோதம்', english: 'Hatred' }],
+            'ரௌ': [{ tamil: 'ரௌத்திரம்', english: 'Fury' }],
+            'ல': [{ tamil: 'லட்டு', english: 'Laddoo' }, { tamil: 'கலகம்', english: 'Feud' }, { tamil: 'உலகம்', english: 'World' }],
+            'லா': [{ tamil: 'லாபம்', english: 'Profit' }, { tamil: 'வெண்ணிலா', english: 'Moonlight' }, { tamil: 'பலாப்பழம்', english: 'Jackfruit' }],
+            'லி': [{ tamil: 'வலி', english: 'Pain' }, { tamil: 'எலி', english: 'Rat' }, { tamil: 'புலி', english: 'Tiger' }],
+            'லீ': [],
+            'லு': [{ tamil: 'எலுமிச்சை', english: 'Lemon' }, { tamil: 'பாலுண்ணி', english: 'Warts' }],
+            'லூ': [{ tamil: 'கல்லூரி', english: 'College' }, { tamil: 'பாலூட்டி', english: 'Mammal' }],
+            'லெ': [],
+            'லே': [{ tamil: 'மேலே', english: 'Above' }, { tamil: 'வேலை', english: 'Work' }, { tamil: 'சேலை', english: 'Saree' }],
+            'லை': [{ tamil: 'இலை', english: 'Leaf' }, { tamil: 'உலை', english: 'Hearth' }, { tamil: 'அலை', english: 'Wave' }],
+            'லொ': [{ tamil: 'நல்லொழுக்கம்', english: 'Good character' }],
+            'லோ': [{ tamil: 'உலோபி', english: 'Miser' }, { tamil: 'உலோகம்', english: 'Metal' }],
+            'லௌ': [{ tamil: 'லௌகீகம்', english: 'Worldliness' }],
+            'வ': [{ tamil: 'வண்டு', english: 'Beetle' }, { tamil: 'வரிசை', english: 'Order' }, { tamil: 'வண்டி', english: 'Cart' }],
+            'வா': [{ tamil: 'வாசல்', english: 'Entrance' }, { tamil: 'வானம்', english: 'Sky' }, { tamil: 'வார்த்தை', english: 'Word' }],
+            'வி': [{ tamil: 'வில்', english: 'Bow' }, { tamil: 'வித்தை', english: 'Skill' }, { tamil: 'விமானம்', english: 'Airplane' }],
+            'வீ': [{ tamil: 'வீடு', english: 'House' }, { tamil: 'வீதி', english: 'Street' }, { tamil: 'வீரன்', english: 'Warrior' }],
+            'ву': [{ tamil: 'கதவு', english: 'Door' }, { tamil: 'அறிவு', english: 'Knowledge' }, { tamil: 'உணவு', english: 'Food' }],
+            'வூ': [{ tamil: 'இவ்வூர்', english: 'This village' }],
+            'வெ': [{ tamil: 'வெற்றி', english: 'Victory' }, { tamil: 'வெள்ளி', english: 'Silver' }, { tamil: 'வெள்ளை', english: 'White' }],
+            'வே': [{ tamil: 'வேர்', english: 'Root' }, { tamil: 'வேகம்', english: 'Speed' }, { tamil: 'வேலை', english: 'Work' }],
+            'வை': [{ tamil: 'வைரம்', english: 'Diamond' }, { tamil: 'வைகாசி', english: 'Tamil month' }, { tamil: 'வைகறை', english: 'Dawn' }],
+            'வொ': [{ tamil: 'இவ்வொன்று', english: 'This item' }],
+            'வோ': [{ tamil: 'வருவோர்', english: 'Comers' }, { tamil: 'போவோர்', english: 'Goers' }],
+            'வௌ': [{ tamil: 'வௌவால்', english: 'Bat' }],
+            'ழ': [{ tamil: 'வழி', english: 'Way' }, { tamil: 'பழம்', english: 'Fruit' }, { tamil: 'அழகு', english: 'Beauty' }],
+            'ழா': [{ tamil: 'விழா', english: 'Festival' }, { tamil: 'குழாய்', english: 'Pipe' }],
+            'ழி': [{ tamil: 'மொழி', english: 'Language' }, { tamil: 'செழிப்பு', english: 'Prosperity' }, { tamil: 'வழிகாட்டி', english: 'Guide' }],
+            'ழீ': [],
+            'ழு': [{ tamil: 'முழு', english: 'Full' }, { tamil: 'புழு', english: 'Worm' }, { tamil: 'குழு', english: 'Group' }],
+            'ழூ': [{ tamil: 'கீழூற்று', english: 'Spring' }],
+            'ழெ': [],
+            'ழே': [{ tamil: 'கீழே', english: 'Below' }],
+            'ழை': [{ tamil: 'மழை', english: 'Rain' }, { tamil: 'ஏழை', english: 'Poor' }, { tamil: 'உழைப்பு', english: 'Hard work' }],
+            'ழொ': [{ tamil: 'புகழொடு', english: 'With fame' }, { tamil: 'தமிழொலி', english: 'Tamil sound' }],
+            'ழோ': [{ tamil: 'புகழோங்கு', english: 'Fame growing' }, { tamil: 'தமிழோடு', english: 'With Tamil' }],
+            'ள': [{ tamil: 'களம்', english: 'Field' }, { tamil: 'குளம்', english: 'Pond' }, { tamil: 'தாளம்', english: 'Rhythm' }],
+            'ளா': [{ tamil: 'காளான்', english: 'Mushroom' }, { tamil: 'காளாஞ்சி', english: 'Ceremonial plate' }],
+            'ளி': [{ tamil: 'ஒளி', english: 'Light' }, { tamil: 'புளி', english: 'Tamarind' }, { tamil: 'குளிர்', english: 'Cold' }],
+            'ளீ': [],
+            'ளு': [{ tamil: 'தள்ளு', english: 'Push' }, { tamil: 'கொள்ளு', english: 'Horsegram' }, { tamil: 'வள்ளுவர்', english: 'Valluvar' }],
+            'ளூ': [{ tamil: 'உள்ளூற', english: 'Inwardly' }, { tamil: 'முள்ளூன்றிய', english: 'Deeply rooted thorn' }],
+            'ளெ': [{ tamil: 'வெள்ளெலி', english: 'White rat' }, { tamil: 'உள்ளெரிச்சல்', english: 'Internal burning' }, { tamil: 'மெள்ளென', 'english': 'Softly' }],
+            'ளே': [{ tamil: 'உள்ளே', english: 'Inside' }, { tamil: 'வெளியே', english: 'Outside' }, { tamil: 'அவளே', english: 'She herself' }],
+            'ளை': [{ tamil: 'நாளை', english: 'Tomorrow' }, { tamil: 'பிள்ளை', english: 'Child' }, { tamil: 'விளையாட்டு', english: 'Game' }],
+            'ளொ': [{ tamil: 'வெள்ளொளி', english: 'White light' }, { tamil: 'உள்ளொன்று', english: 'Inwardly' }],
+            'ளோ': [{ tamil: 'அவளோ', english: 'She?' }, { tamil: 'இவளோ', english: 'This girl?' }],
+            'ற': [{ tamil: 'மறம்', english: 'Valor' }, { tamil: 'அறம்', english: 'Virtue' }, { tamil: 'பறவை', english: 'Bird' }],
+            'றா': [{ tamil: 'கற்றான்', english: 'Learned man' }, { tamil: 'நூற்றாண்டு', english: 'Century' }],
+            'றி': [{ tamil: 'அறிவு', english: 'Knowledge' }, { tamil: 'வெற்றி', english: 'Victory' }, { tamil: 'நெற்றி', english: 'Forehead' }],
+            'றீ': [{ tamil: 'கற்றீர்', english: 'You learned' }, { tamil: 'பெற்றீர்', english: 'You obtained' }],
+            'று': [{ tamil: 'உறுப்பு', english: 'Organ' }, { tamil: 'காற்று', english: 'Wind' }, { tamil: 'நேற்று', english: 'Yesterday' }],
+            'றூ': [{ tamil: 'சிற்றூர்', english: 'Small village' }, { tamil: 'கற்றூண்', english: 'Stone pillar' }],
+            'றெ': [{ tamil: 'சிற்றெறும்பு', english: 'Small ant' }, { tamil: 'பெற்றெடுத்த', english: 'Gave birth to' }],
+            'றே': [{ tamil: 'அன்றே', english: 'That day itself' }, { tamil: 'இன்றே', english: 'Today itself' }, { tamil: 'கற்றேன்', english: 'I learned' }],
+            'றை': [{ tamil: 'கறை', english: 'Stain' }, { tamil: 'அறை', english: 'Room' }, { tamil: 'நிறை', english: 'Fullness' }],
+            'றொ': [{ tamil: 'சிற்றொலி', english: 'Small sound' }, { tamil: 'மற்றொன்று', english: 'Another one' }],
+            'றோ': [{ tamil: 'மற்றோர்', english: 'Others' }, { tamil: 'கற்றோர்', english: 'Learned scholars' }, { tamil: 'பெற்றோர்', english: 'Parents' }],
+            'ன': [{ tamil: 'மனம்', english: 'Mind' }, { tamil: 'சன்னல்', english: 'Window' }, { tamil: 'வானம்', english: 'Sky' }],
+            'னா': [{ tamil: 'கனா', english: 'Dream' }, { tamil: 'வினா', english: 'Question' }],
+            'னி': [{ tamil: 'தனி', english: 'Alone' }, { tamil: 'கனி', english: 'Fruit' }, { tamil: 'பனி', english: 'Dew' }],
+            'னீ': [{ tamil: 'தேனீ', english: 'Honeybee' }, { tamil: 'நன்னீர்', english: 'Fresh water' }],
+            'னு': [{ tamil: 'மனு', english: 'Petition' }, { tamil: 'அவனுடன்', english: 'With him' }],
+            'னூ': [{ tamil: 'முன்னூறு', english: 'Three Hundred' }, { tamil: 'நன்னூல்', english: 'Grammar book' }],
+            'னெ': [{ tamil: 'நன்னெறி', english: 'Good path' }],
+            'னே': [{ tamil: 'முன்னே', english: 'In front' }, { tamil: 'பின்னே', english: 'Behind' }, { tamil: 'என்னே', english: 'What a wonder' }],
+            'னை': [{ tamil: 'அவனை', english: 'Him' }, { tamil: 'என்னை', english: 'Me' }, { tamil: 'யானை', english: 'Elephant' }],
+            'னொ': [{ tamil: 'பின்னொன்று', english: 'Another one' }, { tamil: 'பொன்னொளி', english: 'Golden light' }],
+            'னோ': [{ tamil: 'பின்னோடு', english: 'Behind' }, { tamil: 'என்னோடு', english: 'With me' }]
+        };
+
+        /* ================= GLOBAL CONTROL ================= */
+        let speechSession = 0;
+        let speechTimer = null;
+        let currentUtterance = null;
+        let activeCard = null; 
+
+        const voiceToggle = document.getElementById("voiceToggle");
+
+        /* ================= STOP ENGINE ================= */
+        function stopSpeech() {
+            speechSession++;
+            speechSynthesis.cancel();
+
+            if (speechTimer) {
+                clearTimeout(speechTimer);
+                speechTimer = null;
+            }
+
+            if (currentUtterance) {
+                currentUtterance.onend = null;
+                currentUtterance = null;
+            }
+
+            document.querySelectorAll(".highlight").forEach(el => {
+                el.classList.remove("highlight");
+            });
+
+            if (activeCard) {
+                activeCard.classList.remove("flipped");
+                activeCard = null;
+            }
+        }
+
+        /* ================= PLAY ENGINE ================= */
+        function playAudio(letter, cardElement) {
+            stopSpeech();
+
+            activeCard = cardElement;
+            activeCard.classList.add("flipped");
+
+            const session = speechSession;
+            const wordPairs = wordMap[letter] || [];
+
+            const frontTamilSpans = activeCard.querySelectorAll(".front .letter-word span");
+            const backTamilSpans = activeCard.querySelectorAll(".back .letter-word-tamil span");
+            const backEnglishSpans = activeCard.querySelectorAll(".back .translation-word span");
+
+            let index = 0;
+
+            function speakNext() {
+                if (session !== speechSession) return;
+
+                if (index >= wordPairs.length) {
+                    frontTamilSpans.forEach(s => s.classList.remove("highlight"));
+                    backTamilSpans.forEach(s => s.classList.remove("highlight"));
+                    backEnglishSpans.forEach(s => s.classList.remove("highlight"));
+                    
+                    if (activeCard === cardElement) {
+                        cardElement.classList.remove("flipped");
+                        activeCard = null;
+                    }
+                    return;
+                }
+
+                frontTamilSpans.forEach(s => s.classList.remove("highlight"));
+                backTamilSpans.forEach(s => s.classList.remove("highlight"));
+                backEnglishSpans.forEach(s => s.classList.remove("highlight"));
+
+                if (frontTamilSpans[index]) frontTamilSpans[index].classList.add("highlight");
+                if (backTamilSpans[index]) backTamilSpans[index].classList.add("highlight");
+                if (backEnglishSpans[index]) backEnglishSpans[index].classList.add("highlight");
+
+                const utter = new SpeechSynthesisUtterance(wordPairs[index].tamil);
+                currentUtterance = utter;
+
+                utter.lang = "ta-IN";
+                utter.rate = 0.85;
+
+                utter.onend = () => {
+                    if (session !== speechSession) return;
+                    index++;
+                    speechTimer = setTimeout(speakNext, 400); 
+                };
+
+                speechSynthesis.speak(utter);
+            }
+
+            if (voiceToggle.checked && wordPairs.length > 0) {
+                speakNext();
+            } else {
+                speechTimer = setTimeout(() => {
+                    if (session === speechSession) cardElement.classList.remove("flipped");
+                }, 2500);
+            }
+        }
+
+        /* ================= BUTTON BUILDER ================= */
+        function createButtons(containerId, letters, className) {
+            const container = document.getElementById(containerId);
+            letters.forEach(l => {
+                const containerBtn = document.createElement('button');
+                containerBtn.className = `card-container ${className}`;
+
+                const isDisabled = l.startsWith('-');
+                const display = isDisabled ? l.substring(1) : l;
+                
+                const wordPairs = wordMap[display] || [];
+
+                if (isDisabled) {
+                    containerBtn.classList.add('disabled-btn');
+                    containerBtn.disabled = true;
+                }
+
+                const cardInner = document.createElement('div');
+                cardInner.className = 'card';
+
+                /* ── FRONT FACE ── */
+                const frontFace = document.createElement('div');
+                frontFace.className = 'front';
+
+                const letterSpanFront = document.createElement('span');
+                letterSpanFront.className = 'letter-main';
+                letterSpanFront.textContent = display;
+
+                const wordSpanFront = document.createElement('span');
+                wordSpanFront.className = 'letter-word';
+                wordSpanFront.innerHTML = wordPairs.map(p => `<span>${p.tamil}</span>`).join('<br>');
+
+                frontFace.appendChild(letterSpanFront);
+                frontFace.appendChild(wordSpanFront);
+
+                /* ── BACK FACE ── */
+                const backFace = document.createElement('div');
+                backFace.className = 'back';
+
+                const wordSpanBackTamil = document.createElement('span');
+                wordSpanBackTamil.className = 'letter-word-tamil';
+                wordSpanBackTamil.style.fontWeight = "bold";
+                wordSpanBackTamil.style.fontSize = "13px";
+                wordSpanBackTamil.innerHTML = wordPairs.map(p => `<span>${p.tamil}</span>`).join('<br>');
+
+                const divider = document.createElement('hr');
+                divider.style.width = "85%";
+                divider.style.margin = "6px 0";
+                divider.style.border = "0.5px solid #ccc";
+
+                const wordSpanBackEnglish = document.createElement('span');
+                wordSpanBackEnglish.className = 'translation-word';
+                wordSpanBackEnglish.innerHTML = wordPairs.map(p => `<span>${p.english}</span>`).join('<br>');
+
+                backFace.appendChild(wordSpanBackTamil);
+                backFace.appendChild(divider);
+                backFace.appendChild(wordSpanBackEnglish);
+
+                cardInner.appendChild(frontFace);
+                cardInner.appendChild(backFace);
+                containerBtn.appendChild(cardInner);
+
+                if (!isDisabled) {
+                    containerBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        playAudio(display, cardInner);
+                    };
+                }
+
+                container.appendChild(containerBtn);
+            });
+        }
+
+        /* ================= INIT ================= */
+        createButtons("uyirButtons", uyirLetters, "uyir-button");
+        createButtons("meiButtons", meiLetters, "mei-button");
+        createButtons("uyirmeiButtons", uyirmeiLetters, "uyirmei-button");
+        createButtons('aythaButtons', aythaLetter, 'aytha-button');
+
+        document.addEventListener("click", () => {
+            stopSpeech();
+        });
+    </script>
+</body>
+</html>

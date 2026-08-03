@@ -63,6 +63,12 @@
     '28_oli_verupadu.html': 'learner',
     '29_catch_correct_word.html': 'learner',
     '30_select_unrelated_word.html': 'learner',
+    '31_tamil_words_with_sound.html': 'learner',
+    '32_vaarthai_sakkaram.html': 'learner',
+    '33_vaarthai_rayil.html': 'learner',
+    '34_mithakkum_baloon.html': 'learner',
+    '35_vinveli_vettai.html': 'learner',
+    '36_common_letter.html': 'learner',
     '17_voice_to_text.html': 'admin',
     '20_word_search.html': 'admin'
   };

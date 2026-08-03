@@ -140,6 +140,19 @@
             margin-bottom: 15px;
         }
 
+        #wordTooltip {
+            position: fixed;
+            background: #333;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 16px;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            white-space: nowrap;
+        }
+
         /* Mobile responsiveness */
         @media (max-width: 600px) {
             #container {
@@ -165,12 +178,6 @@
             }
         }
     </style>
-
-  <link rel="stylesheet" href="css/auth.css" />
-  <script src="js/auth.js"></script>
-  <script>
-    TamilAuth.initPage();
-  </script>
 </head>
 
 <body>
@@ -219,6 +226,38 @@
 
             let selectedPresetWord = null;
 
+            // Tamil -> English lookup, loaded from word_list.csv
+            let wordMap = {};
+
+            // Tooltip element used to show the English meaning on hover
+            const tooltip = document.createElement('div');
+            tooltip.id = 'wordTooltip';
+            document.body.appendChild(tooltip);
+
+            function parseCSVLine(line) {
+                // simple comma split (matches the pattern used elsewhere in this project)
+                return line.split(',');
+            }
+
+            fetch('word_list.csv')
+                .then(res => res.text())
+                .then(text => {
+                    const lines = text.trim().split(/\r?\n/);
+                    const header = parseCSVLine(lines[0]).map(h => h.trim());
+                    const tamilIdx = header.indexOf('Tamil');
+                    const engIdx = header.indexOf('English');
+                    if (tamilIdx === -1 || engIdx === -1) return;
+
+                    for (let i = 1; i < lines.length; i++) {
+                        if (!lines[i]) continue;
+                        const parts = parseCSVLine(lines[i]);
+                        const tam = (parts[tamilIdx] || '').trim();
+                        const eng = (parts[engIdx] || '').trim();
+                        if (tam && eng) wordMap[tam] = eng;
+                    }
+                })
+                .catch(err => console.error("CSV படிப்பதில் பிழை: ", err));
+
             function updateWordCount() {
                 const count = rightBox.children.length;
                 wordCount.textContent = "எண்ணிக்கை: " + count;
@@ -261,6 +300,23 @@
                     chunkBtn.addEventListener('click', () => {
                         chunkBtn.remove();
                         updateWordCount();
+                    });
+
+                    chunkBtn.addEventListener('mouseenter', () => {
+                        const english = wordMap[chunkText];
+                        if (english) {
+                            tooltip.textContent = english;
+                            tooltip.style.display = 'block';
+                        }
+                    });
+
+                    chunkBtn.addEventListener('mousemove', (e) => {
+                        tooltip.style.left = (e.clientX + 12) + 'px';
+                        tooltip.style.top = (e.clientY + 12) + 'px';
+                    });
+
+                    chunkBtn.addEventListener('mouseleave', () => {
+                        tooltip.style.display = 'none';
                     });
 
                     rightBox.appendChild(chunkBtn);
