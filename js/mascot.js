@@ -129,12 +129,10 @@
 
     getCurrentMessage() {
       const file = this.getPageFilename();
-      const lang = window.TamilAuth ? window.TamilAuth.getLang() : 'ta';
       const msgObj = MASCOT_MESSAGES[file] || {
-        ta: 'வாருங்கள்! தமிழைக் கற்று மகிழ்வோம்! 🌟',
-        en: 'Welcome! Let\'s enjoy learning Tamil together! 🌟'
+        ta: 'வாருங்கள்! தமிழைக் கற்று மகிழ்வோம்! 🌟'
       };
-      return msgObj[lang] || msgObj['ta'];
+      return msgObj['ta'] || msgObj.ta;
     }
 
     renderWidget() {

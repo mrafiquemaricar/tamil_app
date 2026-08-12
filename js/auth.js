@@ -37,7 +37,7 @@
     productionEndpoint: 'https://api.hit-pay.com/v1/payment-requests'
   };
 
-  // Module Access Mapping
+  // Module Access Mapping: First 4 modules unlocked for guest, rest require learner role
   const MODULE_ROLES = {
     'index.html': 'guest',
     'login.html': 'guest',
@@ -45,9 +45,10 @@
     'learner-dashboard.html': 'learner',
     'teacher-dashboard.html': 'teacher',
     '01_alphabets_with_sound.html': 'guest',
-    '02_mei_plus_uyir.html': 'guest',
-    '03_letter_joining.html': 'guest',
+    '31_tamil_words_with_sound.html': 'guest',
     '16_writing_alphabets.html': 'guest',
+    '02_mei_plus_uyir.html': 'guest',
+    '03_letter_joining.html': 'learner',
     '04_reading_words.html': 'learner',
     '05_english_to_tamil.html': 'learner',
     '06_matching_words.html': 'learner',
@@ -72,7 +73,6 @@
     '28_oli_verupadu.html': 'learner',
     '29_catch_correct_word.html': 'learner',
     '30_select_unrelated_word.html': 'learner',
-    '31_tamil_words_with_sound.html': 'learner',
     '32_vaarthai_sakkaram.html': 'learner',
     '33_vaarthai_rayil.html': 'learner',
     '34_mithakkum_baloon.html': 'learner',
@@ -445,7 +445,6 @@
             <span>${this.t('appName')}</span>
           </a>
           <div class="header-user-nav">
-            <button class="lang-toggle-btn" onclick="TamilAuth.setLanguage('${nextLang}')">${nextLangLabel}</button>
             <div class="header-user-badge">
               <span>👤 ${user.name}</span>
               <span class="role-badge role-${isAdmin || isTeacher ? 'admin' : (isSubscriber ? 'subscriber' : 'guest')}">${roleLabel}</span>
@@ -555,11 +554,6 @@
 
         if (userLevel < requiredLevel) {
           link.classList.add('locked-module');
-          const badgeText = this.lang === 'en' ? 'Subscription Required' : 'சந்தா தேவை';
-          const tag = document.createElement('span');
-          tag.className = 'level-tag';
-          tag.innerText = badgeText;
-          link.appendChild(tag);
 
           link.addEventListener('click', (e) => {
             e.preventDefault();
