@@ -413,6 +413,8 @@
         localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(userSession));
         this.currentUser = userSession;
         this.verifySubscriptionExpiry();
+        this.renderHeader();
+        this.applyDashboardLocks();
 
         if (this.db) {
           try {
@@ -495,19 +497,16 @@
     renderHeader(container) {
       this.verifySubscriptionExpiry();
       const user = this.currentUser;
-      const isGuest = user.role === ROLES.GUEST;
+      const isLoggedIn = user && user.email && user.email !== 'guest@tamil.app';
       const isAdmin = user.role === ROLES.ADMIN;
       const isTeacher = user.role === ROLES.TEACHER;
       const isLearner = user.role === ROLES.LEARNER;
       const isSubscriber = isLearner || isTeacher || isAdmin;
       
-      let roleLabel = this.t('guest');
+      let roleLabel = 'விருந்தினர் (Guest)';
       if (user.role === ROLES.ADMIN) roleLabel = this.t('admin');
       else if (user.role === ROLES.TEACHER) roleLabel = this.t('teacher');
       else if (isSubscriber) roleLabel = this.t('activeSubscriber');
-
-      const nextLang = this.lang === 'ta' ? 'en' : 'ta';
-      const nextLangLabel = this.lang === 'ta' ? '🇬🇧 English' : '🇮🇳 தமிழ்';
 
       const headerHTML = `
         <header class="tamil-app-header">
@@ -516,24 +515,25 @@
             <span>${this.t('appName')}</span>
           </a>
           <div class="header-user-nav">
-            <div class="header-user-badge">
-              <span>👤 ${user.name}</span>
-              <span class="role-badge role-${isAdmin || isTeacher ? 'admin' : (isSubscriber ? 'subscriber' : 'guest')}">${roleLabel}</span>
-            </div>
             ${
-              isAdmin
-                ? `<a href="admin.html" class="header-btn" style="background:#f59e0b; color:#fff;">📊 ${this.t('adminDashboard')}</a>`
-                : (isTeacher
-                  ? `<a href="teacher-dashboard.html" class="header-btn" style="background:#3b82f6; color:#fff;">📘 ${this.t('teacherDashboard')}</a>`
-                  : (isLearner
-                    ? `<a href="learner-dashboard.html" class="header-btn" style="background:#10b981; color:#fff;">🎓 ${this.t('learnerDashboard')}</a>`
-                    : (!isSubscriber
-                      ? `<button class="header-btn header-btn-upgrade" onclick="TamilAuth.openCheckoutModal()">💳 ${this.t('subscribeNow')}</button>`
-                      : '')))
-            }
-            ${
-              isGuest
+              isLoggedIn
                 ? `
+                  <div class="header-user-badge">
+                    <span>👤 ${user.name}</span>
+                    <span class="role-badge role-${isAdmin || isTeacher ? 'admin' : (isSubscriber ? 'subscriber' : 'guest')}">${roleLabel}</span>
+                  </div>
+                  ${
+                    isAdmin
+                      ? `<a href="admin.html" class="header-btn" style="background:#f59e0b; color:#fff;">📊 ${this.t('adminDashboard')}</a>`
+                      : (isTeacher
+                        ? `<a href="teacher-dashboard.html" class="header-btn" style="background:#3b82f6; color:#fff;">📘 ${this.t('teacherDashboard')}</a>`
+                        : (isLearner
+                          ? `<a href="learner-dashboard.html" class="header-btn" style="background:#10b981; color:#fff;">🎓 ${this.t('learnerDashboard')}</a>`
+                          : `<button class="header-btn header-btn-upgrade" onclick="TamilAuth.openCheckoutModal()">💳 ${this.t('subscribeNow')}</button>`))
+                  }
+                  <button class="header-btn header-btn-secondary" onclick="TamilAuth.logout()">🚪 ${this.t('logout')}</button>
+                `
+                : `
                   <button type="button" class="google-auth-btn-hdr" onclick="TamilAuth.loginWithGoogle()">
                     <svg width="16" height="16" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -545,13 +545,17 @@
                   </button>
                   <button class="header-btn" onclick="TamilAuth.openModal('auth')">🔑 ${this.t('login')}</button>
                 `
-                : `<button class="header-btn header-btn-secondary" onclick="TamilAuth.logout()">🚪 ${this.t('logout')}</button>`
             }
           </div>
         </header>
       `;
 
-      if (container) {
+      const existingHeader = document.querySelector('.tamil-app-header');
+      if (existingHeader) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = headerHTML;
+        existingHeader.replaceWith(tempDiv.firstElementChild);
+      } else if (container) {
         container.innerHTML = headerHTML;
       } else {
         const div = document.createElement('div');
