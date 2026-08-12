@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>சொல் எழுதிப் பழகுவோம்</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #fdfdfd;
+      text-align: center;
+      margin: 0;
+    }
+
+    h1 {
+      color: #00f;
+      text-align: center;
+    }
+
+    select {
+      font-size: 20px;
+      padding: 12px 16px;
+      margin: 12px 0;
+      width: 100%;
+      max-width: 400px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    #home {
+      text-decoration: none;
+      background-color: #0000ff;
+      color: #ffffff;
+      padding: 10px;
+      border-radius: 15px;
+    }
+
+    #scoreBox {
+      display: inline-block;
+      margin: 10px auto;
+      font-size: 18px;
+      font-weight: bold;
+      background-color: #eef1ff;
+      border: 1px solid #ccd;
+      border-radius: 8px;
+      padding: 8px 16px;
+    }
+
+    .target-word-box {
+      font-size: 40px;
+      cursor: pointer;
+      user-select: none;
+      padding: 12px;
+      margin: 10px auto;
+      width: 90%;
+      max-width: 400px;
+      line-height: 1.6;
+      border-radius: 8px;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      background-color: #e0d4f7;
+    }
+
+    .target-word-box:hover {
+      background-color: #b5c5f3;
+      transform: scale(1.03);
+    }
+
+    .word-position {
+      font-size: 14px;
+      color: #555;
+      margin: 4px 0 12px;
+    }
+
+    #canvasFrame {
+      margin: 16px auto 10px;
+      width: 90%;
+      max-width: 500px;
+      height: 220px;
+      background: #ffffff;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    #canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    .canvas-controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 12px auto;
+      max-width: 500px;
+    }
+
+    button {
+      font-size: 16px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background-color: #f0f0f0;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+
+    button:hover {
+      background-color: #e0e0e0;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #completedBtn {
+      background-color: #0000ff;
+      color: #fff;
+      border-color: #0000ff;
+      font-weight: bold;
+    }
+
+    #completedBtn:hover {
+      background-color: #1a1aff;
+    }
+
+    #status {
+      max-width: 500px;
+      margin: 10px auto;
+      font-size: 15px;
+      color: #555;
+      min-height: 20px;
+    }
+
+    #feedback {
+      max-width: 500px;
+      margin: 12px auto;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      min-height: 24px;
+      display: none;
+    }
+
+    #feedback.correct {
+      display: block;
+      background-color: #d4f7d4;
+      color: #1a7a1a;
+      border: 1px solid #9fdc9f;
+    }
+
+    #feedback.incorrect {
+      display: block;
+      background-color: #f7d4d4;
+      color: #a71a1a;
+      border: 1px solid #dc9f9f;
+    }
+
+    #countdown {
+      font-size: 14px;
+      font-weight: normal;
+      margin-top: 4px;
+    }
+  </style>
+
+
+  <link rel="stylesheet" href="/css/auth.css?v=20260723" />
+  <link rel="stylesheet" href="/css/mascot.css?v=20260724" />
+  <script src="/js/auth.js?v=20260723"></script>
+  <script src="/js/mascot.js?v=20260724"></script>
+  <script>
+    TamilAuth.initPage();
+  </script>
+
+</head>
+
+<body>
+
+  <a id="home" href="index.html"> ◀ முகப்பு</a>
+  <h1>சொல் எழுதிப் பழகுவோம்</h1>
+
+  <select id="categoryFilter">
+    <option value="">-- தேர்வு செய்யவும் --</option>
+  </select>
+
+  <br />
+
+  <div id="scoreBox">மதிப்பெண்: 0 / 0</div>
+
+  <div id="practiceArea" style="display:none;">
+    <div class="target-word-box" id="targetWord" title="ஒலிக்க அழுத்தவும்">🔊</div>
+    <div class="word-position" id="wordPosition">1 / 1</div>
+
+    <div class="canvas-controls">
+      <button id="showWordBtn">சொல்லைக் காட்டு</button>
+    </div>
+
+    <div id="canvasFrame">
+      <canvas id="canvas"></canvas>
+    </div>
+
+    <div class="canvas-controls">
+      <button id="undoBtn">அழி</button>
+      <button id="clearBtn">முழுவதும் அழி</button>
+      <button id="completedBtn">சரி பார் ✓</button>
+    </div>
+
+    <p id="status">சொல்லைக் கேட்டு, பெட்டியில் எழுதவும். தேவைப்பட்டால் "சொல்லைக் காட்டு" அழுத்தவும்.</p>
+    <div id="feedback"></div>
+  </div>
+
+  <script>
+    const sheetUrl = 'word_list.csv';
+
+    const categoryFilter = document.getElementById('categoryFilter');
+    const scoreBox = document.getElementById('scoreBox');
+    const practiceArea = document.getElementById('practiceArea');
+    const targetWordEl = document.getElementById('targetWord');
+    const showWordBtn = document.getElementById('showWordBtn');
+    const wordPositionEl = document.getElementById('wordPosition');
+    const undoBtn = document.getElementById('undoBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const completedBtn = document.getElementById('completedBtn');
+    const statusEl = document.getElementById('status');
+    const feedbackEl = document.getElementById('feedback');
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    let dataRows = [];
+    let categoryWords = [];
+    let currentIndex = 0;
+    let score = { correct: 0, total: 0 };
+    let ttsEnabled = false;
+    let advanceTimer = null;
+    let countdownInterval = null;
+    let revealTimer = null;
+    let currentTargetWord = '';
+
+    let strokes = [];
+    let current = null;
+    let cssW = 0, cssH = 0;
+
+    // ---------- Load word list ----------
+    fetch(sheetUrl)
+      .then(res => res.text())
+      .then(csvText => {
+        const lines = csvText.trim().split('\n');
+        const header = lines[0].split(',');
+        const catIndex = header.indexOf('Category');
+        const tamilIndex = header.indexOf('Tamil');
+
+        const categoriesSet = new Set();
+
+        for (let i = 1; i < lines.length; i++) {
+          const parts = lines[i].split(',');
+          const category = parts[catIndex].trim();
+          const tamilWord = parts[tamilIndex].trim();
+
+          dataRows.push({ category, tamil: tamilWord });
+          categoriesSet.add(category);
+        }
+
+        categoriesSet.forEach(cat => {
+          const option = document.createElement('option');
+          option.value = cat;
+          option.textContent = cat;
+          categoryFilter.appendChild(option);
+        });
+      })
+      .catch(() => {
+        statusEl.textContent = 'word_list.csv கோப்பை ஏற்ற முடியவில்லை. அது இந்த HTML கோப்புடன் ஒரே கோப்புறையில் இருக்க வேண்டும்.';
+      });
+
+    // Enable TTS on first tap anywhere
+    document.body.addEventListener('click', function initTTS() {
+      ttsEnabled = true;
+      document.body.removeEventListener('click', initTTS);
+    }, { once: true });
+
+    function speak(text) {
+      if (!ttsEnabled) return;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'ta-IN';
+      speechSynthesis.cancel();
+      speechSynthesis.speak(utterance);
+    }
+
+    targetWordEl.addEventListener('click', () => speak(currentTargetWord));
+
+    // ---------- Category selection ----------
+    categoryFilter.onchange = function () {
+      clearPendingAdvance();
+      const selectedCategory = this.value;
+
+      if (!selectedCategory) {
+        practiceArea.style.display = 'none';
+        return;
+      }
+
+      const words = dataRows
+        .filter(row => row.category === selectedCategory)
+        .map(row => row.tamil);
+
+      categoryWords = [...new Set(words)];
+
+      score = { correct: 0, total: 0 };
+      updateScore();
+
+      if (categoryWords.length === 0) {
+        practiceArea.style.display = 'none';
+        statusEl.textContent = 'இந்த வகையில் சொற்கள் இல்லை.';
+        return;
+      }
+
+      currentIndex = 0;
+      practiceArea.style.display = 'block';
+      showWord();
+    };
+
+    function showWord() {
+      clearPendingAdvance();
+      clearPendingReveal();
+      currentTargetWord = categoryWords[currentIndex];
+      hideWordText();
+      wordPositionEl.textContent = (currentIndex + 1) + ' / ' + categoryWords.length;
+      feedbackEl.className = '';
+      feedbackEl.style.display = 'none';
+      feedbackEl.textContent = '';
+      statusEl.textContent = 'சொல்லைக் கேட்டு, பெட்டியில் எழுதவும். தேவைப்பட்டால் "சொல்லைக் காட்டு" அழுத்தவும்.';
+      strokes = [];
+      current = null;
+      resizeCanvas();
+      setControlsEnabled(true);
+      showWordBtn.disabled = false;
+      speak(currentTargetWord);
+    }
+
+    function hideWordText() {
+      targetWordEl.textContent = '🔊';
+    }
+
+    function clearPendingReveal() {
+      if (revealTimer) { clearTimeout(revealTimer); revealTimer = null; }
+    }
+
+    showWordBtn.addEventListener('click', () => {
+      clearPendingReveal();
+      targetWordEl.textContent = currentTargetWord;
+      showWordBtn.disabled = true;
+      revealTimer = setTimeout(() => {
+        hideWordText();
+        showWordBtn.disabled = false;
+        revealTimer = null;
+      }, 5000);
+    });
+
+    function updateScore() {
+      scoreBox.textContent = 'மதிப்பெண்: ' + score.correct + ' / ' + score.total;
+    }
+
+    function clearPendingAdvance() {
+      if (advanceTimer) { clearTimeout(advanceTimer); advanceTimer = null; }
+      if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+    }
+
+    function setControlsEnabled(enabled) {
+      undoBtn.disabled = !enabled;
+      clearBtn.disabled = !enabled;
+      completedBtn.disabled = !enabled;
+      showWordBtn.disabled = !enabled;
+    }
+
+    // ---------- Canvas drawing ----------
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      cssW = rect.width;
+      cssH = rect.height;
+      canvas.width = Math.round(cssW * dpr);
+      canvas.height = Math.round(cssH * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      redraw();
+    }
+
+    function redraw() {
+      ctx.clearRect(0, 0, cssW, cssH);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = '#222';
+      const all = current ? strokes.concat([current]) : strokes;
+      for (const s of all) {
+        if (s.x.length < 2) {
+          if (s.x.length === 1) {
+            ctx.beginPath();
+            ctx.arc(s.x[0], s.y[0], 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#222';
+            ctx.fill();
+          }
+          continue;
+        }
+        ctx.beginPath();
+        ctx.moveTo(s.x[0], s.y[0]);
+        for (let i = 1; i < s.x.length; i++) ctx.lineTo(s.x[i], s.y[i]);
+        ctx.stroke();
+      }
+    }
+
+    function pointFromEvent(e) {
+      const rect = canvas.getBoundingClientRect();
+      return { x: e.clientX - rect.left, y: e.clientY - rect.top, t: Date.now() };
+    }
+
+    canvas.addEventListener('pointerdown', (e) => {
+      if (completedBtn.disabled) return;
+      canvas.setPointerCapture(e.pointerId);
+      const p = pointFromEvent(e);
+      current = { x: [p.x], y: [p.y], t: [p.t] };
+      redraw();
+    });
+
+    canvas.addEventListener('pointermove', (e) => {
+      if (!current) return;
+      const p = pointFromEvent(e);
+      current.x.push(p.x);
+      current.y.push(p.y);
+      current.t.push(p.t);
+      redraw();
+    });
+
+    function endStroke() {
+      if (!current) return;
+      strokes.push(current);
+      current = null;
+      redraw();
+    }
+    canvas.addEventListener('pointerup', endStroke);
+    canvas.addEventListener('pointercancel', endStroke);
+    canvas.addEventListener('pointerleave', (e) => {
+      if (e.buttons === 0) endStroke();
+    });
+
+    window.addEventListener('resize', () => { if (practiceArea.style.display !== 'none') resizeCanvas(); });
+
+    clearBtn.addEventListener('click', () => {
+      strokes = [];
+      current = null;
+      redraw();
+      statusEl.textContent = 'எழுதியது அழிக்கப்பட்டது. மீண்டும் எழுதவும்.';
+    });
+
+    undoBtn.addEventListener('click', () => {
+      strokes.pop();
+      redraw();
+    });
+
+    // ---------- Recognition ----------
+    completedBtn.addEventListener('click', recognize);
+
+    async function recognize() {
+      if (strokes.length === 0) {
+        statusEl.textContent = 'எழுதிய பிறகு "சரி பார்" அழுத்தவும்.';
+        return;
+      }
+      setControlsEnabled(false);
+      clearPendingReveal();
+      hideWordText();
+      statusEl.textContent = 'சரிபார்க்கிறோம்…';
+      feedbackEl.style.display = 'none';
+
+      const ink = strokes.map(s => [s.x, s.y, s.t]);
+      const body = {
+        options: 'enable_pre_space',
+        requests: [{
+          writing_guide: {
+            writing_area_width: Math.round(cssW),
+            writing_area_height: Math.round(cssH),
+            padding_left: 0, padding_right: 0, padding_top: 0, padding_bottom: 0
+          },
+          ink: ink,
+          language: 'ta'
+        }]
+      };
+
+      const target = categoryWords[currentIndex];
+
+      try {
+        const res = await fetch('https://inputtools.google.com/request?ime=handwriting&app=mobilesearch&cs=1&oe=UTF-8', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (!res.ok) throw new Error('இணைப்பு தோல்வி (' + res.status + ')');
+        const data = await res.json();
+
+        if (!Array.isArray(data) || data[0] !== 'SUCCESS' || !data[1] || !data[1][0] || !data[1][0][1]) {
+          throw new Error('அடையாளம் காண முடியவில்லை');
+        }
+        const candidates = data[1][0][1].filter(Boolean);
+        const topGuess = candidates[0] || '';
+        const isCorrect = topGuess === target;
+
+        score.total++;
+        if (isCorrect) score.correct++;
+        updateScore();
+
+        showFeedback(isCorrect, topGuess, target);
+      } catch (err) {
+        statusEl.textContent = err.message || 'அடையாளம் காணுதல் தோல்வியடைந்தது.';
+        setControlsEnabled(true);
+      }
+    }
+
+    function showFeedback(isCorrect, topGuess, target) {
+      feedbackEl.className = isCorrect ? 'correct' : 'incorrect';
+      feedbackEl.style.display = 'block';
+      const mainLine = isCorrect
+        ? '✓ சரியாக எழுதியுள்ளீர்கள்!'
+        : '✗ தவறு. <br> நீங்கள் எழுதியது: "' + topGuess + '" <br> சரியான சொல்: "' + target + '"';
+      feedbackEl.innerHTML = mainLine + '<div id="countdown"></div>';
+      statusEl.textContent = '';
+
+      let secondsLeft = 5;
+      const countdownEl = document.getElementById('countdown');
+      countdownEl.textContent = secondsLeft + ' வினாடியில் அடுத்த சொல்...';
+
+      countdownInterval = setInterval(() => {
+        secondsLeft--;
+        if (secondsLeft > 0) {
+          countdownEl.textContent = secondsLeft + ' வினாடியில் அடுத்த சொல்...';
+        }
+      }, 1000);
+
+      advanceTimer = setTimeout(() => {
+        clearPendingAdvance();
+        currentIndex = (currentIndex + 1) % categoryWords.length;
+        showWord();
+      }, 5000);
+    }
+  </script>
+</body>
+
+</html>

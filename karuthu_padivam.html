@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>கருத்து படிவம்</title>
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            padding: 20px;
+            max-width: 700px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #00f;
+            /* font-size: 1.5rem; */
+            margin-bottom: 1rem;
+        }
+
+        .question {
+            /* question area */
+            text-align: center;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            font-size: 1.5rem;
+            line-height: 2.5rem;
+            margin: 2rem 0;
+            white-space: pre-line;
+            /* 👈 ensures \n is shown as line break */
+        }
+
+        .blank {
+            display: inline-flex;
+            justify-content: center;
+            /* center horizontally */
+            align-items: center;
+            /* center vertically */
+            min-width: 6rem;
+            max-width: 100%;
+            height: 2rem;
+            border: 1px solid #555;
+            padding: 0.1rem 0.3rem;
+            text-align: center;
+            cursor: pointer;
+            word-break: break-word;
+        }
+
+
+        .blank.selected {
+            border-color: blue;
+            background: #d0e8ff;
+        }
+
+        .blank.correct {
+            border-color: green;
+            background: #d4edda;
+        }
+
+        .blank.incorrect {
+            border-color: red;
+            background: #f8d7da;
+        }
+
+        .words {
+            margin: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.3rem;
+        }
+
+        .word-chunk {
+            background: #15ff00;
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+            font-size: 1.1rem;
+        }
+
+        .word-chunk.used {
+            background: #a3c8ff;
+            cursor: default;
+        }
+
+        button {
+            margin: 1rem 0.3rem;
+            /* font-size: 1.2rem; */
+            padding: 0.5rem 1rem;
+        }
+
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .controls button {
+            padding: 10px 15px;
+            font-size: 4em;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #0000ff;
+            color: white;
+            transition: background 0.3s;
+        }
+
+        .controls button:hover {
+            background: #ffa500;
+        }
+
+        #home {
+            text-decoration: none;
+            background-color: #0000ff;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 15px;
+        }
+
+        /* 🔹 feedback form specific styles (new, doesn't touch anything above) */
+        .form-field {
+            text-align: left;
+            margin: 1.2rem 0;
+        }
+
+        .form-field label {
+            display: block;
+            font-size: 1.1rem;
+            margin-bottom: 0.4rem;
+            color: #333;
+        }
+
+        .form-field input[type="text"],
+        .form-field textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 0.6rem;
+            font-size: 1.05rem;
+            border: 1px solid #555;
+            border-radius: 6px;
+            font-family: Arial;
+        }
+
+        .form-field textarea {
+            min-height: 8rem;
+            resize: vertical;
+        }
+
+        #sendBtn {
+            font-size: 1.3rem;
+            padding: 0.7rem 2rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #0000ff;
+            color: white;
+            transition: background 0.3s;
+        }
+
+        #sendBtn:hover {
+            background: #ffa500;
+        }
+
+        #thankyou {
+            font-size: 1.4rem;
+            color: green;
+            margin-top: 2rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+
+  <link rel="stylesheet" href="/css/auth.css?v=20260723" />
+  <link rel="stylesheet" href="/css/mascot.css?v=20260724" />
+  <script src="/js/auth.js?v=20260723"></script>
+  <script src="/js/mascot.js?v=20260724"></script>
+  <script>
+    TamilAuth.initPage();
+  </script>
+
+</head>
+
+
+<body>
+    <a id="home" href="index.html"> ◀ முகப்பு</a>
+    <h1>கருத்து படிவம்</h1>
+    <hr>
+
+    <p align = center>
+    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfape94Fq2txYNlE8lpXztR_qQ7apqiu4fKraymIS-alFvHhw/viewform?embedded=true" width=100% height="800" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+    </p>
+    
+</body>
+
+</html>

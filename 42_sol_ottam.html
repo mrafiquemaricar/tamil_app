@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>சொல் ஓட்டம் - Word Runner</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 12px;
+            max-width: 600px;
+            margin: auto;
+            background-color: #f9f9f9;
+            touch-action: manipulation;
+        }
+
+        h1 {
+            color: #00f;
+            margin-bottom: 0.5rem;
+            font-size: 1.6rem;
+        }
+
+        #home {
+            text-decoration: none;
+            background-color: #0000ff;
+            color: #ffffff;
+            padding: 8px 14px;
+            border-radius: 15px;
+            display: inline-block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+
+        #home:hover {
+            background-color: #0000aa;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 450px;
+            margin: 8px auto;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .prompt-container {
+            background-color: #0000ff;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            width: 100%;
+            max-width: 450px;
+            margin: 8px auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .prompt-label {
+            font-size: 0.8rem;
+            color: #ffeb3b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .canvas-container {
+            width: 100%;
+            max-width: 450px;
+            margin: 8px auto;
+            position: relative;
+        }
+
+        #runnerCanvas {
+            background-color: #eef2f7;
+            border: 3px solid #0000ff;
+            border-radius: 12px;
+            display: block;
+            width: 100%;
+            height: auto;
+            touch-action: none;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            max-width: 450px;
+            margin: 12px auto;
+        }
+
+        .control-btn {
+            flex: 1;
+            padding: 16px 12px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background: #0000ff;
+            color: white;
+            transition: background 0.1s, transform 0.1s;
+            user-select: none;
+            -webkit-user-select: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            touch-action: manipulation;
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+            background: #ffa500;
+        }
+
+        .feedback {
+            font-size: 1.1rem;
+            font-weight: bold;
+            min-height: 28px;
+            margin: 8px 0;
+        }
+
+        .feedback.correct {
+            color: green;
+        }
+
+        .feedback.incorrect {
+            color: red;
+        }
+
+        .status {
+            font-size: 1rem;
+            margin-top: 6px;
+            color: #555;
+        }
+
+        .restart-btn {
+            padding: 12px 24px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #28a745;
+            color: white;
+            font-weight: bold;
+            margin-top: 10px;
+            display: none;
+            touch-action: manipulation;
+        }
+
+        .restart-btn:hover {
+            background: #218838;
+        }
+
+        /* Responsive Mobile Specific Queries */
+        @media (max-width: 480px) {
+            body {
+                padding: 6px;
+            }
+
+            h1 {
+                font-size: 1.4rem;
+            }
+
+            .game-header {
+                font-size: 1rem;
+            }
+
+            .prompt-container {
+                font-size: 1.1rem;
+            }
+
+            .control-btn {
+                padding: 14px 10px;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+
+  <link rel="stylesheet" href="/css/auth.css?v=20260723" />
+  <link rel="stylesheet" href="/css/mascot.css?v=20260724" />
+  <script src="/js/auth.js?v=20260723"></script>
+  <script src="/js/mascot.js?v=20260724"></script>
+  <script>
+    TamilAuth.initPage();
+  </script>
+
+</head>
+
+<body>
+    <a id="home" href="index.html"> ◀ முகப்பு</a>
+    <h1>சொல் ஓட்டம் </h1>
+    <hr>
+
+    <div class="game-header">
+        <div>மதிப்பெண்: <span id="score">0</span></div>
+        <div>சுற்று: <span id="round">1</span></div>
+        <div>உயிர்கள்: <span id="lives">❤️❤️❤️</span></div>
+    </div>
+
+    <div class="prompt-container">
+        <span class="prompt-label">ஆங்கிலச் சொல்</span>
+        <span id="targetWord">--</span>
+    </div>
+
+    <div class="canvas-container">
+        <canvas id="runnerCanvas" width="450" height="420"></canvas>
+    </div>
+
+    <div class="controls">
+        <button class="control-btn" id="leftBtn">◀ இடது</button>
+        <button class="control-btn" id="rightBtn">வலது ▶</button>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+    <div class="status" id="status">சொற்கள் மீதம்: 0</div>
+    <button class="restart-btn" id="restartBtn" onclick="resetGame()">மீண்டும் தொடங்கு</button>
+
+    <script>
+        const canvas = document.getElementById("runnerCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const scoreEl = document.getElementById("score");
+        const roundEl = document.getElementById("round");
+        const livesEl = document.getElementById("lives");
+        const targetWordEl = document.getElementById("targetWord");
+        const feedbackEl = document.getElementById("feedback");
+        const statusEl = document.getElementById("status");
+        const restartBtn = document.getElementById("restartBtn");
+
+        const LANES = [75, 225, 375]; // Canvas coordinates for Lane 0, 1, 2
+        let currentLane = 1; // Start in middle lane (0=Left, 1=Middle, 2=Right)
+
+        let wordData = [];
+        let score = 0;
+        let lives = 3;
+        let currentRound = 1;
+        
+        let roundPool = [];
+        let currentQuestionIndex = 0;
+        let activeGates = []; // Gate obstacles currently falling
+        let speed = 2.5;
+        let isGameOver = false;
+        let isTransitioning = false;
+        let animationFrameId = null;
+
+        // Fetch & parse CSV with BOM stripping
+        fetch("word_list.csv")
+            .then(res => res.text())
+            .then(text => {
+                const rows = text.trim().split("\n").map(r => r.split(","));
+                const header = rows[0].map(h => h.replace(/^\uFEFF/, '').trim());
+
+                let catIndex = header.indexOf("Category");
+                let tamilIndex = header.indexOf("Tamil");
+                let englishIndex = header.indexOf("English");
+
+                if (catIndex === -1) catIndex = 0;
+                if (tamilIndex === -1) tamilIndex = 1;
+                if (englishIndex === -1) englishIndex = 2;
+
+                wordData = rows.slice(1).map(r => ({
+                    category: r[catIndex]?.trim(),
+                    word: r[tamilIndex]?.trim(),
+                    english: r[englishIndex]?.trim() || ""
+                })).filter(w => w.word && w.english);
+
+                resetGame();
+            });
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function resetGame() {
+            score = 0;
+            lives = 3;
+            currentRound = 1;
+            speed = 2.5;
+            isGameOver = false;
+            isTransitioning = false;
+            restartBtn.style.display = "none";
+            
+            scoreEl.textContent = score;
+            updateLivesDisplay();
+            roundEl.textContent = currentRound;
+            
+            startRound();
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            gameLoop();
+        }
+
+        function updateLivesDisplay() {
+            livesEl.textContent = "❤️".repeat(Math.max(0, lives));
+        }
+
+        function startRound() {
+            roundEl.textContent = currentRound;
+            feedbackEl.textContent = "";
+            feedbackEl.className = "feedback";
+            
+            // Pick 6 random words for this round
+            roundPool = shuffle([...wordData]).slice(0, 6);
+            currentQuestionIndex = 0;
+            
+            spawnQuestion();
+        }
+
+        function spawnQuestion() {
+            if (currentQuestionIndex >= roundPool.length) {
+                handleRoundComplete();
+                return;
+            }
+
+            const currentItem = roundPool[currentQuestionIndex];
+            targetWordEl.textContent = currentItem.english;
+            statusEl.textContent = `சொற்கள் மீதம்: ${roundPool.length - currentQuestionIndex}`;
+
+            // Pick 2 distractor Tamil words from other entries
+            const distractors = shuffle(wordData.filter(w => w.word !== currentItem.word)).slice(0, 2);
+
+            // Assemble 3 lane choices (1 correct, 2 distractors)
+            let choices = shuffle([
+                { text: currentItem.word, isCorrect: true },
+                { text: distractors[0].word, isCorrect: false },
+                { text: distractors[1].word, isCorrect: false }
+            ]);
+
+            // Create gate objects moving down with standard box size
+            activeGates = choices.map((choice, laneIdx) => ({
+                x: LANES[laneIdx],
+                y: -70,
+                width: 130,
+                height: 60,
+                text: choice.text,
+                isCorrect: choice.isCorrect,
+                lane: laneIdx
+            }));
+
+            isTransitioning = false;
+        }
+
+        function movePlayer(direction) {
+            if (isGameOver || isTransitioning) return;
+            if (direction === "left" && currentLane > 0) {
+                currentLane--;
+            } else if (direction === "right" && currentLane < 2) {
+                currentLane++;
+            }
+        }
+
+        // Tap/Click directly on a lane on canvas (Responsive Touch Handling)
+        function handleCanvasTouch(e) {
+            if (isGameOver || isTransitioning) return;
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clickX = clientX - rect.left;
+            const laneWidth = rect.width / 3;
+
+            if (clickX < laneWidth) {
+                currentLane = 0;
+            } else if (clickX < laneWidth * 2) {
+                currentLane = 1;
+            } else {
+                currentLane = 2;
+            }
+        }
+
+        canvas.addEventListener("pointerdown", handleCanvasTouch);
+
+        // Control buttons with touch and click support
+        const leftBtn = document.getElementById("leftBtn");
+        const rightBtn = document.getElementById("rightBtn");
+
+        leftBtn.addEventListener("touchstart", (e) => { e.preventDefault(); movePlayer("left"); }, { passive: false });
+        leftBtn.addEventListener("click", () => movePlayer("left"));
+
+        rightBtn.addEventListener("touchstart", (e) => { e.preventDefault(); movePlayer("right"); }, { passive: false });
+        rightBtn.addEventListener("click", () => movePlayer("right"));
+
+        // Keyboard Arrow controls
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") movePlayer("left");
+            if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") movePlayer("right");
+        });
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawLanes();
+            drawPlayer();
+
+            if (!isGameOver && !isTransitioning) {
+                updateAndDrawGates();
+            }
+
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        function drawLanes() {
+            // Draw lane dividing lines
+            ctx.strokeStyle = "#ccc";
+            ctx.lineWidth = 2;
+            ctx.setLineDash([10, 10]);
+
+            ctx.beginPath();
+            ctx.moveTo(150, 0);
+            ctx.lineTo(150, canvas.height);
+            ctx.moveTo(300, 0);
+            ctx.lineTo(300, canvas.height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function drawPlayer() {
+            const playerX = LANES[currentLane];
+            const playerY = canvas.height - 60;
+
+            // Character Body
+            ctx.fillStyle = "#0000ff";
+            ctx.beginPath();
+            ctx.arc(playerX, playerY, 22, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Inner Accent Ring
+            ctx.strokeStyle = "#15ff00";
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            // Runner Icon Text
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 16px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("🏃", playerX, playerY);
+        }
+
+        // Helper function to wrap text inside canvas box
+        function getWrappedLines(context, text, maxWidth) {
+            const words = text.split(" ");
+            let lines = [];
+            let currentLine = "";
+
+            for (let i = 0; i < words.length; i++) {
+                let testLine = currentLine ? currentLine + " " + words[i] : words[i];
+                let metrics = context.measureText(testLine);
+                if (metrics.width > maxWidth && currentLine !== "") {
+                    lines.push(currentLine);
+                    currentLine = words[i];
+                } else {
+                    currentLine = testLine;
+                }
+            }
+            lines.push(currentLine);
+            return lines;
+        }
+
+        function updateAndDrawGates() {
+            let collisionOccurred = false;
+
+            for (let gate of activeGates) {
+                gate.y += speed;
+
+                // Draw Gate Box
+                ctx.fillStyle = "#15ff00";
+                ctx.strokeStyle = "#008800";
+                ctx.lineWidth = 2;
+                
+                const boxX = gate.x - gate.width / 2;
+                const boxY = gate.y - gate.height / 2;
+                
+                ctx.fillRect(boxX, boxY, gate.width, gate.height);
+                ctx.strokeRect(boxX, boxY, gate.width, gate.height);
+
+                // Configure font for wrapping check
+                ctx.fillStyle = "#000000";
+                ctx.font = "bold 13px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+
+                // Get wrapped lines fitting max box padding width (width - 12px)
+                const lines = getWrappedLines(ctx, gate.text, gate.width - 12);
+                const lineHeight = 16;
+                const startY = gate.y - ((lines.length - 1) * lineHeight) / 2;
+
+                lines.forEach((line, index) => {
+                    ctx.fillText(line, gate.x, startY + (index * lineHeight));
+                });
+
+                // Collision Detection line with Player (at y ~ 360)
+                if (gate.y >= canvas.height - 75 && gate.y <= canvas.height - 30) {
+                    if (gate.lane === currentLane) {
+                        collisionOccurred = true;
+                        handleCollision(gate.isCorrect);
+                        break;
+                    }
+                }
+            }
+
+            // Check if gates missed completely past screen bottom
+            if (!collisionOccurred && activeGates.length > 0 && activeGates[0].y > canvas.height + 40) {
+                handleCollision(false); // Missed all lanes
+            }
+        }
+
+        function handleCollision(isCorrect) {
+            isTransitioning = true;
+            activeGates = [];
+
+            if (isCorrect) {
+                score += 10;
+                scoreEl.textContent = score;
+                feedbackEl.textContent = "✔ சரி! (+10)";
+                feedbackEl.className = "feedback correct";
+            } else {
+                lives--;
+                updateLivesDisplay();
+                feedbackEl.textContent = "✖ தவறு! (-1 உயிர்)";
+                feedbackEl.className = "feedback incorrect";
+            }
+
+            if (lives <= 0) {
+                triggerGameOver();
+            } else {
+                currentQuestionIndex++;
+                setTimeout(() => {
+                    feedbackEl.textContent = "";
+                    spawnQuestion();
+                }, 1200);
+            }
+        }
+
+        function handleRoundComplete() {
+            isTransitioning = true;
+            activeGates = [];
+            
+            feedbackEl.className = "feedback correct";
+            feedbackEl.textContent = `🎉 சுற்று ${currentRound} நிறைவடைந்தது! அடுத்த சுற்று தொடங்குகிறது...`;
+
+            currentRound++;
+            speed += 0.5; // Slight speed increment per round
+
+            setTimeout(() => {
+                startRound();
+            }, 2000);
+        }
+
+        function triggerGameOver() {
+            isGameOver = true;
+            targetWordEl.textContent = "GAME OVER";
+            feedbackEl.className = "feedback incorrect";
+            feedbackEl.textContent = `💀 விளையாட்டு முடிந்தது! மொத்த மதிப்பெண்: ${score}`;
+            statusEl.textContent = "மீண்டும் தொடங்கு பொத்தானை அழுத்தவும்.";
+            restartBtn.style.display = "inline-block";
+        }
+    </script>
+</body>
+
+</html>

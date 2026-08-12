@@ -68,6 +68,42 @@
     '36_common_letter.html': {
       ta: 'கொடுக்கப்பட்டுள்ள சொற்களில் பொதுவான தமிழ் எழுத்தைக் கண்டுபிடியுங்கள்! 🔍',
       en: 'Identify the common Tamil letter across the given words! 🔍'
+    },
+    '37_jumbled_sentences.html': {
+      ta: 'கலைந்துள்ள சொற்களைச் சரியான வரிசையில் அமைத்து வாக்கியத்தை உருவாக்குங்கள்! ✍️',
+      en: 'Rearrange jumbled words in correct order to form complete sentences! ✍️'
+    },
+    '38_reading_practice.html': {
+      ta: 'தமிழ் வாக்கியங்களைப் படித்தும் ஒலியைக் கேட்டும் பயிற்சி செய்யுங்கள்! 📖',
+      en: 'Practice reading Tamil sentences with native audio pronunciation! 📖'
+    },
+    '39_writing_practice.html': {
+      ta: 'திரையில் விரலால் அல்லது மவுஸால் தமிழ் எழுத்துக்களை எழுதிப் பழகுங்கள்! 🎨',
+      en: 'Practice handwriting Tamil alphabets on screen! 🎨'
+    },
+    '40_select_suitable_word.html': {
+      ta: 'வாக்கியத்திற்குப் பொருத்தமான சரியான சொல்லைத் தேர்ந்தெடுக்கவும்! 🎯',
+      en: 'Select the most suitable Tamil word to complete the sentence! 🎯'
+    },
+    '41_place_inside_correct_box.html': {
+      ta: 'சொற்களை அவற்றின் சரியான வகைப்பெட்டிக்குள் நகர்த்தி வையுங்கள்! 📦',
+      en: 'Drag and place words into their corresponding correct category box! 📦'
+    },
+    '42_sol_ottam.html': {
+      ta: 'வேகமாக ஓடும் சொற்களில் சரியான தமிழைத் தொட்டு புள்ளிகள் பெறுங்கள்! 🏃‍♂️',
+      en: 'Tap the correct running Tamil words quickly to score points! 🏃‍♂️'
+    },
+    '43_theme_quest.html': {
+      ta: 'தலைப்பு சார்ந்த தமிழ் சொல் தேடல் வேட்டையைத் தொடங்குங்கள்! 🗺️',
+      en: 'Embark on a themed Tamil vocabulary search quest! 🗺️'
+    },
+    '44_correct_words.html': {
+      ta: 'பிழையில்லாத சரியான தமிழ் சொற்களைக் கண்டறியவும்! ✨',
+      en: 'Identify and choose the correctly spelled Tamil words! ✨'
+    },
+    'karuthu_padivam.html': {
+      ta: 'உங்கள் கருத்துக்கள் மற்றும் பரிந்துரைகளை எங்களோடு பகிர்ந்து கொள்ளுங்கள்! 📝',
+      en: 'Share your feedback and suggestions to help us improve! 📝'
     }
   };
 

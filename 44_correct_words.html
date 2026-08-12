@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>வார்த்தைகளை சரி செய்வோம்</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #fdfdfd;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      color: #00f;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    button {
+      font-size: 2.5em;
+      padding: 10px 15px;
+      margin: 10px 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background-color: #0000ff;
+      color: #ffffff;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #ffa500;
+    }
+
+    /* Single top rectangle containing all 3 words */
+    #wordsContainer {
+      width: 90%;
+      border: 2px solid #ccc;
+      background-color: #ffffff;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      align-items: center;
+      box-sizing: border-box;
+    }
+
+    .word-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    /* Shared tile & slot dimension rules for strict uniformity */
+    .tile,
+    .slot {
+      width: 48px;
+      height: 48px;
+      line-height: 48px;
+      font-size: 20px;
+      text-align: center;
+      border-radius: 4px;
+      box-sizing: border-box;
+      user-select: none;
+      flex: 0 0 auto;
+    }
+
+    .tile {
+      background-color: #9c27b0;
+      color: white;
+      cursor: grab;
+      touch-action: manipulation;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tile.dragging {
+      opacity: 0.5;
+    }
+
+    .slot {
+      border: 2px dashed #9c27b0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+
+    .slot.revealed {
+      border: 2px solid #4caf50;
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      font-weight: bold;
+    }
+
+    /* Keyframes for Yellow & Black blinking effect on wrong answers */
+    @keyframes slot-blink {
+      0%, 100% {
+        border-color: #ffeb3b;
+        background-color: #fffde7;
+      }
+      50% {
+        border-color: #000000;
+        background-color: #212121;
+      }
+    }
+
+    @keyframes tile-blink {
+      0%, 100% {
+        background-color: #ffeb3b;
+        color: #000000;
+      }
+      50% {
+        background-color: #000000;
+        color: #ffeb3b;
+      }
+    }
+
+    /* Keyframes for Green blinking effect on CORRECT answers */
+    @keyframes slot-success-blink {
+      0%, 100% {
+        border-color: #4caf50;
+        background-color: #e8f5e9;
+      }
+      50% {
+        border-color: #1b5e20;
+        background-color: #a5d6a7;
+      }
+    }
+
+    @keyframes tile-success-blink {
+      0%, 100% {
+        background-color: #4caf50;
+        color: #ffffff;
+      }
+      50% {
+        background-color: #c8e6c9;
+        color: #1b5e20;
+      }
+    }
+
+    /* 5px border with yellow/black blinking animation for wrong answer slots */
+    .slot.incorrect {
+      border: 5px solid #ffeb3b !important;
+      animation: slot-blink 0.4s infinite !important;
+    }
+
+    /* Target the tile placed inside a wrong slot */
+    .slot.incorrect .tile {
+      animation: tile-blink 0.4s infinite !important;
+    }
+
+    /* 5px green border with blinking animation for CORRECT answer slots */
+    .slot.correct {
+      border: 5px solid #4caf50 !important;
+      animation: slot-success-blink 0.4s infinite !important;
+    }
+
+    /* Target the tile placed inside a CORRECT slot */
+    .slot.correct .tile {
+      animation: tile-success-blink 0.4s infinite !important;
+    }
+
+    /* Fixed vertical and horizontal centering inside drop slots */
+    .slot .tile {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      line-height: normal;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Bottom Draggable Tiles Panel */
+    #tilesContainer {
+      min-height: 100px;
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin: 10px 0;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 90%;
+      box-sizing: border-box;
+      background: #fafafa;
+      border-radius: 8px;
+    }
+
+    #buttonsContainer {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-top: 10px;
+    }
+
+    #feedbackMessage {
+      color: #000;
+      padding: 8px 14px;
+      border-radius: 5px;
+      font-weight: bold;
+      display: none;
+      min-width: 180px;
+      width: 90%;
+      text-align: center;
+      box-sizing: border-box;
+      font-size: 1.1em;
+    }
+
+    #feedbackMessage.success {
+      background-color: #ffa500;
+      display: block;
+    }
+
+    #feedbackMessage.error {
+      background-color: #ffcdd2;
+      color: #b71c1c;
+      border: 1px solid #e57373;
+      display: block;
+    }
+
+    #correctWordsContainer {
+      margin-top: 6px;
+      font-weight: normal;
+      font-size: 1em;
+      color: #333;
+    }
+
+    #home {
+      text-decoration: none;
+      background-color: #0000ff;
+      color: #ffffff;
+      padding: 8px 14px;
+      border-radius: 15px;
+      display: inline-block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      font-size: 0.95rem;
+    }
+  </style>
+
+  <link rel="stylesheet" href="/css/auth.css?v=20260723" />
+  <link rel="stylesheet" href="/css/mascot.css?v=20260724" />
+  <script src="/js/auth.js?v=20260723"></script>
+  <script src="/js/mascot.js?v=20260724"></script>
+  <script>
+    TamilAuth.initPage();
+  </script>
+
+</head>
+
+<body>
+
+  <a id="home" href="index.html"> ◀ முகப்பு</a>
+
+  <h1>வார்த்தைகளை சரி செய்வோம்</h1>
+
+  <!-- Single Top Rectangle for 3 Words -->
+  <div id="wordsContainer" title="காலியிடங்களில் எழுத்துகளை பொருத்தவும்"></div>
+
+  <!-- Remaining Draggable Tiles Panel at the Bottom -->
+  <div id="tilesContainer" title="எழுத்துகளை இங்கே இருந்து இழுக்கவும்"></div>
+
+  <!-- Dynamic Feedback Message & Correct Words Display -->
+  <div id="feedbackMessage"></div>
+
+  <div id="buttonsContainer">
+    <button id="showAnswerBtn" title="பதிலைக் காட்டு">?</button>
+    <button id="nextWordBtn" title="அடுத்த வார்த்தைகள்">▶</button>
+  </div>
+
+  <script>
+    const uyirLetters = ['அ', 'ஆ', 'இ', 'ஈ', 'உ', 'ஊ', 'எ', 'ஏ', 'ஐ', 'ஒ', 'ஓ', 'ஔ'];
+    const meiLetters = ['க்', 'ங்', 'ச்', 'ஞ்', 'ட்', 'ண்', 'த்', 'ந்', 'ப்', 'ம்', 'ய்', 'ர்', 'ல்', 'வ்', 'ழ்', 'ள்', 'ற்', 'ன்'];
+    const uyirmeiLetters = ['க', 'கா', 'கி', 'கீ', 'கு', 'கூ', 'கெ', 'கே', 'கை', 'கொ', 'கோ', 'கௌ',
+      'ங', 'ஙா', 'ஙி', 'ஙீ', 'ஙு', 'ஙூ', 'ஙெ', 'ஙே', 'ஙை', 'ஙொ', 'ஙோ', 'ஙௌ',
+      'ச', 'சா', 'சி', 'சீ', 'சு', 'சூ', 'செ', 'சே', 'சை', 'சொ', 'சோ', 'சௌ',
+      'ஞ', 'ஞா', 'ஞி', 'ஞீ', 'ஞு', 'ஞூ', 'ஞெ', 'ஞே', 'ஞை', 'ஞொ', 'ஞோ', 'ஞௌ',
+      'ட', 'டா', 'டி', 'டீ', 'டு', 'டூ', 'டெ', 'டே', 'டை', 'டொ', 'டோ', 'டௌ',
+      'ண', 'ணா', 'ணி', 'ணீ', 'ணு', 'ணூ', 'ணெ', 'ணே', 'ணை', 'ணொ', 'ணோ', 'ணௌ',
+      'த', 'தா', 'தி', 'தீ', 'து', 'தூ', 'தெ', 'தே', 'தை', 'தொ', 'தோ', 'தௌ',
+      'ந', 'நா', 'நி', 'நீ', 'நு', 'நூ', 'நெ', 'நே', 'நை', 'நொ', 'நோ', 'நௌ',
+      'ப', 'பா', 'பி', 'பீ', 'பு', 'பூ', 'பெ', 'பே', 'பை', 'பொ', 'போ', 'பௌ',
+      'ம', 'மா', 'மி', 'மீ', 'மு', 'மூ', 'மெ', 'மே', 'மை', 'மொ', 'மோ', 'மௌ',
+      'ய', 'யா', 'யி', 'யீ', 'யு', 'யூ', 'யெ', 'யே', 'யை', 'யொ', 'யோ', 'யௌ',
+      'ர', 'ரா', 'ரி', 'ரீ', 'ரு', 'ரூ', 'ரெ', 'ரே', 'ரை', 'ரொ', 'ரோ', 'ரௌ',
+      'ல', 'லா', 'லி', 'லீ', 'லு', 'லூ', 'லெ', 'லே', 'லை', 'லொ', 'லோ', 'லௌ',
+      'வ', 'வா', 'வி', 'வீ', 'வு', 'வூ', 'வெ', 'வே', 'வை', 'வொ', 'வோ', 'வௌ',
+      'ழ', 'ழா', 'ழி', 'ழீ', 'ழு', 'ழூ', 'ழெ', 'ழே', 'ழை', 'ழொ', 'ழோ', 'ழௌ',
+      'ள', 'ளா', 'ளி', 'ளீ', 'ளு', 'ளூ', 'ளெ', 'ளே', 'ளை', 'ளொ', 'ளோ', 'ளௌ',
+      'ற', 'றா', 'றி', 'றீ', 'று', 'றூ', 'றெ', 'றே', 'றை', 'றொ', 'றோ', 'றௌ',
+      'ன', 'னா', 'னி', 'னீ', 'னு', 'னூ', 'னெ', 'னே', 'னை', 'னொ', 'னோ', 'னௌ'];
+    const aythaLetter = ["ஃ"];
+    const kiranthaLetters = ['ஜ்', 'ஜ', 'ஜா', 'ஜி', 'ஜீ', 'ஜு', 'ஜூ', 'ஜெ', 'ஜே', 'ஜை', 'ஜொ', 'ஜோ', 'ஜௌ',
+      'ஷ்', 'ஷ', 'ஷா', 'ஷி', 'ஷீ', 'ஷு', 'ஷூ', 'ஷெ', 'ஷே', 'ஷை', 'ஷொ', 'ஷோ', 'ஷௌ',
+      'ஸ்', 'ஸ', 'ஸா', 'ஸி', 'ஸீ', 'ஸு', 'ஸூ', 'ஸெ', 'ஸே', 'ஸை', 'ஸொ', 'ஸோ', 'ஸௌ',
+      'ஹ்', 'ஹ', 'ஹா', 'ஹி', 'ஹீ', 'ஹு', 'ஹூ', 'ஹெ', 'ஹே', 'ஹை', 'ஹொ', 'ஹோ', 'ஹௌ',
+      'க்ஷ்', 'க்ஷ', 'க்ஷா', 'க்ஷி', 'க்ஷீ', 'க்ஷு', 'க்ஷூ', 'க்ஷெ', 'க்ஷே', 'க்ஷை', 'க்ஷொ', 'க்ஷோ', 'க்ஷெள',
+      'ஸ்ரீ'];
+
+    const allLetters = uyirLetters.concat(meiLetters, uyirmeiLetters, aythaLetter, kiranthaLetters);
+
+    const sheetUrl = 'word_list.csv';
+    const wordsContainer = document.getElementById('wordsContainer');
+    const tilesContainer = document.getElementById('tilesContainer');
+    const showAnswerBtn = document.getElementById('showAnswerBtn');
+    const nextWordBtn = document.getElementById('nextWordBtn');
+    const feedbackMessage = document.getElementById('feedbackMessage');
+
+    let allWords = [];
+    let usedWords = new Set();
+    let currentWordsData = [];
+    let isEvaluating = false;
+
+    function splitTamilWord(word) {
+      const result = [];
+      let i = 0;
+      while (i < word.length) {
+        let matched = false;
+        for (let len = 3; len > 0; len--) {
+          if (i + len <= word.length) {
+            const part = word.substring(i, i + len);
+            if (allLetters.includes(part)) {
+              result.push(part);
+              i += len;
+              matched = true;
+              break;
+            }
+          }
+        }
+        if (!matched) {
+          result.push(word[i]);
+          i++;
+        }
+      }
+      return result;
+    }
+
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+
+    function pickRandomWords(count = 3) {
+      let availableWords = allWords.filter(word => !usedWords.has(word));
+
+      if (availableWords.length < count) {
+        usedWords.clear();
+        availableWords = [...allWords];
+      }
+
+      shuffleArray(availableWords);
+      const selected = availableWords.slice(0, count);
+      selected.forEach(w => usedWords.add(w));
+      return selected;
+    }
+
+    function setupNewRound() {
+      isEvaluating = false;
+      const words = pickRandomWords(3);
+      if (words.length === 0) return;
+
+      currentWordsData = [];
+      let poolOfTiles = [];
+
+      words.forEach(word => {
+        const letters = splitTamilWord(word);
+        let revealedIndices = [];
+
+        if (letters.length <= 1) {
+          revealedIndices = [];
+        } else if (letters.length === 2) {
+          const randIdx = Math.floor(Math.random() * 2);
+          revealedIndices = [randIdx];
+        } else {
+          const indices = Array.from({ length: letters.length }, (_, i) => i);
+          shuffleArray(indices);
+          revealedIndices = indices.slice(0, 2);
+        }
+
+        letters.forEach((letter, idx) => {
+          if (!revealedIndices.includes(idx)) {
+            poolOfTiles.push(letter);
+          }
+        });
+
+        currentWordsData.push({
+          word,
+          letters,
+          revealedIndices
+        });
+      });
+
+      shuffleArray(poolOfTiles);
+      renderTiles(poolOfTiles);
+      renderWordSlots();
+      clearFeedback();
+    }
+
+    function renderTiles(tiles) {
+      tilesContainer.innerHTML = '';
+      tiles.forEach((letter, index) => {
+        const tile = document.createElement('div');
+        tile.className = 'tile';
+        tile.textContent = letter;
+        tile.setAttribute('draggable', 'true');
+        tile.setAttribute('data-tile-id', 'tile-' + index + '-' + Date.now());
+        tilesContainer.appendChild(tile);
+      });
+    }
+
+    function renderWordSlots() {
+      wordsContainer.innerHTML = '';
+      currentWordsData.forEach((wordObj, wIdx) => {
+        const row = document.createElement('div');
+        row.className = 'word-row';
+        row.setAttribute('data-word-index', wIdx);
+
+        wordObj.letters.forEach((letter, lIdx) => {
+          const slot = document.createElement('div');
+          slot.className = 'slot';
+          slot.setAttribute('data-word-idx', wIdx);
+          slot.setAttribute('data-letter-idx', lIdx);
+
+          if (wordObj.revealedIndices.includes(lIdx)) {
+            slot.classList.add('revealed');
+            slot.textContent = letter;
+          } else {
+            slot.addEventListener('dragover', allowDrop);
+            slot.addEventListener('drop', dropOnSlot);
+            slot.addEventListener('click', onSlotClick);
+          }
+
+          row.appendChild(slot);
+        });
+
+        wordsContainer.appendChild(row);
+      });
+    }
+
+    function clearFeedback() {
+      feedbackMessage.className = '';
+      feedbackMessage.innerHTML = '';
+      feedbackMessage.style.display = 'none';
+      // Clear any previous correct/incorrect classes on slots
+      document.querySelectorAll('.slot').forEach(slot => {
+        slot.classList.remove('correct', 'incorrect');
+      });
+    }
+
+    function checkAnswer() {
+      if (isEvaluating) return;
+
+      // Check if all slots are filled
+      let allSlotsFilled = true;
+      currentWordsData.forEach((wordObj, wIdx) => {
+        const row = wordsContainer.querySelector(`.word-row[data-word-index="${wIdx}"]`);
+        wordObj.letters.forEach((_, lIdx) => {
+          if (!wordObj.revealedIndices.includes(lIdx)) {
+            const slot = row.children[lIdx];
+            if (!slot.querySelector('.tile')) {
+              allSlotsFilled = false;
+            }
+          }
+        });
+      });
+
+      if (!allSlotsFilled) return;
+
+      // Validate placed letters
+      let allCorrect = true;
+      let wrongSlots = [];
+      let filledUserSlots = [];
+
+      currentWordsData.forEach((wordObj, wIdx) => {
+        const row = wordsContainer.querySelector(`.word-row[data-word-index="${wIdx}"]`);
+        wordObj.letters.forEach((expectedLetter, lIdx) => {
+          if (!wordObj.revealedIndices.includes(lIdx)) {
+            const slot = row.children[lIdx];
+            filledUserSlots.push(slot);
+            const tile = slot.querySelector('.tile');
+            if (!tile || tile.textContent !== expectedLetter) {
+              allCorrect = false;
+              wrongSlots.push(slot);
+            }
+          }
+        });
+      });
+
+      if (allCorrect) {
+        isEvaluating = true;
+        // Highlight all user filled slots with green blinking feedback
+        filledUserSlots.forEach(slot => slot.classList.add('correct'));
+
+        feedbackMessage.className = 'success';
+        feedbackMessage.innerHTML = '✅ சரியான பதில்!';
+
+        setTimeout(() => {
+          setupNewRound();
+        }, 1800);
+      } else {
+        isEvaluating = true;
+        // Highlight wrong slots with yellow/black blinking border & tile
+        wrongSlots.forEach(slot => slot.classList.add('incorrect'));
+
+        // Correct words list formatting
+        const correctWordsList = currentWordsData.map(d => d.word).join(', ');
+
+        feedbackMessage.className = 'error';
+        feedbackMessage.innerHTML = `❌ பிழையான பதில்!<br>
+          <div id="correctWordsContainer">சரியான வார்த்தைகள்: <strong>${correctWordsList}</strong></div>`;
+
+        // Display blinking error for 5 seconds (5000ms) before returning tiles
+        setTimeout(() => {
+          wrongSlots.forEach(slot => {
+            slot.classList.remove('incorrect');
+            const tile = slot.querySelector('.tile');
+            if (tile) {
+              tilesContainer.appendChild(tile);
+            }
+          });
+          clearFeedback();
+          isEvaluating = false;
+        }, 5000);
+      }
+    }
+
+    // Drag and drop handlers
+    let draggedTile = null;
+
+    function dragStart(e) {
+      if (isEvaluating) return;
+      if (e.target.classList.contains('tile')) {
+        draggedTile = e.target;
+        e.dataTransfer.setData('text/plain', e.target.getAttribute('data-tile-id'));
+        e.target.classList.add('dragging');
+      }
+    }
+
+    function dragEnd(e) {
+      if (e.target.classList.contains('tile')) {
+        e.target.classList.remove('dragging');
+      }
+    }
+
+    function allowDrop(e) {
+      e.preventDefault();
+    }
+
+    function dropOnSlot(e) {
+      e.preventDefault();
+      if (isEvaluating) return;
+      const slot = e.currentTarget;
+      if (slot.classList.contains('revealed')) return;
+
+      if (draggedTile) {
+        if (slot.children.length > 0) {
+          const existingTile = slot.children[0];
+          tilesContainer.appendChild(existingTile);
+        }
+        slot.appendChild(draggedTile);
+        setTimeout(checkAnswer, 100);
+      }
+    }
+
+    function dropOnContainer(e) {
+      e.preventDefault();
+      if (isEvaluating) return;
+      if (draggedTile) {
+        tilesContainer.appendChild(draggedTile);
+      }
+    }
+
+    tilesContainer.addEventListener('dragstart', dragStart);
+    tilesContainer.addEventListener('dragend', dragEnd);
+    tilesContainer.addEventListener('dragover', allowDrop);
+    tilesContainer.addEventListener('drop', dropOnContainer);
+
+    wordsContainer.addEventListener('dragstart', dragStart);
+    wordsContainer.addEventListener('dragend', dragEnd);
+
+    // Tap/Click support for mobile ease-of-use
+    let selectedTile = null;
+
+    tilesContainer.addEventListener('click', (e) => {
+      if (isEvaluating) return;
+      const tile = e.target.closest('.tile');
+      if (!tile) return;
+
+      if (selectedTile) {
+        selectedTile.style.outline = 'none';
+      }
+
+      if (selectedTile === tile) {
+        selectedTile = null;
+      } else {
+        selectedTile = tile;
+        selectedTile.style.outline = '3px solid #ffa500';
+      }
+    });
+
+    function onSlotClick(e) {
+      if (isEvaluating) return;
+      const slot = e.currentTarget;
+
+      if (selectedTile) {
+        if (slot.children.length > 0) {
+          const existing = slot.children[0];
+          tilesContainer.appendChild(existing);
+        }
+        slot.appendChild(selectedTile);
+        selectedTile.style.outline = 'none';
+        selectedTile = null;
+        setTimeout(checkAnswer, 100);
+      } else if (slot.children.length > 0) {
+        const existing = slot.children[0];
+        tilesContainer.appendChild(existing);
+      }
+    }
+
+    showAnswerBtn.onclick = function () {
+      if (isEvaluating) return;
+      tilesContainer.innerHTML = '';
+      currentWordsData.forEach((wordObj, wIdx) => {
+        const row = wordsContainer.querySelector(`.word-row[data-word-index="${wIdx}"]`);
+        wordObj.letters.forEach((letter, lIdx) => {
+          if (!wordObj.revealedIndices.includes(lIdx)) {
+            const slot = row.children[lIdx];
+            slot.innerHTML = '';
+            const tile = document.createElement('div');
+            tile.className = 'tile';
+            tile.textContent = letter;
+            tile.setAttribute('draggable', 'false');
+            slot.appendChild(tile);
+          }
+        });
+      });
+      clearFeedback();
+    };
+
+    nextWordBtn.onclick = function () {
+      setupNewRound();
+    };
+
+    fetch(sheetUrl)
+      .then(res => res.text())
+      .then(csvText => {
+        const lines = csvText.trim().split('\n');
+        if (lines.length <= 1) return;
+
+        const header = lines[0].split(',');
+        const tamilIndex = header.findIndex(h => h.trim() === 'Tamil');
+
+        for (let i = 1; i < lines.length; i++) {
+          if (!lines[i].trim()) continue;
+          const parts = lines[i].split(',');
+          const tamilWord = parts[tamilIndex] ? parts[tamilIndex].trim() : '';
+
+          if (tamilWord) {
+            allWords.push(tamilWord);
+          }
+        }
+
+        if (allWords.length > 0) {
+          setupNewRound();
+        }
+      });
+  </script>
+
+</body>
+
+</html>

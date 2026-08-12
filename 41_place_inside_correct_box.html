@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>சரியான பெட்டியில் போடு</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            max-width: 700px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #00f;
+            margin-bottom: 1rem;
+        }
+
+        #home {
+            text-decoration: none;
+            background-color: #0000ff;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 15px;
+        }
+
+        .score-board {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin: 15px 0;
+            color: #333;
+        }
+
+        .buckets-container {
+            display: flex;
+            justify-content: space-around;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .bucket {
+            flex: 1;
+            min-height: 180px;
+            border: 3px dashed #0000ff;
+            border-radius: 12px;
+            padding: 10px;
+            background-color: #f0f4ff;
+            transition: background-color 0.3s, border-color 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: visible; /* Allows tooltips to extend beyond bucket bounds */
+        }
+
+        .bucket.drag-over {
+            background-color: #d0e8ff;
+            border-color: #00aa00;
+        }
+
+        .bucket-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #00f;
+            margin-bottom: 10px;
+            padding: 5px 10px;
+            border-bottom: 2px solid #00f;
+            width: 100%;
+        }
+
+        .bucket-words {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            width: 100%;
+            padding-top: 15px;
+        }
+
+        .card-container {
+            min-height: 90px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .word-card {
+            background-color: #15ff00;
+            color: #000;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: grab;
+            user-select: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+        }
+
+        .word-card:active {
+            cursor: grabbing;
+        }
+
+        .placed-word {
+            position: relative;
+            display: inline-block;
+            background-color: #d4edda;
+            border: 1px solid #28a745;
+            color: #155724;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        /* Tooltip Box */
+        .placed-word:hover::after {
+            content: attr(data-english);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #000;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            z-index: 100;
+            pointer-events: none;
+            box-shadow: 0px 4px 8px rgba(0,0,0,0.3);
+        }
+
+        /* Tooltip Arrow */
+        .placed-word:hover::before {
+            content: '';
+            position: absolute;
+            bottom: 105%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #000;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .feedback {
+            font-size: 1.2rem;
+            font-weight: bold;
+            min-height: 30px;
+            margin: 10px 0;
+        }
+
+        .feedback.correct {
+            color: green;
+        }
+
+        .feedback.incorrect {
+            color: red;
+        }
+
+        .status {
+            font-size: 1.1rem;
+            margin-top: 15px;
+            color: #555;
+        }
+
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .controls button {
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #0000ff;
+            color: white;
+            transition: background 0.3s;
+        }
+
+        .controls button:hover {
+            background: #ffa500;
+        }
+    </style>
+
+  <link rel="stylesheet" href="/css/auth.css?v=20260723" />
+  <link rel="stylesheet" href="/css/mascot.css?v=20260724" />
+  <script src="/js/auth.js?v=20260723"></script>
+  <script src="/js/mascot.js?v=20260724"></script>
+  <script>
+    TamilAuth.initPage();
+  </script>
+
+</head>
+
+<body>
+    <a id="home" href="index.html"> ◀ முகப்பு</a>
+    <h1>சரியான பெட்டியில் போடு</h1>
+    <hr>
+
+    <div class="score-board">மதிப்பெண்: <span id="score">0</span></div>
+
+    <div id="gameArea">
+        <div class="card-container">
+            <div id="currentWord" class="word-card" draggable="true">--</div>
+        </div>
+
+        <div class="feedback" id="feedback"></div>
+
+        <div class="buckets-container">
+            <div class="bucket" id="bucketA" data-category="">
+                <div class="bucket-title" id="bucketTitleA">வகை 1</div>
+                <div class="bucket-words" id="bucketWordsA"></div>
+            </div>
+            <div class="bucket" id="bucketB" data-category="">
+                <div class="bucket-title" id="bucketTitleB">வகை 2</div>
+                <div class="bucket-words" id="bucketWordsB"></div>
+            </div>
+        </div>
+
+        <div class="status" id="status">சொற்கள் மீதம்: 0</div>
+    </div>
+
+    <script>
+        let wordData = [];
+        let categoryMap = {};
+        let unplayedCategories = [];
+        let currentWords = [];
+        let currentWordIndex = 0;
+        let score = 0;
+        let activeCategories = [];
+        let timerId = null;
+        let isTransitioning = false;
+
+        const currentWordEl = document.getElementById("currentWord");
+        const bucketA = document.getElementById("bucketA");
+        const bucketB = document.getElementById("bucketB");
+        const bucketTitleA = document.getElementById("bucketTitleA");
+        const bucketTitleB = document.getElementById("bucketTitleB");
+        const bucketWordsA = document.getElementById("bucketWordsA");
+        const bucketWordsB = document.getElementById("bucketWordsB");
+        const scoreEl = document.getElementById("score");
+        const feedbackEl = document.getElementById("feedback");
+        const statusEl = document.getElementById("status");
+
+        fetch("word_list.csv")
+            .then(res => res.text())
+            .then(text => {
+                const rows = text.trim().split("\n").map(r => r.split(","));
+                
+                // Clean BOM and whitespace from header items
+                const header = rows[0].map(h => h.replace(/^\uFEFF/, '').trim());
+                
+                let catIndex = header.indexOf("Category");
+                let tamilIndex = header.indexOf("Tamil");
+                let englishIndex = header.indexOf("English");
+
+                // Fallback positions if headers aren't explicitly matched
+                if (catIndex === -1) catIndex = 0;
+                if (tamilIndex === -1) tamilIndex = 1;
+                if (englishIndex === -1) englishIndex = 2;
+
+                wordData = rows.slice(1).map(r => ({
+                    category: r[catIndex]?.trim(),
+                    word: r[tamilIndex]?.trim(),
+                    english: r[englishIndex]?.trim() || ""
+                })).filter(w => w.category && w.word);
+
+                // Group words by category
+                categoryMap = {};
+                wordData.forEach(item => {
+                    if (!categoryMap[item.category]) {
+                        categoryMap[item.category] = [];
+                    }
+                    categoryMap[item.category].push({ word: item.word, english: item.english });
+                });
+
+                resetGame();
+            });
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function resetGame() {
+            score = 0;
+            scoreEl.textContent = score;
+            unplayedCategories = shuffle(Object.keys(categoryMap));
+            startNextRound();
+        }
+
+        function startNextRound() {
+            if (timerId) clearInterval(timerId);
+            isTransitioning = false;
+            feedbackEl.textContent = "";
+            feedbackEl.className = "feedback";
+            bucketWordsA.innerHTML = "";
+            bucketWordsB.innerHTML = "";
+
+            if (unplayedCategories.length < 2) {
+                // If odd number of categories left or finished, reload full pool
+                unplayedCategories = shuffle(Object.keys(categoryMap));
+            }
+
+            // Pick 2 categories
+            activeCategories = [unplayedCategories.pop(), unplayedCategories.pop()];
+
+            bucketA.dataset.category = activeCategories[0];
+            bucketB.dataset.category = activeCategories[1];
+
+            bucketTitleA.textContent = activeCategories[0];
+            bucketTitleB.textContent = activeCategories[1];
+
+            // Gather all available words from both categories
+            let pool = [];
+            categoryMap[activeCategories[0]].forEach(item => pool.push({ word: item.word, english: item.english, category: activeCategories[0] }));
+            categoryMap[activeCategories[1]].forEach(item => pool.push({ word: item.word, english: item.english, category: activeCategories[1] }));
+
+            currentWords = shuffle(pool);
+            currentWordIndex = 0;
+
+            displayCurrentWord();
+        }
+
+        function displayCurrentWord() {
+            if (currentWordIndex >= currentWords.length) {
+                currentWordEl.style.display = "none";
+                statusEl.textContent = "அனைத்து சொற்களும் நிறைவடைந்தன!";
+                handleRoundCompletion();
+                return;
+            }
+
+            const item = currentWords[currentWordIndex];
+            currentWordEl.style.display = "inline-block";
+            currentWordEl.textContent = item.word;
+            statusEl.textContent = `சொற்கள் மீதம்: ${currentWords.length - currentWordIndex}`;
+        }
+
+        // Drag and Drop Events
+        currentWordEl.addEventListener("dragstart", e => {
+            e.dataTransfer.setData("text/plain", currentWords[currentWordIndex].category);
+        });
+
+        [bucketA, bucketB].forEach(bucket => {
+            bucket.addEventListener("dragover", e => {
+                e.preventDefault();
+                bucket.classList.add("drag-over");
+            });
+
+            bucket.addEventListener("dragleave", () => {
+                bucket.classList.remove("drag-over");
+            });
+
+            bucket.addEventListener("drop", e => {
+                e.preventDefault();
+                bucket.classList.remove("drag-over");
+                if (isTransitioning) return;
+
+                const selectedCategory = bucket.dataset.category;
+                processAnswer(selectedCategory);
+            });
+
+            // Tap / Click support
+            bucket.addEventListener("click", (e) => {
+                // Ignore clicks if clicking directly on a placed word tag inside bucket
+                if (e.target.classList.contains("placed-word")) return;
+                if (isTransitioning || currentWordIndex >= currentWords.length) return;
+                const selectedCategory = bucket.dataset.category;
+                processAnswer(selectedCategory);
+            });
+        });
+
+        function processAnswer(selectedCategory) {
+            const currentItem = currentWords[currentWordIndex];
+
+            if (selectedCategory === currentItem.category) {
+                score += 10;
+                scoreEl.textContent = score;
+                feedbackEl.textContent = "✔ சரி! (+10)";
+                feedbackEl.className = "feedback correct";
+
+                const placed = document.createElement("span");
+                placed.className = "placed-word";
+                placed.textContent = currentItem.word;
+                placed.setAttribute("data-english", currentItem.english || "N/A");
+
+                if (selectedCategory === activeCategories[0]) {
+                    bucketWordsA.appendChild(placed);
+                } else {
+                    bucketWordsB.appendChild(placed);
+                }
+            } else {
+                score -= 5;
+                scoreEl.textContent = score;
+                feedbackEl.textContent = "✖ தவறு! (-5)";
+                feedbackEl.className = "feedback incorrect";
+            }
+
+            currentWordIndex++;
+            displayCurrentWord();
+        }
+
+        function handleRoundCompletion() {
+            isTransitioning = true;
+            let countdown = 5;
+
+            feedbackEl.className = "feedback correct";
+            feedbackEl.textContent = `🎉 சுலோகம் நிறைவடைந்தது! அடுத்த வினாடி வினா ${countdown} வினாடிகளில்...`;
+
+            timerId = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    feedbackEl.textContent = `🎉 சுலோகம் நிறைவடைந்தது! அடுத்த வினாடி வினா ${countdown} வினாடிகளில்...`;
+                } else {
+                    clearInterval(timerId);
+                    timerId = null;
+                    startNextRound();
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+
+</html>

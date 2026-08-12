@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>கலைந்த வார்த்தையை சரி செய்வோம்</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #fdfdfd;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      color: #00f;
+      text-align: center;
+    }
+
+
+    select,
+    button {
+      font-size: 1.1em;
+      padding: 10px 15px;
+      margin: 10px 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background-color: white;
+      cursor: pointer;
+    }
+
+    button {
+      background-color: #0000ff;
+      color: #ffffff;
+      font-size: 2.5em;
+    }
+
+    button:hover {
+      background: #ffa500;
+    }
+
+    select:disabled {
+      background-color: #eee;
+      cursor: not-allowed;
+    }
+
+    #tilesContainer,
+    #answerBox {
+      min-height: 100px;
+      /* increase base height */
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin: 10px 0;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      /* allow multiple rows */
+      justify-content: center;
+      width: 90%;
+      height: auto;
+      /* expand with content */
+      box-sizing: border-box;
+      overflow: visible;
+      /* show everything */
+    }
+
+    .tile {
+      background-color: #9c27b0;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: grab;
+      font-size: 20px;
+      user-select: none;
+      flex: 0 0 auto;
+      width: auto;
+      min-width: 36px;
+      height: 36px;
+      line-height: 36px;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .tile.dragging {
+      opacity: 0.5;
+    }
+
+    #buttonsContainer {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-top: 10px;
+    }
+
+    #successMessage {
+      background-color: #ffa500;
+      color: #000;
+      padding: 6px 14px;
+      border-radius: 5px;
+      font-weight: bold;
+      display: none;
+      min-width: 180px;
+      width: 100%;
+      text-align: center;
+    }
+
+    #categoryFilter {
+      text-align: center;
+      width: 90%;
+    }
+
+
+    #home {
+      text-decoration: none;
+      background-color: #0000ff;
+      color: #ffffff;
+      padding: 10px;
+      border-radius: 15px;
+    }
+  </style>
+
+  <link rel="stylesheet" href="/css/auth.css?v=20260723" />
+  <link rel="stylesheet" href="/css/mascot.css?v=20260724" />
+  <script src="/js/auth.js?v=20260723"></script>
+  <script src="/js/mascot.js?v=20260724"></script>
+  <script>
+    TamilAuth.initPage();
+  </script>
+
+</head>
+
+<body>
+
+  <a id="home" href="index.html"> ◀ முகப்பு</a>
+
+  <h1>கலைந்த வாக்கியத்தையை சரி செய்வோம் </h1>
+
+  <div id="tilesContainer" title="செயல்பாட்டிலிருந்து எழுத்துகளை இங்கே இடுக"></div>
+  <div id="dragArrow" style="font-size: 30px; font-weight: bold; color: #0000ff; user-select: none; margin: 8px 0;">⬇
+  </div>
+  <div id="answerBox" title="பதிலில் எழுத்துக்களை இங்கே பொருத்தவும்"></div>
+  <div id="successMessage">✅சரியான பதில் </div>
+  <div id="buttonsContainer">
+    <button id="showAnswerBtn">?</button>
+    <button id="nextWordBtn">▶</button>
+  </div>
+
+  <script>
+
+    const sentenceList = [
+      // ==========================================
+      // 3-WORD SENTENCES (மூன்று வார்த்தை வாக்கியங்கள்)
+      // ==========================================
+
+      // 1. குதி (Jump)
+      "நான் உயர குதிக்கிறேன்",
+      "நீ மேலே குதிக்கிறாய்",
+      "அவன் கீழே குதிக்கிறான்",
+
+      // 2. நீந்து (Swim)
+      "நான் வேகமாக நீந்துகிறேன்",
+      "அவள் ஆற்றில் நீந்துகிறாள்",
+      "அவர் குளத்தில் நீந்துகிறார்",
+
+      // 3. ஏறு (Climb)
+      "நான் மரத்தில் ஏறுகிறேன்",
+      "நீ மலையில் ஏறுகிறாய்",
+      "அவன் படியில் ஏறுகிறான்",
+
+      // 4. இறங்கு (Descend)
+      "நான் மலையிலிருந்து இறங்குகிறேன்",
+      "அவள் படியிலிருந்து இறங்குகிறாள்",
+      "அவர் பேருந்திலிருந்து இறங்குகிறார்",
+
+      // 5. திற (Open)
+      "நான் கதவை திறக்கிறேன்",
+      "நீ ஜன்னலை திறக்கிறாய்",
+      "அவன் பெட்டியை திறக்கிறான்",
+
+      // 6. மூடு (Close)
+      "நான் புத்தகத்தை மூடுகிறேன்",
+      "அவள் கண்களை மூடுகிறாள்",
+      "அவர் கதவை மூடுகிறார்",
+
+      // 7. துடை (Wipe/Clean)
+      "நான் தரையை துடைக்கிறேன்",
+      "நீ கண்ணாடியை துடைக்கிறாய்",
+      "அவன் மேஜையை துடைக்கிறான்",
+
+      // 8. கூட்டு (Sweep)
+      "நான் வீட்டை கூட்டுகிறேன்",
+      "அவள் அறையை கூட்டுகிறாள்",
+      "அவர் முற்றத்தை கூட்டுகிறார்",
+
+      // 9. கழுவு (Wash)
+      "நான் கையை கழுவுகிறேன்",
+      "நீ முகத்தை கழுவுகிறாய்",
+      "அவன் பாத்திரம் கழுவுகிறான்",
+
+      // 10. அழை (Call/Invite)
+      "நான் நண்பனை அழைக்கிறேன்",
+      "அவள் அம்மாவை அழைக்கிறாள்",
+      "அவர் விருந்தினரை அழைக்கிறார்",
+
+      // 11. அனுப்பு (Send)
+      "நான் செய்தி அனுப்புகிறேன்",
+      "நீ கடிதம் அனுப்புகிறாய்",
+      "அவன் பணம் அனுப்புகிறான்",
+
+      // 12. பிடி (Catch/Hold)
+      "நான் பந்தை பிடிக்கிறேன்",
+      "அவள் கையை பிடிக்கிறாள்",
+      "அவர் கயிற்றை பிடிக்கிறார்",
+
+      // 13. தூக்கு (Lift)
+      "நான் பையை தூக்குகிறேன்",
+      "நீ கல்லை தூக்குகிறாய்",
+      "அவன் பெட்டியை தூக்குகிறான்",
+
+      // 14. வை (Put/Place)
+      "நான் புத்தகத்தை வைக்கிறேன்",
+      "அவள் தட்டை வைக்கிறாள்",
+      "அவர் பணத்தை வைக்கிறார்",
+
+      // 15. எடு (Take/Pick)
+      "நான் பேனாவை எடுக்கிறேன்",
+      "நீ சாவியை எடுக்கிறாய்",
+      "அவன் பையை எடுக்கிறான்",
+
+      // 16. வெட்டு (Cut)
+      "நான் காய்கறி வெட்டுகிறேன்",
+      "அவள் மரத்தை வெட்டுகிறாள்",
+      "அவர் கயிற்றை வெட்டுகிறார்",
+
+      // 17. ஊற்று (Pour)
+      "நான் பால் ஊற்றுகிறேன்",
+      "நீ நீர் ஊற்றுகிறாய்",
+      "அவன் எண்ணெய் ஊற்றுகிறான்",
+
+      // 18. அடி (Beat/Hit)
+      "நான் பந்தை அடிக்கிறேன்",
+      "அவள் மேளம் அடிக்கிறாள்",
+      "அவர் மணியை அடிக்கிறார்",
+
+      // 19. ஒட்டு (Stick/Paste)
+      "நான் படம் ஒட்டுகிறேன்",
+      "நீ தாளை ஒட்டுகிறாய்",
+      "அவன் வில்லை ஒட்டுகிறான்",
+
+      // 20. நிறுத்து (Stop)
+      "நான் வண்டியை நிறுத்துகிறேன்",
+      "அவள் ஓட்டத்தை நிறுத்துகிறாள்",
+      "அவர் பேச்சை நிறுத்துகிறார்",
+
+      // 21. தொடங்கு (Start)
+      "நான் வேலையை தொடங்குகிறேன்",
+      "நீ ஆட்டத்தை தொடங்குகிறாய்",
+      "அவன் பயணத்தை தொடங்குகிறான்",
+
+      // 22. முடி (Finish)
+      "நான் பாடத்தை முடிக்கிறேன்",
+      "அவள் வேலையை முடிக்கிறாள்",
+      "அவர் தேர்வை முடிக்கிறார்",
+
+      // 23. கொண்டாடு (Celebrate)
+      "நான் விழாவை கொண்டாடுகிறேன்",
+      "நீ பிறந்தநாளை கொண்டாடுகிறாய்",
+      "அவன் வெற்றியை கொண்டாடுகிறான்",
+
+      // 24. கற்றுக்கொள் (Learn)
+      "நான் பாடம் கற்றுக்கொள்கிறேன்",
+      "அவள் இசை கற்றுக்கொள்கிறாள்",
+      "அவர் தமிழ் கற்றுக்கொள்கிறார்",
+
+      // 25. எண்ணு (Count)
+      "நான் பணத்தை எண்ணுகிறேன்",
+      "நீ நட்சத்திரங்களை எண்ணுகிறாய்",
+      "அவன் மாம்பழங்களை எண்ணுகிறான்",
+
+      // ==========================================
+      // 4-WORD SENTENCES (நான்கு வார்த்தை வாக்கியங்கள்)
+      // ==========================================
+
+      // 1. குதி / நீந்து
+      "நீ ஆழமான குளத்தில் நீந்துகிறாய்",
+      "அவன் ஆற்றில் நீந்துகிறான்",
+
+      // 2. ஏறு / இறங்கு
+      "நான் பெரிய மரத்தில் ஏறுகிறேன்",
+      "அவள் வேக வேகமாக படியில் ஏறுகிறாள்",
+      "அவர் உயரமான மலையிலிருந்து இறங்குகிறார்",
+
+      // 3. திற / மூடு
+      "நான் வீட்டின் கதவை திறக்கிறேன்",
+      "நீ பெரிய பெட்டியை திறக்கிறாய்",
+      "அவன் அறையின் ஜன்னலை மூடுகிறான்",
+
+      // 4. துடை / கூட்டு / கழுவு
+      "நான் வீட்டின் தரையை துடைக்கிறேன்",
+
+      // 5. அழை / அனுப்பு
+      "நீ வீட்டிற்கு விருந்தினரை அழைக்கிறாய்",
+      "அவன் மின்னஞ்சலில் செய்தி அனுப்புகிறான்",
+
+      // 6. பிடி / தூக்கு
+      "நான் வேகமாக வந்த பந்தை பிடிக்கிறேன்",
+      "அவள் கனமான பையை தூக்குகிறாள்",
+      "அவர் மரப்பெட்டியை மேலே தூக்குகிறார்",
+
+      // 7. வை / எடு
+      "நான் மேஜை மீது புத்தகத்தை வைக்கிறேன்",
+      "நீ பையிலிருந்து சாவியை எடுக்கிறாய்",
+      "அவன் அலமாரியிலிருந்து பேனாவை எடுக்கிறான்",
+
+      // 8. வெட்டு / ஊற்று
+      "நான் சமையலறையில் காய்கறி வெட்டுகிறேன்",
+      "அவள் சூடான பாலை ஊற்றுகிறாள்",
+      "அவர் செடிக்கு தண்ணீர் ஊற்றுகிறார்",
+
+      // 9. அடி / ஒட்டு
+      "நான் கிரிக்கெட் பந்தை அடிக்கிறேன்",
+      "நீ சுவரில் படம் ஒட்டுகிறாய்",
+      "அவன் நோட்டுப் புத்தகத்தில் படம் ஒட்டுகிறான்",
+
+      // 10. நிறுத்து / தொடங்கு
+      "நான் சாலையின் ஓரத்தில் நிறுத்துகிறேன்",
+      "அவள் புதிய வேலையை தொடங்குகிறாள்",
+      "அவர் காலையில் பயணத்தை தொடங்குகிறார்",
+
+      // 11. முடி / கொண்டாடு
+      "அவன் வெற்றியை கொண்டாடுகிறான்",
+
+      // 12. கற்றுக்கொள் / எண்ணு
+      "நான் பாடம் கற்றுக்கொள்கிறேன்",
+      "அவள் மேஜையில் பணத்தை எண்ணுகிறாள்",
+      "அவர் கடையில் பொருட்களை எண்ணுகிறார்",
+
+      // ==========================================
+      // 5-WORD SENTENCES (ஐந்து வார்த்தை வாக்கியங்கள்)
+      // ==========================================
+
+      // 1. நீந்து / ஏறு
+      "நான் தினமும் மாலையில் குளத்தில் நீந்துகிறேன்",
+      "நீ நண்பர்களுடன் சேர்ந்து மலையில் ஏறுகிறாய்",
+
+      // 2. திற / மூடு / கழுவு
+      "நான் வீட்டின் முன் கதவை திறக்கிறேன்",
+      "அவள் வீட்டின் ஜன்னலை மூடுகிறாள்",
+      "அவர் உணவகத்தில் சாப்பிட்ட பின் கை கழுவுகிறார்",
+
+      // 3. அழை / அனுப்பு / பிடி
+      "நான் நண்பனை தொலைபேசியில் அழைக்கிறேன்",
+      "நீ கணினி மூலம் செய்தி அனுப்புகிறாய்",
+      "அவன் மேலிருந்து விழுந்த பந்தை பிடிக்கிறான்",
+
+      // 4. வை / எடு / வெட்டு
+      "நான் அறைக்கு சென்று மேஜை மீது வைக்கிறேன்",
+      "அவள் பையிலிருந்து புதிய புத்தகத்தை வெளியே எடுக்கிறாள்",
+      "அவர் கத்தியால் சுவையான காய்கறிகளை நறுக்குகிறார்",
+
+      // 5. தொடங்கு / முடி / கொண்டாடு
+      "நான் திட்டமிட்டபடி வேலையை தொடங்குகிறேன்",
+      "நீ அனைத்து பாடங்களையும் எழுதி முடிக்கிறாய்",
+      "அவன் பிறந்தநாளை சிறப்பாக கொண்டாடுகிறான்",
+
+      "கற்க கசடறக் கற்பவை கற்றபின் நிற்க அதற்குத் தக",
+      "தொட்டனைத் தூறும் மணற்கேணி மாந்தர்க்குக் கற்றனைத் தூறும் அறிவு",
+      "கேடில் விழுச்செல்வம் கல்வி ஒருவற்கு மாடல்ல மற்றை யவை",
+      "அன்பிலார் எல்லாம் தமக்குரியர் அன்புடையார் என்பும் உரியர் பிறர்க்கு",
+      "உடுக்கை இழந்தவன் கைபோல ஆங்கே இடுக்கண் களைவதாம் நட்பு",
+      "இன்னா செய்தாரை ஒறுத்தல் அவர்நாண நன்னயம் செய்து விடல்",
+      "எண்ணிய எண்ணியாங்கு எய்துப எண்ணியார் திண்ணியர் ஆகப் பெறின்",
+      "நீர்இன்று அமையாது உலகெனின் யார்யார்க்கும் வான்இன்று அமையாது உலகு",
+      "குழல் இனிது யாழ்இனிது என்பதம் மக்கள் மழலைச்சொல் கேளா தவர்",
+      "ஈன்ற பொழுதின் பெரிதுவக்கும் தன்மகனைச் சான்றோன் எனக்கேட்ட தாய்",
+      "அன்பிற்கும் உண்டோ அடைக்குந்தாழ் ஆர்வலர் புன்கணீர் பூசல் தரும்",
+      "காலத்தி னாற்செய்த நன்றி சிறிதெனினும் ஞாலத்தின் மாணப் பெரிது",
+      "அகழ்வாரைத் தாங்கும் நிலம்போலத் தம்மை இகழ்வார்ப் பொறுத்தல் தலை",
+      "ஈதல் இசைபட வாழ்தல் அதுவல்லது ஊதியம் இல்லை உயிர்க்கு"
+    ];
+
+
+    const tilesContainer = document.getElementById('tilesContainer');
+    const answerBox = document.getElementById('answerBox');
+    const showAnswerBtn = document.getElementById('showAnswerBtn');
+    const nextWordBtn = document.getElementById('nextWordBtn');
+    const successMessage = document.getElementById('successMessage');
+
+    let sentenceIndex = 0;
+    let currentSentence = '';
+    let currentWords = [];
+
+    function splitSentence(sentence) {
+      return sentence.trim().split(/\s+/).filter(Boolean);
+    }
+
+    function shuffleArray(arr) {
+      if (arr.length <= 1) return arr;
+
+      // Make a shallow copy of the original positions to check against
+      const original = [...arr];
+      let isDeranged = false;
+
+      while (!isDeranged) {
+        // Fisher-Yates Shuffle
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+
+        // Check if EVERY element moved to a new spot
+        isDeranged = arr.every((item, index) => item !== original[index]);
+      }
+
+      return arr;
+    }
+
+
+    // function shuffleArray2(arr) {
+    //   for (let i = arr.length - 1; i > 0; i--) {
+    //     const j = Math.floor(Math.random() * (i + 1));
+    //     [arr[i], arr[j]] = [arr[j], arr[i]];
+    //   }
+    // }
+
+    function clearTiles() {
+      tilesContainer.innerHTML = '';
+      answerBox.innerHTML = '';
+    }
+
+    function renderTiles(letters) {
+      clearTiles();
+      letters.forEach((letter, index) => {
+        const tile = document.createElement('div');
+        tile.className = 'tile';
+        tile.textContent = letter;
+        tile.setAttribute('draggable', 'true');
+        tile.setAttribute('data-index', index);
+        tilesContainer.appendChild(tile);
+      });
+    }
+
+    function renderAnswerBox() {
+      answerBox.innerHTML = '';
+    }
+
+    let lastIndex = -1;
+
+    function pickNextSentence() {
+      let randomIndex;
+
+      // Keep picking a new index until it's different from the last one
+      do {
+        randomIndex = Math.floor(Math.random() * sentenceList.length);
+      } while (randomIndex === lastIndex && sentenceList.length > 1);
+
+      lastIndex = randomIndex;
+      return sentenceList[randomIndex];
+    }
+    // function pickNextSentence2() {
+    //   const sentence = sentenceList[sentenceIndex];
+    //   sentenceIndex = (sentenceIndex + 1) % sentenceList.length;
+    //   return sentence;
+    // }
+
+    function setupNewWord() {
+      currentSentence = pickNextSentence();
+      currentWords = splitSentence(currentSentence);
+      const shuffled = currentWords.slice();
+      shuffleArray(shuffled);
+      renderTiles(shuffled);
+      renderAnswerBox();
+      hideSuccessMessage();
+    }
+
+    function checkAnswer() {
+      const answerWords = [];
+      for (const child of answerBox.children) {
+        answerWords.push(child.textContent);
+      }
+      if (answerWords.length === currentWords.length && answerWords.join(' ') === currentSentence) {
+        showSuccessMessage();
+        setTimeout(() => {
+          setupNewWord();
+        }, 1500);
+      }
+    }
+
+    function showSuccessMessage() {
+      successMessage.style.display = 'block';
+    }
+
+    function hideSuccessMessage() {
+      successMessage.style.display = 'none';
+    }
+
+    // Drag and drop handlers
+    let dragSource = null;
+
+    function dragStart(e) {
+      dragSource = e.target.parentNode;
+      e.dataTransfer.setData('text/plain', e.target.getAttribute('data-index'));
+      e.target.classList.add('dragging');
+    }
+
+    function dragEnd(e) {
+      e.target.classList.remove('dragging');
+      dragSource = null;
+    }
+
+    function allowDrop(e) {
+      e.preventDefault();
+    }
+
+    function drop(e) {
+      e.preventDefault();
+      const dataIndex = e.dataTransfer.getData('text/plain');
+      if (dataIndex === '') return;
+
+      // Find dragged tile by data-index within dragSource container
+      let tile = null;
+      if (dragSource) {
+        tile = dragSource.querySelector(`.tile[data-index='${dataIndex}']`);
+      }
+      if (!tile) return;
+
+      if (e.currentTarget === answerBox && tile.parentNode === answerBox) {
+        // Rearrange inside answerBox
+        if (e.target.classList.contains('tile')) {
+          const rect = e.target.getBoundingClientRect();
+          const isAfter = e.clientX > rect.left + rect.width / 2;
+          if (isAfter) {
+            answerBox.insertBefore(tile, e.target.nextSibling);
+          } else {
+            answerBox.insertBefore(tile, e.target);
+          }
+        } else {
+          answerBox.appendChild(tile);
+        }
+      } else if (e.currentTarget === answerBox && tile.parentNode !== answerBox) {
+        // Move tile from tilesContainer to answerBox
+        answerBox.appendChild(tile);
+      } else if (e.currentTarget === tilesContainer && tile.parentNode !== tilesContainer) {
+        // Move tile from answerBox to tilesContainer
+        tilesContainer.appendChild(tile);
+      } else if (e.currentTarget === tilesContainer && tile.parentNode === tilesContainer) {
+        // Rearrange inside tilesContainer
+        if (e.target.classList.contains('tile')) {
+          const rect = e.target.getBoundingClientRect();
+          const isAfter = e.clientX > rect.left + rect.width / 2;
+          if (isAfter) {
+            tilesContainer.insertBefore(tile, e.target.nextSibling);
+          } else {
+            tilesContainer.insertBefore(tile, e.target);
+          }
+        } else {
+          tilesContainer.appendChild(tile);
+        }
+      }
+
+      // Delay checkAnswer so the tile visually moves first
+      setTimeout(checkAnswer, 300);
+    }
+
+    tilesContainer.addEventListener('dragstart', dragStart);
+    tilesContainer.addEventListener('dragend', dragEnd);
+    tilesContainer.addEventListener('dragover', allowDrop);
+    tilesContainer.addEventListener('drop', drop);
+
+    answerBox.addEventListener('dragstart', dragStart);
+    answerBox.addEventListener('dragend', dragEnd);
+    answerBox.addEventListener('dragover', allowDrop);
+    answerBox.addEventListener('drop', drop);
+
+    // ==== NEW: Tap-to-move tiles ====
+    function onTileClick(e) {
+      const tile = e.target;
+      if (!tile.classList.contains('tile')) return;
+
+      if (tile.parentNode === tilesContainer) {
+        answerBox.appendChild(tile);
+      } else if (tile.parentNode === answerBox) {
+        tilesContainer.appendChild(tile);
+      }
+
+      setTimeout(checkAnswer, 300);
+    }
+
+    tilesContainer.addEventListener('click', onTileClick);
+    answerBox.addEventListener('click', onTileClick);
+    // ==== END NEW ====
+
+    showAnswerBtn.onclick = function () {
+      clearTiles();
+      currentWords.forEach(word => {
+        const tile = document.createElement('div');
+        tile.className = 'tile';
+        tile.textContent = word;
+        tile.setAttribute('draggable', 'false');
+        answerBox.appendChild(tile);
+      });
+      hideSuccessMessage();
+    };
+
+    nextWordBtn.onclick = function () {
+      setupNewWord();
+      hideSuccessMessage();
+    };
+
+    // Start the game with the first sentence
+    setupNewWord();
+  </script>
+
+</body>
+
+</html>

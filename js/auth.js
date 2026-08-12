@@ -78,6 +78,15 @@
     '34_mithakkum_baloon.html': 'learner',
     '35_vinveli_vettai.html': 'learner',
     '36_common_letter.html': 'learner',
+    '37_jumbled_sentences.html': 'learner',
+    '38_reading_practice.html': 'learner',
+    '39_writing_practice.html': 'learner',
+    '40_select_suitable_word.html': 'learner',
+    '41_place_inside_correct_box.html': 'learner',
+    '42_sol_ottam.html': 'learner',
+    '43_theme_quest.html': 'learner',
+    '44_correct_words.html': 'learner',
+    'karuthu_padivam.html': 'guest',
     '17_voice_to_text.html': 'admin',
     '20_word_search.html': 'admin'
   };

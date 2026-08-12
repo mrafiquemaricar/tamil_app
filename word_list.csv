@@ -1,77 +1,35 @@
 ﻿Category,Tamil,English
-விலங்குகள் - Animals,அணில்,Squirrel
-விலங்குகள் - Animals,ஆடு,Goat
-விலங்குகள் - Animals,ஆமை,Turtle
-விலங்குகள் - Animals,எருமை,Buffallo
-விலங்குகள் - Animals,எலி,Rat
-விலங்குகள் - Animals,எறும்பு,Ant
-விலங்குகள் - Animals,ஒட்டகம்,Camel
-விலங்குகள் - Animals,ஓநாய்,Wolf
-விலங்குகள் - Animals,நரி,Fox
-விலங்குகள் - Animals,கரடி,Bear
-விலங்குகள் - Animals,கழுதை,Donkey
-விலங்குகள் - Animals,காண்டாமிருகம்,Rhinoceros
-விலங்குகள் - Animals,குதிரை,Horse
-விலங்குகள் - Animals,குரங்கு,Monkey
-விலங்குகள் - Animals,கொசு,Mosquito
-விலங்குகள் - Animals,சிங்கம்,Lion
-விலங்குகள் - Animals,சிலந்தி,Spider
-விலங்குகள் - Animals,எலி,Mouse
-விலங்குகள் - Animals,செம்மறி ஆடு,Sheep
-விலங்குகள் - Animals,தவளை,Frog
-விலங்குகள் - Animals,நண்டு,Crab
-விலங்குகள் - Animals,நத்தை,Snail
-விலங்குகள் - Animals,நாய்,Dog
-விலங்குகள் - Animals,நீர்யானை,Hippopotamus
-விலங்குகள் - Animals,பசு,Cow
-விலங்குகள் - Animals,பட்டாம்பூச்சி,Butterfly
-விலங்குகள் - Animals,பல்லி,Lizard
-விலங்குகள் - Animals,பறவை,Bird
-விலங்குகள் - Animals,புலி,Tiger
-விலங்குகள் - Animals,பூனை,Cat
-விலங்குகள் - Animals,மான்,Deer
-விலங்குகள் - Animals,மீன்,Fish
-விலங்குகள் - Animals,முதலை,Crocodile
-விலங்குகள் - Animals,முயல்,Rabbit
-விலங்குகள் - Animals,யானை,Elephant
-இயற்கை - Nature,ஆறு,River
-இயற்கை - Nature,இலை,Leaf
-இயற்கை - Nature,ஒளி,Light
-இயற்கை - Nature,கல்,Stone
-இயற்கை - Nature,காற்று,Wind
-இயற்கை - Nature,சந்திரன்,Moon
-இயற்கை - Nature,சூரியன்,Sun
-இயற்கை - Nature,நட்சத்திரம்,Star
-இயற்கை - Nature,நிலம்,Land
-இயற்கை - Nature,நெருப்பு,Fire
-இயற்கை - Nature,பூ,Flower
-இயற்கை - Nature,பெருங்கடல்,Ocean
-இயற்கை - Nature,மரம்,Tree
-இயற்கை - Nature,மலை,Mountain
-இயற்கை - Nature,மழை,Rain
-இயற்கை - Nature,மேகம்,Cloud
-இயற்கை - Nature,வானம்,Sky
-இயற்கை - Nature,விதை,Seed
 ஆடை - Dress,அரைக் கால் சட்டை,Shorts
+ஆடை - Dress,காதணி,Earring
 ஆடை - Dress,காலணி,Shoe
 ஆடை - Dress,கால் உறை,Socks
 ஆடை - Dress,கால் சட்டை,Pant
 ஆடை - Dress,கை உறை,Gloves
 ஆடை - Dress,சட்டை,Shirt
 ஆடை - Dress,செருப்பு,Slipper
+ஆடை - Dress,சேலை,Saree
+ஆடை - Dress,தொப்பி,Cap
 ஆடை - Dress,பாவாடை,Skirt
+ஆடை - Dress,இடுப்பு வார்,Belt
+ஆடை - Dress,மோதிரம்,Ring
 ஆடை - Dress,ரவிக்கை,Blouse
+ஆடை - Dress,வளையல்,Bangle
+ஆடை - Dress,வேட்டி,Dhoti
+இடம் - Place,அஞ்சலகம்,Post Office
 இடம் - Place,அரங்கம்,Stadium
 இடம் - Place,அருங்காட்சியகம்,Museum
 இடம் - Place,உடற்பயிற்சி கூடம்,Gym
+இடம் - Place,உணவகம்,Restaurant
 இடம் - Place,கடல்,Sea
+இடம் - Place,கடற்கரை,Beach
+இடம் - Place,கல்லூரி,College
 இடம் - Place,காடு,Forest
 இடம் - Place,காவல் நிலையம்,Police Station
 இடம் - Place,கிராமம்,Village
 இடம் - Place,கோவில்,Temple
 இடம் - Place,சந்தை,Market
 இடம் - Place,சாலை,Road
-இடம் - Place,டாக்ஸி நிறுத்தம்,Taxi Stand
+இடம் - Place,திரையரங்கம்,Cinema
 இடம் - Place,தீயணைப்பு நிலையம்,Fire Station
 இடம் - Place,தேவாலயம்,Church
 இடம் - Place,தோட்டம்,Garden
@@ -80,42 +38,84 @@
 இடம் - Place,நூலகம்,Library
 இடம் - Place,பட்டறை,Workshop
 இடம் - Place,பள்ளி,School
+இடம் - Place,பாலம்,Bridge
+இடம் - Place,பூங்கா,Park
 இடம் - Place,பேருந்து நிலையம்,Bus Stand
 இடம் - Place,பேருந்து நிறுத்தம்,Bus Stop
 இடம் - Place,மசூதி,Mosque
 இடம் - Place,மருத்துவமனை,Hospital
+இடம் - Place,ரயில் நிலையம்,Railway Station
+இடம் - Place,வங்கி,Bank
 இடம் - Place,விமான நிலையம்,Airport
 இடம் - Place,விளையாட்டு மைதானம்,Playground
 இடம் - Place,வீடு,House
+இயற்கை - Nature,ஆறு,River
+இயற்கை - Nature,இடி,Thunder
+இயற்கை - Nature,இலை,Leaf
+இயற்கை - Nature,ஏரி,Lake
+இயற்கை - Nature,ஒளி,Light
+இயற்கை - Nature,கல்,Stone
+இயற்கை - Nature,காற்று,Wind
+இயற்கை - Nature,சந்திரன்,Moon
+இயற்கை - Nature,சூரியன்,Sun
+இயற்கை - Nature,தீவு,Island
+இயற்கை - Nature,நட்சத்திரம்,Star
+இயற்கை - Nature,நிலம்,Land
+இயற்கை - Nature,நீர்வீழ்ச்சி,Waterfall
+இயற்கை - Nature,நெருப்பு,Fire
+இயற்கை - Nature,பனி,Snow
+இயற்கை - Nature,பாறை,Rock
+இயற்கை - Nature,புல்,Grass
+இயற்கை - Nature,பூ,Flower
+இயற்கை - Nature,பெருங்கடல்,Ocean
+இயற்கை - Nature,மணல்,Sand
+இயற்கை - Nature,மரம்,Tree
+இயற்கை - Nature,மலை,Mountain
+இயற்கை - Nature,மழை,Rain
+இயற்கை - Nature,மின்னல்,Lightning
+இயற்கை - Nature,மேகம்,Cloud
+இயற்கை - Nature,வானம்,Sky
+இயற்கை - Nature,வானவில்,Rainbow
+இயற்கை - Nature,விதை,Seed
 உடல் - Body,இடுப்பு,Hip
 உடல் - Body,இதயம்,Heart
 உடல் - Body,இரத்தம்,Blood
+உடல் - Body,உதடு,Lip
 உடல் - Body,உள்ளங்கை,Palm
 உடல் - Body,எலும்பு,Bone
+உடல் - Body,கணுக்கால்,Ankle
 உடல் - Body,கண்,Eye
 உடல் - Body,கழுத்து,Neck
 உடல் - Body,கன்னம்,Cheek
 உடல் - Body,காது,Ear
-உடல் - Body,கால்,Leg
 உடல் - Body,கால் விரல்,Toe
-உடல் - Body,கை,Hand
+உடல் - Body,கால்,Leg
 உடல் - Body,கை விரல்,Finger
+உடல் - Body,கை,Hand
+உடல் - Body,தலை,Head
 உடல் - Body,தலைமுடி,Hair
+உடல் - Body,தாடை,Chin
 உடல் - Body,தொடை,Thigh
+உடல் - Body,தோல்,Skin
 உடல் - Body,தோள்பட்டை,Shoulder
 உடல் - Body,நகம்,Nail 
 உடல் - Body,நாக்கு,Tongue
+உடல் - Body,நுரையீரல்,Lungs
 உடல் - Body,பல்,Tooth
 உடல் - Body,பாதம்,Foot
 உடல் - Body,புருவம்,Eyebrow
+உடல் - Body,மணிக்கட்டு,Wrist
 உடல் - Body,மார்பு,Chest
 உடல் - Body,முகம்,Face
 உடல் - Body,முடி,Hair
 உடல் - Body,முதுகு,Back
+உடல் - Body,முழங்கால்,Knee
+உடல் - Body,முழங்கை,Elbow
 உடல் - Body,மூக்கு,Nose
 உடல் - Body,மூளை,Brain
 உடல் - Body,வயிறு,Stomach
 உடல் - Body,வாய்,Mouth
+உணவு - Food,அப்பம்,Appam
 உணவு - Food,அரிசி,Rice
 உணவு - Food,அல்வா,Halwa
 உணவு - Food,ஆட்டிறைச்சி,Mutton
@@ -124,35 +124,41 @@
 உணவு - Food,இரவு உணவு,Dinner
 உணவு - Food,இறால்,Prawn
 உணவு - Food,உணவு,Food
+உணவு - Food,உப்பு,Salt
+உணவு - Food,எண்ணெய்,Oil
 உணவு - Food,ஐஸ்கிரீம்,Ice Cream
 உணவு - Food,கறி,Curry
 உணவு - Food,காபி,Coffee
 உணவு - Food,காய்கறி குழம்பு,Vegetable Curry
 உணவு - Food,காலை உணவு,Breakfast
-உணவு - Food,கேக்,Cake
 உணவு - Food,கோழி,Chicken
 உணவு - Food,சட்னி,Satni
 உணவு - Food,சப்பாத்தி,Chappathi
 உணவு - Food,சமோசா,Samosa
+உணவு - Food,சர்க்கரை,Sugar
 உணவு - Food,சாம்பார்,Sambar
 உணவு - Food,சோறு,Cooked Rice
 உணவு - Food,தண்ணீர்,Water
 உணவு - Food,தயிர்,Yogurt
 உணவு - Food,தேநீர்,Tea
+உணவு - Food,தேன்,Honey
 உணவு - Food,தோசை,Thosai
-உணவு - Food,நண்டு,Crab
 உணவு - Food,பராட்டா,Paraatta
+உணவு - Food,பருப்பு,Dal
 உணவு - Food,பழச்சாறு,Fruit Juice
 உணவு - Food,பழம்,Fruit
 உணவு - Food,பஜ்ஜி,bajji
+உணவு - Food,பாயசம்,Payasam
 உணவு - Food,பால்,Milk
 உணவு - Food,பூரி,Poori
 உணவு - Food,போண்டா,Bonda
 உணவு - Food,மதிய உணவு,Lunch
+உணவு - Food,மிளகு,Pepper
 உணவு - Food,முட்டை,Egg
 உணவு - Food,முறுக்கு,Murukku
 உணவு - Food,மோர்,Butter Milk
 உணவு - Food,ரசம்,Rasam
+உணவு - Food,ரொட்டி,Bread
 உணவு - Food,லட்டு,Laddu
 உணவு - Food,வடை,vadai
 உணவு - Food,வாத்து,Duck
@@ -170,6 +176,7 @@
 எண் - Number,ஐம்பது,Fifty
 எண் - Number,ஒன்பது,Nine
 எண் - Number,ஒன்று,One
+எண் - Number,கோடி,Crore
 எண் - Number,தொண்ணூறு,Ninety
 எண் - Number,நாற்பது,Fourty
 எண் - Number,நான்கு,Four
@@ -184,31 +191,43 @@
 எண் - Number,பத்து,Ten
 எண் - Number,பத்தொன்பது,Nineteen
 எண் - Number,பன்னிரண்டு,Tweleve
+எண் - Number,பூஜ்ஜியம்,Zero
+எண் - Number,மில்லியன்,Million
 எண் - Number,முப்பது,Thirty
 எண் - Number,மூன்று,Three
+எண் - Number,லட்சம்,Lakh
 எழுது பொருட்கள் - Stationary,அழிப்பான்,Eraser
-எழுது பொருட்கள் - Stationary,பென்சில்,Pencil
-எழுது பொருட்கள் - Stationary,மை,Ink
-எழுது பொருட்கள் - Stationary,வண்ணப் பென்சில்,Colour Pencil
-எழுது பொருட்கள் - Stationary,பேனா,Pen
-எழுது பொருட்கள் - Stationary,நோட்டு புத்தகம்,Notebook
 எழுது பொருட்கள் - Stationary,அளவுகோல்,Ruler
+எழுது பொருட்கள் - Stationary,உறை,Envelope
 எழுது பொருட்கள் - Stationary,ஒட்டுப்பசை,Glue
 எழுது பொருட்கள் - Stationary,கத்தரிக்கோல்,Scissors
-எழுது பொருட்கள் - Stationary,கோப்பு,File
 எழுது பொருட்கள் - Stationary,காகிதம்,Paper
-எழுது பொருட்கள் - Stationary,உறை,Envelope
+எழுது பொருட்கள் - Stationary,கோப்பு,File
+எழுது பொருட்கள் - Stationary,நோட்டு புத்தகம்,Notebook
+எழுது பொருட்கள் - Stationary,பலகை,Board
+எழுது பொருட்கள் - Stationary,புத்தகம்,Book
+எழுது பொருட்கள் - Stationary,பென்சில்,Pencil
+எழுது பொருட்கள் - Stationary,பேனா,Pen
+எழுது பொருட்கள் - Stationary,மை,Ink
+எழுது பொருட்கள் - Stationary,வண்ணப் பென்சில்,Colour Pencil
 காய்கறி - Vegetable,இஞ்சி,Ginger
 காய்கறி - Vegetable,உருளைக்கிழங்கு,Potato
 காய்கறி - Vegetable,கத்தரிக்காய்,Brinjal
+காய்கறி - Vegetable,கீரை,Spinach
 காய்கறி - Vegetable,கேரட்,Carrot
 காய்கறி - Vegetable,கொத்தமல்லி,Coriander
 காய்கறி - Vegetable,சிகப்பு மிளகாய்,Red Chilli
 காய்கறி - Vegetable,தக்காளி,Tomato
 காய்கறி - Vegetable,பச்சை மிளகாய்,Green Chilli
+காய்கறி - Vegetable,பாகற்காய்,Bitter Gourd
 காய்கறி - Vegetable,பீட்ரூட்,Beetroot
+காய்கறி - Vegetable,பீர்க்கங்காய்,Ridge Gourd
+காய்கறி - Vegetable,பீன்ஸ்,Beans
 காய்கறி - Vegetable,புதினா,Puthina
+காய்கறி - Vegetable,பூசணிக்காய்,Pumpkin
 காய்கறி - Vegetable,பூண்டு,Garlic
+காய்கறி - Vegetable,முட்டைக்கோஸ்,Cabbage
+காய்கறி - Vegetable,முருங்கைக்காய்,Drumstick
 காய்கறி - Vegetable,முள்ளங்கி,Radish
 காய்கறி - Vegetable,வெங்காயம்,Onion
 காய்கறி - Vegetable,வெண்டைக்காய் ,Ladies Finger
@@ -218,6 +237,7 @@
 குடும்பம் - Family,அத்தை,Aunty
 குடும்பம் - Family,அப்பா,Father
 குடும்பம் - Family,அம்மா,Mother
+குடும்பம் - Family,கணவன்,Husband
 குடும்பம் - Family,குழந்தை,Child
 குடும்பம் - Family,தங்கை,Younger Sister
 குடும்பம் - Family,தம்பி,Younger Brother
@@ -225,8 +245,13 @@
 குடும்பம் - Family,நண்பன்,Friend
 குடும்பம் - Family,பக்கத்து வீட்டுக்காரர்,Neighbour
 குடும்பம் - Family,பாட்டி,Grand Mother
+குடும்பம் - Family,பேத்தி,Granddaughter
+குடும்பம் - Family,பேரன்,Grandson
+குடும்பம் - Family,மகள்,Daughter
+குடும்பம் - Family,மகன்,Son
 குடும்பம் - Family,மருமகள்,Niece
 குடும்பம் - Family,மருமகன்,Nephew
+குடும்பம் - Family,மனைவி,Wife
 குடும்பம் - Family,மாமா,Uncle
 செயல் - Action,அழு,Cry
 செயல் - Action,உட்கார்,Sit
@@ -235,33 +260,46 @@
 செயல் - Action,எறி,Throw
 செயல் - Action,ஓடு,Run
 செயல் - Action,கத்து,Shout
+செயல் - Action,கழுவு,Wash
 செயல் - Action,குடி,Drink
+செயல் - Action,கேள்,Ask
+செயல் - Action,கொடு,Give
+செயல் - Action,சமை,Cook
 செயல் - Action,சாப்பிடு,Eat
 செயல் - Action,சிரி,Smile
 செயல் - Action,தாவு,Jump
 செயல் - Action,திற,Open
 செயல் - Action,தூக்கு,Lift
 செயல் - Action,தூங்கு,Sleep
+செயல் - Action,தேடு,Search
 செயல் - Action,நட,Walk
 செயல் - Action,நில்,Stand
 செயல் - Action,நீந்து,Swim
 செயல் - Action,படி,Read
 செயல் - Action,பாடு,Sing
+செயல் - Action,பார்,See
 செயல் - Action,பிடி,Catch
+செயல் - Action,பேசு,Speak
 செயல் - Action,போ,Go
 செயல் - Action,போடு,Put
 செயல் - Action,மூடு,Close
+செயல் - Action,வரை,Draw
 செயல் - Action,வா,Come
 செயல் - Action,விடு,Release
-செயல் - Action,கொடு,Give
 செயல் - Action,விளையாடு,Play
 தட்ப வெப்பம் - Climate,கனமழை,Heavy Rain
+தட்ப வெப்பம் - Climate,குளிர்,Cold
+தட்ப வெப்பம் - Climate,கோடைக்காலம்,Summer
 தட்ப வெப்பம் - Climate,சூறாவளி,Cyclone
 தட்ப வெப்பம் - Climate,தூறல்,Drizzle
+தட்ப வெப்பம் - Climate,பனிக்காலம்,Winter
+தட்ப வெப்பம் - Climate,பனிமூட்டம்,Fog
+தட்ப வெப்பம் - Climate,புயல்,Storm
 தட்ப வெப்பம் - Climate,பூமி,Earth
 தட்ப வெப்பம் - Climate,பூமியதிர்ச்சி,Earthquake
 தட்ப வெப்பம் - Climate,மழை பெய்யும்,Rainy
 தட்ப வெப்பம் - Climate,மேகமூட்டம்,Cloudy
+தட்ப வெப்பம் - Climate,வெயில்,Sunny
 தட்ப வெப்பம் - Climate,வெள்ளம்,Flood
 திசை - Direction,கிழக்கு,East
 திசை - Direction,தெற்கு,South
@@ -323,7 +361,57 @@
 வார நாள் - Week Day,புதன் கிழமை,Wednesday
 வார நாள் - Week Day,வியாழக்கிழமை,Thursday
 வார நாள் - Week Day,வெள்ளிக்கிழமை,Friday
-வீடு - House,சாவி,Key
+விலங்குகள் - Animals,அணில்,Squirrel
+விலங்குகள் - Animals,ஆடு,Goat
+விலங்குகள் - Animals,ஆந்தை,Owl
+விலங்குகள் - Animals,ஆமை,Turtle
+விலங்குகள் - Animals,எருமை,Buffallo
+விலங்குகள் - Animals,எலி,Mouse
+விலங்குகள் - Animals,எலி,Rat
+விலங்குகள் - Animals,எறும்பு,Ant
+விலங்குகள் - Animals,ஒட்டகச்சிவிங்கி,Giraffe
+விலங்குகள் - Animals,ஒட்டகம்,Camel
+விலங்குகள் - Animals,ஓநாய்,Wolf
+விலங்குகள் - Animals,கங்காரு,Kangaroo
+விலங்குகள் - Animals,கரடி,Bear
+விலங்குகள் - Animals,கழுகு,Eagle
+விலங்குகள் - Animals,கழுதை,Donkey
+விலங்குகள் - Animals,காகம்,Crow
+விலங்குகள் - Animals,காண்டாமிருகம்,Rhinoceros
+விலங்குகள் - Animals,கிளி,Parrot
+விலங்குகள் - Animals,குதிரை,Horse
+விலங்குகள் - Animals,குரங்கு,Monkey
+விலங்குகள் - Animals,கொசு,Mosquito
+விலங்குகள் - Animals,சிங்கம்,Lion
+விலங்குகள் - Animals,சிலந்தி,Spider
+விலங்குகள் - Animals,சிறுத்தை,Leopard
+விலங்குகள் - Animals,சுறா,Shark
+விலங்குகள் - Animals,செம்மறி ஆடு,Sheep
+விலங்குகள் - Animals,தவளை,Frog
+விலங்குகள் - Animals,திமிங்கலம்,Whale
+விலங்குகள் - Animals,தேனீ,Bee
+விலங்குகள் - Animals,நண்டு,Crab
+விலங்குகள் - Animals,நத்தை,Snail
+விலங்குகள் - Animals,நரி,Fox
+விலங்குகள் - Animals,நாய்,Dog
+விலங்குகள் - Animals,நீர்யானை,Hippopotamus
+விலங்குகள் - Animals,பசு,Cow
+விலங்குகள் - Animals,பட்டாம்பூச்சி,Butterfly
+விலங்குகள் - Animals,பல்லி,Lizard
+விலங்குகள் - Animals,பறவை,Bird
+விலங்குகள் - Animals,பாம்பு,Snake
+விலங்குகள் - Animals,புலி,Tiger
+விலங்குகள் - Animals,புறா,Pigeon
+விலங்குகள் - Animals,பூனை,Cat
+விலங்குகள் - Animals,மயில்,Peacock
+விலங்குகள் - Animals,மான்,Deer
+விலங்குகள் - Animals,மீன்,Fish
+விலங்குகள் - Animals,முதலை,Crocodile
+விலங்குகள் - Animals,முயல்,Rabbit
+விலங்குகள் - Animals,யானை,Elephant
+விலங்குகள் - Animals,வெட்டுக்கிளி,Grasshopper
+விலங்குகள் - Animals,வௌவால்,Bat
+விலங்குகள் - Animals,வரிக்குதிரை,Zebra
 வீடு - House,கடிகாரம்,Clock
 வீடு - House,கதவு,Door
 வீடு - House,கத்தரிக்கோல்,Scissor
@@ -337,17 +425,18 @@
 வீடு - House,சமையலறை,Kitchen
 வீடு - House,சலவை இயந்திரம்,Washing Machine
 வீடு - House,சாப்பாட்டு மேசை,Dining Table
+வீடு - House,சாவி,Key
 வீடு - House,தட்டு,Plate
-வீடு - House,தலையணை,Pillow
 வீடு - House,தலையணை உறை,Pillow Cover
+வீடு - House,தலையணை,Pillow
 வீடு - House,திரைச்சீலை,Curtain
 வீடு - House,தொலைக்காட்சி,Television
 வீடு - House,தொலைபேசி,Phone
 வீடு - House,நாட்காட்டி,Calendar
 வீடு - House,நாற்காலி,Chair
-வீடு - House,படுக்கை,Bed
 வீடு - House,படுக்கை அறை,Bed Room
 வீடு - House,படுக்கை விரிப்பு,Bed Sheet
+வீடு - House,படுக்கை,Bed
 வீடு - House,புகைப்படம்,Photo
 வீடு - House,பை,Bag
 வீடு - House,மின் விசிறி,Fan
@@ -355,11 +444,10 @@
 வீடு - House,முற்றம்,Yard
 வீடு - House,மெத்தை,Mattress
 வீடு - House,மேசை,Table
-வீடு - House,மேஜை,Table
 வீடு - House,வரவேற்பு அறை,Living Room
 வீடு - House,வானொலி,Radio
-வீடு - House,ஜன்னல்,Window
 வீடு - House,ஜன்னல் திரை,Curtian
+வீடு - House,ஜன்னல்,Window
 வேலை - Career,ஆசிரியர்,Teacher
 வேலை - Career,ஆராய்ச்சியாளர்,Researcher
 வேலை - Career,இசைக் கலைஞர்,Musician

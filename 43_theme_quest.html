@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>கருப்பொருள் பயணம் - Theme Quests</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 10px;
+            max-width: 700px;
+            margin: auto;
+            background-color: #f9f9f9;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        h1 {
+            color: #00f;
+            margin-bottom: 0.5rem;
+            font-size: 1.6rem;
+        }
+
+        #home {
+            text-decoration: none;
+            background-color: #0000ff;
+            color: #ffffff;
+            padding: 8px 14px;
+            border-radius: 15px;
+            display: inline-block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+
+        #home:hover {
+            background-color: #0000aa;
+        }
+
+        .score-board {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #333;
+        }
+
+        /* World Selection Map */
+        .world-map {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            margin: 15px 0;
+        }
+
+        .world-card {
+            background-color: #ffffff;
+            border: 3px solid #0000ff;
+            border-radius: 12px;
+            padding: 16px 10px 12px 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            user-select: none;
+        }
+
+        .world-card:active:not(.locked) {
+            transform: scale(0.97);
+        }
+
+        .world-card.locked {
+            background-color: #e9ecef;
+            border-color: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .world-card.completed {
+            border-color: #28a745;
+            background-color: #f0fff4;
+        }
+
+        /* Top-Right Badge Icon */
+        .card-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ffffff;
+            border: 2px solid #0000ff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 2;
+        }
+
+        .world-card.locked .card-badge {
+            border-color: #6c757d;
+            background: #e9ecef;
+        }
+
+        .world-card.completed .card-badge {
+            border-color: #28a745;
+            background: #f0fff4;
+        }
+
+        .world-title {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #00f;
+            margin-bottom: 4px;
+            word-wrap: break-word;
+        }
+
+        .world-card.locked .world-title {
+            color: #6c757d;
+        }
+
+        .world-status {
+            font-size: 0.8rem;
+            margin-top: 4px;
+            font-weight: bold;
+        }
+
+        /* Quest Area - Expanded Display Window */
+        #questArea {
+            display: none;
+            background-color: #ffffff;
+            border: 3px solid #0000ff;
+            border-radius: 12px;
+            padding: 16px 12px;
+            margin: 10px 0;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            min-height: 75vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .prompt-container {
+            background-color: #0000ff;
+            color: #ffffff;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .prompt-label {
+            font-size: 0.8rem;
+            color: #ffeb3b;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        /* Answer Slots & Letter Tiles - Non-overlapping Flexible Layout */
+        .answer-slots {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            min-height: 65px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+            padding: 10px;
+            border: 2px dashed #0000ff;
+            border-radius: 10px;
+            background-color: #f0f4ff;
+        }
+
+        .slot-tile {
+            width: clamp(36px, 11vw, 46px);
+            height: clamp(36px, 11vw, 46px);
+            background-color: #ffffff;
+            border: 2px dashed #0000ff;
+            border-radius: 8px;
+            font-size: clamp(0.9rem, 4vw, 1.1rem);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            transition: background-color 0.2s, border-style 0.2s;
+            user-select: none;
+            -webkit-user-select: none;
+            flex-shrink: 0;
+        }
+
+        .slot-tile.filled {
+            border-style: solid;
+            background-color: #e0eaff;
+            cursor: pointer;
+        }
+
+        .slot-tile.drag-over {
+            background-color: #ffe082;
+            border-color: #ffa500;
+        }
+
+        .choice-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+            min-height: 65px;
+            padding: 8px;
+            border-radius: 10px;
+        }
+
+        .choice-tile {
+            width: clamp(36px, 11vw, 46px);
+            height: clamp(36px, 11vw, 46px);
+            background-color: #15ff00;
+            border: 2px solid #008800;
+            color: #000;
+            border-radius: 8px;
+            font-size: clamp(0.9rem, 4vw, 1.1rem);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            padding: 0;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.15);
+            transition: transform 0.1s;
+            touch-action: none;
+            flex-shrink: 0;
+        }
+
+        .choice-tile:active {
+            transform: scale(0.92);
+        }
+
+        .choice-tile.used {
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        /* Dragging Clone Element */
+        .dragging-ghost {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0.85;
+            transform: scale(1.1);
+        }
+
+        .action-btns {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 14px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #0000ff;
+            color: white;
+            transition: background 0.2s, transform 0.1s;
+            touch-action: manipulation;
+            flex: 1;
+            min-width: 90px;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            flex: none;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .feedback {
+            font-size: 1rem;
+            font-weight: bold;
+            min-height: 28px;
+            margin: 8px 0;
+        }
+
+        .feedback.correct {
+            color: green;
+        }
+
+        .feedback.incorrect {
+            color: red;
+        }
+
+        .status {
+            font-size: 0.95rem;
+            margin-top: 6px;
+            color: #555;
+        }
+
+        /* Mobile specific adjustments */
+        @media (max-width: 480px) {
+            body {
+                padding: 6px;
+            }
+
+            h1 {
+                font-size: 1.3rem;
+            }
+
+            #questArea {
+                min-height: 80vh;
+                padding: 12px 8px;
+            }
+
+            .answer-slots, .choice-container {
+                gap: 6px;
+                padding: 6px 4px;
+            }
+
+            .btn {
+                padding: 10px 6px;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+
+  <link rel="stylesheet" href="/css/auth.css?v=20260723" />
+  <link rel="stylesheet" href="/css/mascot.css?v=20260724" />
+  <script src="/js/auth.js?v=20260723"></script>
+  <script src="/js/mascot.js?v=20260724"></script>
+  <script>
+    TamilAuth.initPage();
+  </script>
+
+</head>
+
+<body>
+    <a id="home" href="index.html"> ◀ முகப்பு</a>
+    <h1>கருப்பொருள் பயணம்</h1>
+    <hr>
+
+    <div class="score-board">மொத்த விண்மீன்கள்: <span id="totalStars">0</span> ⭐</div>
+
+    <!-- World Map Grid -->
+    <div id="mapContainer">
+        <h2 style="color:#00f; font-size: 1.2rem; margin: 10px 0;">உலகத் தேர்வு</h2>
+        <div class="world-map" id="worldMap"></div>
+        <button class="btn btn-danger" onclick="resetProgress()" style="margin-top: 15px;">முன்னேற்றத்தை மீட்டமை</button>
+    </div>
+
+    <!-- Active Quest Screen -->
+    <div id="questArea">
+        <div>
+            <h2 id="questTitle" style="color:#00f; margin-top: 0; font-size: 1.2rem;">--</h2>
+
+            <div class="prompt-container">
+                <span class="prompt-label">ஆங்கிலச் சொல் :</span>
+                <span id="targetWord">--</span>
+            </div>
+
+            <div class="answer-slots" id="answerSlots"></div>
+            <div class="choice-container" id="choiceTiles"></div>
+        </div>
+
+        <div>
+            <div class="action-btns">
+                <button class="btn" onclick="checkAnswer()">சரிபார்க்க</button>
+                <button class="btn btn-secondary" onclick="clearAnswer()">அழி</button>
+                <button class="btn btn-secondary" onclick="exitToMap()">வரைபடம்</button>
+            </div>
+
+            <div class="feedback" id="feedback"></div>
+            <div class="status" id="status">சொற்கள் மீதம்: 0</div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = "theme_quest_progress_v1";
+
+        let wordData = [];
+        let categoryMap = {};
+        let worldProgress = {};
+        let currentWorld = null;
+        let currentQuestWords = [];
+        let currentQuestIndex = 0;
+        let selectedLetters = [];
+        let totalStars = 0;
+        let draggedTileIndex = null;
+        let touchGhost = null;
+
+        const worldMapEl = document.getElementById("worldMap");
+        const mapContainerEl = document.getElementById("mapContainer");
+        const questAreaEl = document.getElementById("questArea");
+        const questTitleEl = document.getElementById("questTitle");
+        const targetWordEl = document.getElementById("targetWord");
+        const answerSlotsEl = document.getElementById("answerSlots");
+        const choiceTilesEl = document.getElementById("choiceTiles");
+        const feedbackEl = document.getElementById("feedback");
+        const statusEl = document.getElementById("status");
+        const totalStarsEl = document.getElementById("totalStars");
+
+        function loadSavedProgress() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                return saved ? JSON.parse(saved) : null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function saveProgress() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(worldProgress));
+            } catch (e) {
+                console.error("Could not save progress", e);
+            }
+        }
+
+        function resetProgress() {
+            if (confirm("உங்கள் அனைத்து விளையாட்டின் முன்னேற்றத்தையும் மீட்டமைக்க வேண்டுமா?")) {
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
+            }
+        }
+
+        fetch("word_list.csv")
+            .then(res => res.text())
+            .then(text => {
+                const rows = text.trim().split("\n").map(r => r.split(","));
+                const header = rows[0].map(h => h.replace(/^\uFEFF/, '').trim());
+
+                let catIndex = header.indexOf("Category");
+                let tamilIndex = header.indexOf("Tamil");
+                let englishIndex = header.indexOf("English");
+
+                if (catIndex === -1) catIndex = 0;
+                if (tamilIndex === -1) tamilIndex = 1;
+                if (englishIndex === -1) englishIndex = 2;
+
+                wordData = rows.slice(1).map(r => ({
+                    category: r[catIndex]?.trim(),
+                    word: r[tamilIndex]?.trim(),
+                    english: r[englishIndex]?.trim() || ""
+                })).filter(w => w.category && w.word && w.english);
+
+                categoryMap = {};
+                wordData.forEach(item => {
+                    if (!categoryMap[item.category]) categoryMap[item.category] = [];
+                    categoryMap[item.category].push(item);
+                });
+
+                const savedProgress = loadSavedProgress();
+                const categories = Object.keys(categoryMap);
+
+                categories.forEach((cat, idx) => {
+                    if (savedProgress && savedProgress[cat]) {
+                        worldProgress[cat] = savedProgress[cat];
+                        if (idx === 0) worldProgress[cat].unlocked = true;
+                    } else {
+                        worldProgress[cat] = {
+                            unlocked: idx === 0,
+                            completed: false,
+                            stars: 0,
+                            score: 0
+                        };
+                    }
+                });
+
+                renderMap();
+            });
+
+        function renderMap() {
+            worldMapEl.innerHTML = "";
+            mapContainerEl.style.display = "block";
+            questAreaEl.style.display = "none";
+
+            const categories = Object.keys(categoryMap);
+            categories.forEach((cat, idx) => {
+                const prog = worldProgress[cat];
+                const isUnlocked = prog.unlocked || idx === 0;
+
+                const card = document.createElement("div");
+                card.className = `world-card ${isUnlocked ? '' : 'locked'} ${prog.completed ? 'completed' : ''}`;
+
+                let badgeIcon = "🔒";
+                let statusText = "";
+
+                if (prog.completed) {
+                    badgeIcon = "⭐";
+                    statusText = `${"⭐".repeat(prog.stars)} (${prog.score}/10)`;
+                } else if (isUnlocked) {
+                    badgeIcon = "🔓";
+                    statusText = "";
+                }
+
+                // Omit badge icon for initial world (idx === 0)
+                const badgeHTML = idx === 0 ? "" : `<div class="card-badge">${badgeIcon}</div>`;
+
+                card.innerHTML = `
+                    ${badgeHTML}
+                    <div class="world-title">உலகம் ${idx + 1}: <br> ${cat}</div>
+                    <div class="world-status">${statusText}</div>
+                `;
+
+                if (isUnlocked) {
+                    card.onclick = () => startQuest(cat);
+                }
+
+                worldMapEl.appendChild(card);
+            });
+
+            updateTotalStars();
+        }
+
+        function updateTotalStars() {
+            totalStars = Object.values(worldProgress).reduce((sum, p) => sum + (p.stars || 0), 0);
+            totalStarsEl.textContent = totalStars;
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function splitTamilWord(word) {
+            const segmenter = new Intl.Segmenter("ta", { granularity: "grapheme" });
+            return Array.from(segmenter.segment(word), s => s.segment);
+        }
+
+        function startQuest(category) {
+            currentWorld = category;
+            questTitleEl.textContent = category;
+            mapContainerEl.style.display = "none";
+            questAreaEl.style.display = "flex";
+
+            currentQuestWords = shuffle([...categoryMap[category]]).slice(0, 10);
+            currentQuestIndex = 0;
+            worldProgress[category].score = 0;
+
+            loadWordQuest();
+        }
+
+        function loadWordQuest() {
+            feedbackEl.textContent = "";
+            feedbackEl.className = "feedback";
+            selectedLetters = [];
+
+            if (currentQuestIndex >= currentQuestWords.length) {
+                completeQuest();
+                return;
+            }
+
+            const currentItem = currentQuestWords[currentQuestIndex];
+            targetWordEl.textContent = currentItem.english;
+            statusEl.textContent = `சொற்கள் மீதம்: ${currentQuestWords.length - currentQuestIndex}`;
+
+            const correctLetters = splitTamilWord(currentItem.word);
+            const extraLetters = ["க", "ம", "ல", "ர", "ப"].filter(l => !correctLetters.includes(l));
+            const pool = shuffle([...correctLetters, ...extraLetters.slice(0, 2)]);
+
+            answerSlotsEl.innerHTML = "";
+            for (let i = 0; i < correctLetters.length; i++) {
+                const slot = document.createElement("div");
+                slot.className = "slot-tile";
+                slot.dataset.index = i;
+
+                slot.addEventListener("dragover", e => {
+                    e.preventDefault();
+                    slot.classList.add("drag-over");
+                });
+
+                slot.addEventListener("dragleave", () => {
+                    slot.classList.remove("drag-over");
+                });
+
+                slot.addEventListener("drop", e => {
+                    e.preventDefault();
+                    slot.classList.remove("drag-over");
+
+                    if (draggedTileIndex !== null) {
+                        const tileEl = choiceTilesEl.children[draggedTileIndex];
+                        if (tileEl && !tileEl.classList.contains("used")) {
+                            selectLetterAtIndex(tileEl.dataset.letter, tileEl, i);
+                        }
+                    }
+                });
+
+                slot.onclick = () => removeLetterAtSlot(i);
+                answerSlotsEl.appendChild(slot);
+            }
+
+            choiceTilesEl.innerHTML = "";
+            choiceTilesEl.addEventListener("dragover", e => e.preventDefault());
+            choiceTilesEl.addEventListener("drop", e => {
+                e.preventDefault();
+                const slotIndex = e.dataTransfer.getData("slotIndex");
+                if (slotIndex !== undefined && slotIndex !== "") {
+                    removeLetterAtSlot(parseInt(slotIndex, 10));
+                }
+            });
+
+            pool.forEach((letter, idx) => {
+                const tile = document.createElement("div");
+                tile.className = "choice-tile";
+                tile.textContent = letter;
+                tile.draggable = true;
+                tile.dataset.index = idx;
+                tile.dataset.letter = letter;
+
+                tile.addEventListener("dragstart", e => {
+                    draggedTileIndex = idx;
+                    e.dataTransfer.setData("text/plain", letter);
+                });
+
+                tile.addEventListener("touchstart", e => handleTouchStart(e, idx, letter), { passive: false });
+                tile.addEventListener("touchmove", handleTouchMove, { passive: false });
+                tile.addEventListener("touchend", handleTouchEnd, { passive: false });
+
+                tile.onclick = () => selectLetterNextAvailable(letter, tile);
+                choiceTilesEl.appendChild(tile);
+            });
+        }
+
+        function handleTouchStart(e, idx, letter) {
+            const tile = e.currentTarget;
+            if (tile.classList.contains("used")) return;
+
+            draggedTileIndex = idx;
+
+            const touch = e.touches[0];
+            touchGhost = tile.cloneNode(true);
+            touchGhost.classList.add("dragging-ghost");
+            touchGhost.style.left = `${touch.clientX - 20}px`;
+            touchGhost.style.top = `${touch.clientY - 20}px`;
+            document.body.appendChild(touchGhost);
+        }
+
+        function handleTouchMove(e) {
+            if (!touchGhost) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            touchGhost.style.left = `${touch.clientX - 20}px`;
+            touchGhost.style.top = `${touch.clientY - 20}px`;
+        }
+
+        function handleTouchEnd(e) {
+            if (!touchGhost) return;
+
+            const touch = e.changedTouches[0];
+            touchGhost.remove();
+            touchGhost = null;
+
+            const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (dropTarget) {
+                const slot = dropTarget.closest(".slot-tile");
+                if (slot && slot.dataset.index !== undefined) {
+                    const slotIdx = parseInt(slot.dataset.index, 10);
+                    const tileEl = choiceTilesEl.children[draggedTileIndex];
+                    if (tileEl) {
+                        selectLetterAtIndex(tileEl.dataset.letter, tileEl, slotIdx);
+                    }
+                }
+            }
+            draggedTileIndex = null;
+        }
+
+        function selectLetterNextAvailable(letter, tileEl) {
+            const currentItem = currentQuestWords[currentQuestIndex];
+            const maxLen = splitTamilWord(currentItem.word).length;
+
+            let targetIdx = -1;
+            for (let i = 0; i < maxLen; i++) {
+                if (!selectedLetters[i]) {
+                    targetIdx = i;
+                    break;
+                }
+            }
+
+            if (targetIdx !== -1 && !tileEl.classList.contains("used")) {
+                selectLetterAtIndex(letter, tileEl, targetIdx);
+            }
+        }
+
+        function selectLetterAtIndex(letter, tileEl, slotIdx) {
+            if (selectedLetters[slotIdx]) {
+                selectedLetters[slotIdx].tileEl.classList.remove("used");
+            }
+
+            selectedLetters[slotIdx] = { letter, tileEl };
+            tileEl.classList.add("used");
+            updateSlots();
+        }
+
+        function removeLetterAtSlot(slotIdx) {
+            if (selectedLetters[slotIdx]) {
+                selectedLetters[slotIdx].tileEl.classList.remove("used");
+                delete selectedLetters[slotIdx];
+                updateSlots();
+            }
+        }
+
+        function updateSlots() {
+            const slots = answerSlotsEl.querySelectorAll(".slot-tile");
+            slots.forEach((slot, idx) => {
+                const entry = selectedLetters[idx];
+                if (entry) {
+                    slot.textContent = entry.letter;
+                    slot.classList.add("filled");
+                    slot.draggable = true;
+
+                    slot.ondragstart = e => {
+                        e.dataTransfer.setData("slotIndex", idx);
+                    };
+                } else {
+                    slot.textContent = "";
+                    slot.classList.remove("filled");
+                    slot.draggable = false;
+                    slot.ondragstart = null;
+                }
+            });
+        }
+
+        function clearAnswer() {
+            Object.values(selectedLetters).forEach(item => {
+                if (item && item.tileEl) item.tileEl.classList.remove("used");
+            });
+            selectedLetters = [];
+            updateSlots();
+        }
+
+        function checkAnswer() {
+            const currentItem = currentQuestWords[currentQuestIndex];
+            const correctLength = splitTamilWord(currentItem.word).length;
+
+            let userWord = "";
+            for (let i = 0; i < correctLength; i++) {
+                if (selectedLetters[i]) {
+                    userWord += selectedLetters[i].letter;
+                }
+            }
+
+            if (userWord === currentItem.word) {
+                feedbackEl.textContent = "✔ சரி! அருமை!";
+                feedbackEl.className = "feedback correct";
+                worldProgress[currentWorld].score += 1;
+
+                setTimeout(() => {
+                    currentQuestIndex++;
+                    loadWordQuest();
+                }, 1000);
+            } else {
+                feedbackEl.textContent = `✖ தவறு! சரியான விடை: ${currentItem.word}`;
+                feedbackEl.className = "feedback incorrect";
+
+                setTimeout(() => {
+                    currentQuestIndex++;
+                    loadWordQuest();
+                }, 1800);
+            }
+        }
+
+        function completeQuest() {
+            const score = worldProgress[currentWorld].score;
+            const categories = Object.keys(categoryMap);
+            const currentIdx = categories.indexOf(currentWorld);
+
+            worldProgress[currentWorld].completed = true;
+            worldProgress[currentWorld].stars = score >= 8 ? 3 : (score >= 5 ? 2 : 1);
+
+            if (score >= 6 && currentIdx + 1 < categories.length) {
+                const nextCat = categories[currentIdx + 1];
+                worldProgress[nextCat].unlocked = true;
+                feedbackEl.textContent = `🎉 சவால் நிறைவடைந்தது! அடுத்த உலகம் திறக்கப்பட்டது! (${score}/10)`;
+            } else {
+                feedbackEl.textContent = `🎉 சவால் நிறைவடைந்தது! மதிப்பெண்: ${score}/10`;
+            }
+
+            feedbackEl.className = "feedback correct";
+            saveProgress();
+
+            setTimeout(() => {
+                renderMap();
+            }, 2500);
+        }
+
+        function exitToMap() {
+            saveProgress();
+            renderMap();
+        }
+    </script>
+</body>
+
+</html>

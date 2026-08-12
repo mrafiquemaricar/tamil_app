@@ -5,13 +5,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>பொதுவான எழுத்தைக் கண்டுபிடி</title>
-  <link rel="stylesheet" href="/css/auth.css?v=20260723" />
-  <link rel="stylesheet" href="/css/mascot.css?v=20260724" />
-  <script src="/js/auth.js?v=20260723"></script>
-  <script src="/js/mascot.js?v=20260724"></script>
-  <script>
-    TamilAuth.initPage();
-  </script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -92,16 +85,46 @@
       font-weight: 700;
     }
 
+    .blank-index {
+      font-size: 0.6rem;
+      vertical-align: super;
+      color: #888;
+      margin-left: 1px;
+      user-select: none;
+    }
+
     #answerRow {
       margin: 1.5rem 0;
       display: flex;
+      flex-direction: column;
+      /* Moves buttons below input */
       justify-content: center;
       align-items: center;
       gap: 10px;
       flex-wrap: wrap;
     }
 
-    #answerBox {
+    .answer-inputs {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .answer-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .answer-group .group-label {
+      font-size: 0.85rem;
+      color: #555;
+      font-weight: 600;
+    }
+
+    .answerInput {
       font-size: 1.8rem;
       padding: 8px 10px;
       width: 4.5em;
@@ -110,13 +133,13 @@
       border-radius: 8px;
     }
 
-    #answerBox.correct {
+    .answerInput.correct {
       border-color: #28a745;
       background-color: #d4edda;
       color: #155724;
     }
 
-    #answerBox.incorrect {
+    .answerInput.incorrect {
       border-color: #dc3545;
       background-color: #f8d7da;
       color: #721c24;
@@ -162,7 +185,7 @@
 
     .hint {
       color: gray;
-      font-style: italic;
+      /* font-style: italic; */
       margin-top: 10px;
     }
   </style>
@@ -176,22 +199,24 @@
   <div id="scoreDisplay">சரி: 0 / 0</div>
 
   <select id="categorySelect">
-    <option value="">-- தேர்வு செய்யவும் --</option>
+    <option value="">அனைத்து பிரிவுகளும் (All Categories)</option>
   </select>
 
-  <p class="hint">இந்த மூன்று வார்த்தைகளிலும் ஒரே எழுத்து மறைந்துள்ளது. அதைக் கண்டுபிடி!</p>
+  <p class="hint">மறைந்துள்ள எழுத்தைக் / எழுத்துக்களைக் கண்டுபிடி</p>
 
   <div class="wordsBox" id="wordsBox"></div>
 
   <div id="answerRow">
-    <input type="text" id="answerBox" maxlength="3" placeholder="?" autocomplete="off" />
+    <div id="answerInputs" class="answer-inputs"></div>
+    <div id="message"></div>
+    
     <div class="buttons">
       <button id="checkBtn" title="சரி பார்">✔</button>
       <button id="nextBtn" title="அடுத்து">▶</button>
     </div>
   </div>
 
-  <div id="message"></div>
+
 
   <script>
     const uyirLetters = ['அ', 'ஆ', 'இ', 'ஈ', 'உ', 'ஊ', 'எ', 'ஏ', 'ஐ', 'ஒ', 'ஓ', 'ஔ'];
@@ -279,7 +304,7 @@
     const sheetUrl = 'word_list.csv';
     const categorySelect = document.getElementById('categorySelect');
     const wordsBox = document.getElementById('wordsBox');
-    const answerBox = document.getElementById('answerBox');
+    const answerInputsEl = document.getElementById('answerInputs');
     const checkBtn = document.getElementById('checkBtn');
     const nextBtn = document.getElementById('nextBtn');
     const message = document.getElementById('message');
@@ -287,7 +312,7 @@
 
     let dataRows = [];
     let currentWords = [];   // [{tamil, letters}]
-    let commonLetter = '';
+    let commonLetters = [];  // all distinct letters shared by the 3 words
     let score = 0;
     let total = 0;
     let answered = false;
@@ -330,6 +355,8 @@
           opt.textContent = cat;
           categorySelect.appendChild(opt);
         });
+
+        generateSet();
       })
       .catch(err => {
         alert("CSV படிப்பதில் பிழை: " + err);
@@ -352,8 +379,7 @@
         const sets = three.map(w => new Set(w.letters));
         const common = [...sets[0]].filter(l => sets[1].has(l) && sets[2].has(l) && l.trim() !== '');
         if (common.length > 0) {
-          const letter = common[Math.floor(Math.random() * common.length)];
-          return { words: three, letter };
+          return { words: three, letters: common };
         }
       }
       return null;
@@ -363,36 +389,59 @@
       const category = categorySelect.value;
       message.textContent = '';
       message.className = '';
-      answerBox.value = '';
-      answerBox.classList.remove('correct', 'incorrect');
+      answerInputsEl.innerHTML = '';
       answered = false;
 
-      if (!category) {
-        wordsBox.innerHTML = '<p>⚡ முதலில் ஒரு பிரிவைத் தேர்வு செய்யவும்</p>';
-        currentWords = [];
-        commonLetter = '';
-        return;
-      }
-
-      let pool = dataRows.filter(r => r.category === category);
+      // Empty category value means "All Categories" — use words from every category.
+      let pool = category ? dataRows.filter(r => r.category === category) : dataRows;
       let result = findTripleWithCommonLetter(pool);
 
       // Fallback: search across all categories if this one has no match
-      if (!result) {
+      if (!result && category) {
         result = findTripleWithCommonLetter(dataRows);
       }
 
       if (!result) {
         wordsBox.innerHTML = '<p>பொருத்தமான வார்த்தைகள் கிடைக்கவில்லை. மீண்டும் முயற்சிக்கவும்.</p>';
         currentWords = [];
-        commonLetter = '';
+        commonLetters = [];
         return;
       }
 
       currentWords = result.words;
-      commonLetter = result.letter;
+      commonLetters = result.letters;
       renderWords();
-      answerBox.focus();
+      buildAnswerInputs();
+    }
+
+    function buildAnswerInputs() {
+      answerInputsEl.innerHTML = '';
+      commonLetters.forEach((letter, index) => {
+        const group = document.createElement('div');
+        group.className = 'answer-group';
+
+        const label = document.createElement('span');
+        label.className = 'group-label';
+        label.textContent = commonLetters.length > 1 ? `எழுத்து ${index + 1}` : 'எழுத்து';
+        group.appendChild(label);
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.maxLength = 3;
+        input.placeholder = '?';
+        input.autocomplete = 'off';
+        input.className = 'answerInput';
+        input.dataset.index = index;
+        input.addEventListener('keydown', e => {
+          if (e.key === 'Enter') checkAnswer();
+        });
+        group.appendChild(input);
+
+        answerInputsEl.appendChild(group);
+      });
+
+      const firstInput = answerInputsEl.querySelector('.answerInput');
+      if (firstInput) firstInput.focus();
     }
 
     function renderWords() {
@@ -401,11 +450,19 @@
         const lineDiv = document.createElement('div');
         lineDiv.className = 'line';
         w.letters.forEach(letter => {
-          if (letter === commonLetter) {
+          const commonIndex = commonLetters.indexOf(letter);
+          if (commonIndex !== -1) {
             const span = document.createElement('span');
             span.className = 'blank';
-            span.textContent = '\u00A0\u00A0';
             span.dataset.role = 'blank';
+            span.dataset.index = commonIndex;
+            span.textContent = '\u00A0\u00A0';
+            if (commonLetters.length > 1) {
+              const badge = document.createElement('sup');
+              badge.className = 'blank-index';
+              badge.textContent = commonIndex + 1;
+              span.appendChild(badge);
+            }
             lineDiv.appendChild(span);
           } else {
             const span = document.createElement('span');
@@ -418,37 +475,47 @@
       });
     }
 
-    function revealBlanks(isCorrect) {
+    function revealBlanks(correctByIndex) {
       document.querySelectorAll('.blank').forEach(span => {
-        span.textContent = commonLetter;
+        const idx = Number(span.dataset.index);
+        const isCorrect = correctByIndex[idx];
+        span.textContent = commonLetters[idx];
         span.classList.add(isCorrect ? 'correct' : 'incorrect');
       });
     }
 
     function checkAnswer() {
-      if (!commonLetter || answered) return;
-      const userAnswer = answerBox.value.trim();
-      if (!userAnswer) return;
+      if (!commonLetters.length || answered) return;
+
+      const inputs = Array.from(answerInputsEl.querySelectorAll('.answerInput'));
+      const values = inputs.map(inp => inp.value.trim());
+      if (values.some(v => !v)) return; // wait until every box has a value
 
       answered = true;
       total++;
-      const isCorrect = userAnswer === commonLetter;
-      if (isCorrect) score++;
 
-      answerBox.classList.add(isCorrect ? 'correct' : 'incorrect');
-      revealBlanks(isCorrect);
+      const correctByIndex = commonLetters.map((letter, idx) => values[idx] === letter);
+      const allCorrect = correctByIndex.every(Boolean);
+      if (allCorrect) score++;
 
-      message.textContent = isCorrect ? 'சரி ✅' : ('தவறு ❌  சரியான எழுத்து: ' + commonLetter);
-      message.className = isCorrect ? 'success' : 'fail';
+      inputs.forEach((inp, idx) => {
+        inp.classList.add(correctByIndex[idx] ? 'correct' : 'incorrect');
+      });
+      revealBlanks(correctByIndex);
+
+      if (allCorrect) {
+        message.textContent = 'சரி ✅';
+        message.className = 'success';
+      } else {
+        message.textContent = 'தவறு ❌  சரியான எழுத்துக்கள்: ' + commonLetters.join(', ');
+        message.className = 'fail';
+      }
 
       updateScore();
     }
 
     checkBtn.addEventListener('click', checkAnswer);
     nextBtn.addEventListener('click', generateSet);
-    answerBox.addEventListener('keydown', e => {
-      if (e.key === 'Enter') checkAnswer();
-    });
   </script>
 </body>
 

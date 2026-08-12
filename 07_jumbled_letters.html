@@ -217,6 +217,36 @@
       }
     }
 
+    function arraysEqual(a, b) {
+      return a.length === b.length && a.every((v, i) => v === b[i]);
+    }
+
+    // Shuffle letters, but guarantee the result differs from the original
+    // word order (a plain Fisher-Yates shuffle can sometimes land back on
+    // the original order by chance, especially for short 2-3 letter words,
+    // which would show an "unjumbled" word).
+    function jumbleLetters(letters) {
+      if (letters.length <= 1) return letters.slice();
+
+      let shuffled = letters.slice();
+      let attempts = 0;
+      const maxAttempts = 30;
+
+      do {
+        shuffled = letters.slice();
+        shuffleArray(shuffled);
+        attempts++;
+      } while (arraysEqual(shuffled, letters) && attempts < maxAttempts);
+
+      // Extremely rare fallback (e.g. all letters identical): force a swap
+      // of the first two positions so it's visibly different if possible.
+      if (arraysEqual(shuffled, letters) && shuffled.length > 1) {
+        [shuffled[0], shuffled[1]] = [shuffled[1], shuffled[0]];
+      }
+
+      return shuffled;
+    }
+
     function clearTiles() {
       tilesContainer.innerHTML = '';
       answerBox.innerHTML = '';
@@ -264,8 +294,7 @@
       currentWord = pickRandomWord();
       if (!currentWord) return;
       currentLetters = splitTamilWord(currentWord);
-      const shuffled = currentLetters.slice();
-      shuffleArray(shuffled);
+      const shuffled = jumbleLetters(currentLetters);
       renderTiles(shuffled);
       renderAnswerBox();
       hideSuccessMessage();

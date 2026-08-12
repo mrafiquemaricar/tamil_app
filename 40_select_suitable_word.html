@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>அவன் அவள் அவர் அவர்கள்</title>
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            padding: 20px;
+            max-width: 700px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #00f;
+            /* font-size: 1.5rem; */
+            margin-bottom: 1rem;
+        }
+
+        .question {
+            /* question area */
+            text-align: center;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            font-size: 1.5rem;
+            line-height: 2.5rem;
+            margin: 2rem 0;
+            white-space: pre-line;
+            /* 👈 ensures \n is shown as line break */
+        }
+
+        .blank {
+            display: inline-flex;
+            justify-content: center;
+            /* center horizontally */
+            align-items: center;
+            /* center vertically */
+            min-width: 6rem;
+            max-width: 100%;
+            height: 2rem;
+            border: 1px solid #555;
+            padding: 0.1rem 0.3rem;
+            text-align: center;
+            cursor: pointer;
+            word-break: break-word;
+        }
+
+
+        .blank.selected {
+            border-color: blue;
+            background: #d0e8ff;
+        }
+
+        .blank.correct {
+            border-color: green;
+            background: #d4edda;
+        }
+
+        .blank.incorrect {
+            border-color: red;
+            background: #f8d7da;
+        }
+
+        .words {
+            margin: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.3rem;
+        }
+
+        .word-chunk {
+            background: #15ff00;
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+            font-size: 1.1rem;
+        }
+
+        .word-chunk.used {
+            background: #a3c8ff;
+            cursor: default;
+        }
+
+        button {
+            margin: 1rem 0.3rem;
+            /* font-size: 1.2rem; */
+            padding: 0.5rem 1rem;
+        }
+
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .controls button {
+            padding: 10px 15px;
+            font-size: 4em;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #0000ff;
+            color: white;
+            transition: background 0.3s;
+        }
+
+        .controls button:hover {
+            background: #ffa500;
+        }
+
+        #home {
+            text-decoration: none;
+            background-color: #0000ff;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 15px;
+        }
+    </style>
+
+  <link rel="stylesheet" href="/css/auth.css?v=20260723" />
+  <link rel="stylesheet" href="/css/mascot.css?v=20260724" />
+  <script src="/js/auth.js?v=20260723"></script>
+  <script src="/js/mascot.js?v=20260724"></script>
+  <script>
+    TamilAuth.initPage();
+  </script>
+
+</head>
+
+
+<body>
+    <a id="home" href="index.html"> ◀ முகப்பு</a>
+    <h1>சரியான வார்த்தைகளை நிரப்புக </h1>
+    <hr>
+    <div id="paragraph"></div>
+    <div class="words" id="wordChunks" aria-live="polite"></div>
+    <hr>
+    <div class="controls">
+        <button id="checkBtn">✔</button>
+        <button id="nextBtn">▶</button>
+    </div>
+
+    <script>
+        // 🔹 each phrase = 4 sentences, one per pronoun: அவன் / அவள் / அவர் / அவர்கள்
+        const phrases = [
+            "அவன் போனான். அவள் போனாள். அவர் போனார். அவர்கள் போனார்கள்.",
+            "அவன் படித்தான். அவள் படித்தாள். அவர் படித்தார். அவர்கள் படித்தார்கள்.",
+            "அவன் எழுதினான். அவள் எழுதினாள். அவர் எழுதினார். அவர்கள் எழுதினார்கள்.",
+            "அவன் சாப்பிட்டான். அவள் சாப்பிட்டாள். அவர் சாப்பிட்டார். அவர்கள் சாப்பிட்டார்கள்.",
+            "அவன் குடித்தான். அவள் குடித்தாள். அவர் குடித்தார். அவர்கள் குடித்தார்கள்.",
+            "அவன் தூங்கினான். அவள் தூங்கினாள். அவர் தூங்கினார். அவர்கள் தூங்கினார்கள்.",
+            "அவன் எழுந்திருந்தான். அவள் எழுந்திருந்தாள். அவர் எழுந்திருந்தார். அவர்கள் எழுந்திருந்தார்கள்.",
+            "அவன் ஓடினான். அவள் ஓடினாள். அவர் ஓடினார். அவர்கள் ஓடினார்கள்.",
+            "அவன் நடந்தான். அவள் நடந்தாள். அவர் நடந்தார். அவர்கள் நடந்தார்கள்.",
+            "அவன் விளையாடினான். அவள் விளையாடினாள். அவர் விளையாடினார். அவர்கள் விளையாடினார்கள்.",
+            "அவன் பாடினான். அவள் பாடினாள். அவர் பாடினார். அவர்கள் பாடினார்கள்.",
+            "அவன் ஆடினான். அவள் ஆடினாள். அவர் ஆடினார். அவர்கள் ஆடினார்கள்.",
+            "அவன் சிரித்தான். அவள் சிரித்தாள். அவர் சிரித்தார். அவர்கள் சிரித்தார்கள்.",
+            "அவன் அழுதான். அவள் அழுதாள். அவர் அழுதார். அவர்கள் அழுதார்கள்.",
+            "அவன் பேசினான். அவள் பேசினாள். அவர் பேசினார். அவர்கள் பேசினார்கள்.",
+            "அவன் கேட்டான். அவள் கேட்டாள். அவர் கேட்டார். அவர்கள் கேட்டார்கள்.",
+            "அவன் பார்த்தான். அவள் பார்த்தாள். அவர் பார்த்தார். அவர்கள் பார்த்தார்கள்.",
+            "அவன் செய்தான். அவள் செய்தாள். அவர் செய்தார். அவர்கள் செய்தார்கள்.",
+            "அவன் கொடுத்தான். அவள் கொடுத்தாள். அவர் கொடுத்தார். அவர்கள் கொடுத்தார்கள்.",
+            "அவன் வாங்கினான். அவள் வாங்கினாள். அவர் வாங்கினார். அவர்கள் வாங்கினார்கள்.",
+            "அவன் விற்றான். அவள் விற்றாள். அவர் விற்றார். அவர்கள் விற்றார்கள்.",
+            "அவன் குளித்தான். அவள் குளித்தாள். அவர் குளித்தார். அவர்கள் குளித்தார்கள்.",
+            "அவன் எழுந்தான். அவள் எழுந்தாள். அவர் எழுந்தார். அவர்கள் எழுந்தார்கள்.",
+            "அவன் உட்கார்ந்தான். அவள் உட்கார்ந்தாள். அவர் உட்கார்ந்தார். அவர்கள் உட்கார்ந்தார்கள்.",
+            "அவன் நின்றான். அவள் நின்றாள். அவர் நின்றார். அவர்கள் நின்றார்கள்.",
+            "அவன் வேலை செய்தான். அவள் வேலை செய்தாள். அவர் வேலை செய்தார். அவர்கள் வேலை செய்தார்கள்.",
+            "அவன் படம் பார்த்தான். அவள் படம் பார்த்தாள். அவர் படம் பார்த்தார். அவர்கள் படம் பார்த்தார்கள்.",
+            "அவன் புத்தகம் படித்தான். அவள் புத்தகம் படித்தாள். அவர் புத்தகம் படித்தார். அவர்கள் புத்தகம் படித்தார்கள்.",
+            "அவன் கடிதம் எழுதினான். அவள் கடிதம் எழுதினாள். அவர் கடிதம் எழுதினார். அவர்கள் கடிதம் எழுதினார்கள்.",
+            "அவன் பாடம் கற்றான். அவள் பாடம் கற்றாள். அவர் பாடம் கற்றார். அவர்கள் பாடம் கற்றார்கள்.",
+            "அவன் வீடு திரும்பினான். அவள் வீடு திரும்பினாள். அவர் வீடு திரும்பினார். அவர்கள் வீடு திரும்பினார்கள்.",
+            "அவன் பள்ளிக்குப் போனான். அவள் பள்ளிக்குப் போனாள். அவர் பள்ளிக்குப் போனார். அவர்கள் பள்ளிக்குப் போனார்கள்.",
+            "அவன் கடைக்குப் போனான். அவள் கடைக்குப் போனாள். அவர் கடைக்குப் போனார். அவர்கள் கடைக்குப் போனார்கள்.",
+            "அவன் நீச்சல் அடித்தான். அவள் நீச்சல் அடித்தாள். அவர் நீச்சல் அடித்தார். அவர்கள் நீச்சல் அடித்தார்கள்.",
+            "அவன் மரம் ஏறினான். அவள் மரம் ஏறினாள். அவர் மரம் ஏறினார். அவர்கள் மரம் ஏறினார்கள்.",
+            "அவன் பந்து எறிந்தான். அவள் பந்து எறிந்தாள். அவர் பந்து எறிந்தார். அவர்கள் பந்து எறிந்தார்கள்.",
+            "அவன் கோபப்பட்டான். அவள் கோபப்பட்டாள். அவர் கோபப்பட்டார். அவர்கள் கோபப்பட்டார்கள்.",
+            "அவன் மகிழ்ச்சி அடைந்தான். அவள் மகிழ்ச்சி அடைந்தாள். அவர் மகிழ்ச்சி அடைந்தார். அவர்கள் மகிழ்ச்சி அடைந்தார்கள்.",
+            "அவன் வருத்தப்பட்டான். அவள் வருத்தப்பட்டாள். அவர் வருத்தப்பட்டார். அவர்கள் வருத்தப்பட்டார்கள்.",
+            "அவன் உதவி செய்தான். அவள் உதவி செய்தாள். அவர் உதவி செய்தார். அவர்கள் உதவி செய்தார்கள்.",
+            "அவன் கேள்வி கேட்டான். அவள் கேள்வி கேட்டாள். அவர் கேள்வி கேட்டார். அவர்கள் கேள்வி கேட்டார்கள்.",
+            "அவன் பதில் சொன்னான். அவள் பதில் சொன்னாள். அவர் பதில் சொன்னார். அவர்கள் பதில் சொன்னார்கள்.",
+            "அவன் பழம் தின்றான். அவள் பழம் தின்றாள். அவர் பழம் தின்றார். அவர்கள் பழம் தின்றார்கள்.",
+            "அவன் தண்ணீர் குடித்தான். அவள் தண்ணீர் குடித்தாள். அவர் தண்ணீர் குடித்தார். அவர்கள் தண்ணீர் குடித்தார்கள்.",
+            "அவன் கார் ஓட்டினான். அவள் கார் ஓட்டினாள். அவர் கார் ஓட்டினார். அவர்கள் கார் ஓட்டினார்கள்.",
+            "அவன் பேருந்தில் பயணம் செய்தான். அவள் பேருந்தில் பயணம் செய்தாள். அவர் பேருந்தில் பயணம் செய்தார். அவர்கள் பேருந்தில் பயணம் செய்தார்கள்.",
+            "அவன் நண்பனைச் சந்தித்தான். அவள் நண்பனைச் சந்தித்தாள். அவர் நண்பனைச் சந்தித்தார். அவர்கள் நண்பனைச் சந்தித்தார்கள்.",
+            "அவன் வேலைக்குப் போனான். அவள் வேலைக்குப் போனாள். அவர் வேலைக்குப் போனார். அவர்கள் வேலைக்குப் போனார்கள்."
+        ];
+
+        let remaining = [];
+        let currentPhraseSentences = []; // [{before, blankWord, after}]
+        let selectedBlank = null;
+
+        const paragraphDiv = document.getElementById('paragraph');
+        const wordChunksDiv = document.getElementById('wordChunks');
+        const nextBtn = document.getElementById('nextBtn');
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function resetPool() {
+            remaining = shuffle([...phrases]);
+        }
+
+        // 🔹 split one phrase into its 4 "PRONOUN [object words] VERB." sentences,
+        //    and for each sentence randomly blank exactly ONE single word:
+        //    either the pronoun (அவன்/அவள்/அவர்/அவர்கள்) or the verb — never any object word in between.
+        function buildSentences(phrase) {
+            const sentences = phrase.trim().split(/(?<=\.)\s+/).filter(s => s.trim());
+            return sentences.map(sentence => {
+                const clean = sentence.trim();
+                const punctuation = clean.endsWith('.') ? '.' : '';
+                const body = punctuation ? clean.slice(0, -1) : clean;
+                const words = body.trim().split(/\s+/);
+
+                const pronounWord = words[0];                      // first word = pronoun
+                const verbWord = words[words.length - 1];          // last word = verb
+                const middleWords = words.slice(1, -1).join(' ');  // any object words in between (unblanked)
+
+                const blankIsPronoun = Math.random() < 0.5;
+
+                if (blankIsPronoun) {
+                    return {
+                        before: '',
+                        blankWord: pronounWord,
+                        after: (middleWords ? ' ' + middleWords : '') + ' ' + verbWord + punctuation
+                    };
+                } else {
+                    return {
+                        before: pronounWord + (middleWords ? ' ' + middleWords : '') + ' ',
+                        blankWord: verbWord,
+                        after: punctuation
+                    };
+                }
+            });
+        }
+
+        function pickPhrase() {
+            if (remaining.length === 0) {
+                paragraphDiv.innerHTML = "<h2>🎉 அனைத்து தொடர்களும் முடிந்துவிட்டது!</h2>";
+                wordChunksDiv.innerHTML = "";
+                nextBtn.style.display = "none";
+                return false;
+            }
+            const phrase = remaining.pop();
+            currentPhraseSentences = buildSentences(phrase);
+            return true;
+        }
+
+        function prepareAndRender() {
+            if (!pickPhrase()) return;
+
+            paragraphDiv.innerHTML = "";
+            wordChunksDiv.innerHTML = "";
+            selectedBlank = null;
+
+            const allAnswers = [];
+
+            currentPhraseSentences.forEach(({ before, blankWord, after }) => {
+                allAnswers.push(blankWord);
+
+                const qDiv = document.createElement('div');
+                qDiv.className = 'question';
+
+                if (before) qDiv.appendChild(document.createTextNode(before));
+
+                const blank = document.createElement('span');
+                blank.className = 'blank';
+
+                // tap to select
+                blank.addEventListener('click', () => {
+                    document.querySelectorAll('.blank').forEach(b => b.classList.remove('selected'));
+                    blank.classList.add('selected');
+                    selectedBlank = blank;
+                });
+
+                // allow drop
+                blank.addEventListener('dragover', e => e.preventDefault());
+                blank.addEventListener('drop', e => {
+                    e.preventDefault();
+                    const word = e.dataTransfer.getData('text/plain');
+                    if (!word) return;
+
+                    // free old word
+                    const prev = blank.textContent.trim();
+                    if (prev) {
+                        const prevChunk = document.querySelector(`.word-chunk[data-word="${prev}"]`);
+                        if (prevChunk) prevChunk.classList.remove('used');
+                    }
+
+                    blank.textContent = word;
+                    const chunk = document.querySelector(`.word-chunk[data-word="${word}"]`);
+                    if (chunk) chunk.classList.add('used');
+                });
+
+                qDiv.appendChild(blank);
+
+                if (after) qDiv.appendChild(document.createTextNode(after));
+
+                paragraphDiv.appendChild(qDiv);
+            });
+
+            // render chunks — just the 4 correct answers for this phrase, shuffled
+            shuffle(allAnswers).forEach(word => {
+                const chunk = document.createElement('div');
+                chunk.className = 'word-chunk';
+                chunk.textContent = word;
+                chunk.dataset.word = word;
+                chunk.setAttribute('draggable', 'true');
+
+                // drag
+                chunk.addEventListener('dragstart', e => {
+                    e.dataTransfer.setData('text/plain', word);
+                });
+
+                // tap to fill
+                chunk.addEventListener('click', function () {
+                    if (!selectedBlank || this.classList.contains('used')) return;
+
+                    // free previous word
+                    const prev = selectedBlank.textContent.trim();
+                    if (prev) {
+                        const prevChunk = document.querySelector(`.word-chunk[data-word="${prev}"]`);
+                        if (prevChunk) prevChunk.classList.remove('used');
+                    }
+
+                    selectedBlank.textContent = this.dataset.word;
+                    this.classList.add('used');
+
+                    selectedBlank.classList.remove('selected');
+                    selectedBlank = null;
+                });
+
+                wordChunksDiv.appendChild(chunk);
+            });
+        }
+
+        function checkAnswers() {
+            const blanks = document.querySelectorAll('.blank');
+            currentPhraseSentences.forEach(({ blankWord }, i) => {
+                const blank = blanks[i];
+                if ((blank.textContent || "").trim() === blankWord) {
+                    blank.classList.add('correct');
+                    blank.classList.remove('incorrect');
+                } else {
+                    blank.classList.add('incorrect');
+                    blank.classList.remove('correct');
+                }
+            });
+        }
+
+        document.getElementById('checkBtn').addEventListener('click', checkAnswers);
+        nextBtn.addEventListener('click', prepareAndRender);
+
+        // first round
+        resetPool();
+        prepareAndRender();
+    </script>
+</body>
+
+</html>

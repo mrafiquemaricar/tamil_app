@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>தமிழ் வாசிப்புப் பயிற்சி (Tamil Reading Practice)</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --success: #10b981;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #fdfdfd;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      color: #00f;
+      text-align: center;
+    }
+
+    .container {
+      background-color: var(--card-bg);
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      max-width: 700px;
+      width: 100%;
+    }
+
+    .selector-box {
+      margin-bottom: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .selector-box label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #475569;
+    }
+
+    select {
+      padding: 10px 14px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background-color: #f8fafc;
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    select:focus {
+      border-color: var(--primary);
+    }
+
+    .paragraph-box {
+      background-color: #f1f5f9;
+      padding: 20px;
+      border-radius: 12px;
+      font-size: 1.25rem;
+      line-height: 2.2;
+      margin: 15px 0;
+      min-height: 100px;
+      border: 1px solid #cbd5e1;
+    }
+
+    .word {
+      display: inline-block;
+      padding: 2px 8px;
+      margin: 3px 2px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .word.active-read {
+      background-color: #fde047 !important;
+      color: #000 !important;
+      font-weight: 700;
+      transform: scale(1.08);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .word.correct {
+      background-color: #dcfce7 !important;
+      color: #15803d !important;
+      font-weight: 700;
+      border: 1px solid #86efac;
+    }
+
+    .word.incorrect {
+      background-color: #fee2e2 !important;
+      color: #b91c1c !important;
+      font-weight: 700;
+      border: 1px solid #fca5a5;
+      text-decoration: line-through;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    #btnRead {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    #btnRecord {
+      background-color: var(--success);
+      color: white;
+    }
+
+    .btn-stop-state {
+      background-color: var(--danger) !important;
+      color: white !important;
+    }
+
+    .recording-state {
+      background-color: #dc2626 !important;
+      animation: pulse 1.2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+
+    .status-box {
+      font-size: 0.95rem;
+      color: #475569;
+      text-align: center;
+      min-height: 24px;
+      margin-bottom: 15px;
+      font-weight: 500;
+    }
+
+    .mic-meter-wrap {
+      display: none;
+      width: 100%;
+      max-width: 300px;
+      margin: 0 auto 15px auto;
+      background: #e2e8f0;
+      border-radius: 6px;
+      height: 10px;
+      overflow: hidden;
+    }
+
+    .mic-meter-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #10b981, #fbbf24, #ef4444);
+      transition: width 0.08s ease-out;
+    }
+
+    .feedback-card {
+      display: none;
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 15px 20px;
+      margin-top: 20px;
+    }
+
+    .score-container {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin: 10px 0;
+    }
+
+    .score {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    .legend {
+      display: flex;
+      gap: 10px;
+      font-size: 0.85rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .legend-box {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+    }
+
+    .transcript {
+      font-style: italic;
+      color: #334155;
+      background: #ffffff;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+    }
+
+    #home {
+      text-decoration: none;
+      background-color: #0000ff;
+      color: #ffffff;
+      padding: 10px;
+      border-radius: 15px;
+    }
+
+    button {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    .compat-banner {
+      display: none;
+      width: 100%;
+      max-width: 700px;
+      background-color: #fef3c7;
+      border: 1px solid #fbbf24;
+      color: #92400e;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .compat-banner.error {
+      background-color: #fee2e2;
+      border-color: #fca5a5;
+      color: #991b1b;
+    }
+  </style>
+
+  <link rel="stylesheet" href="/css/auth.css?v=20260723" />
+  <link rel="stylesheet" href="/css/mascot.css?v=20260724" />
+  <script src="/js/auth.js?v=20260723"></script>
+  <script src="/js/mascot.js?v=20260724"></script>
+  <script>
+    TamilAuth.initPage();
+  </script>
+
+</head>
+
+<body>
+
+  <a id="home" href="index.html"> ◀ முகப்பு</a>
+
+  <h1>தமிழ் வாசிப்புப் பயிற்சி</h1>
+
+  <div class="compat-banner" id="compatBanner"></div>
+
+  <div class="container">
+    <div class="selector-box">
+      <label for="textSelect">பத்தியைத் தேர்ந்தெடுக்கவும் </label>
+      <select id="textSelect">
+        <!-- Populated via JS -->
+      </select>
+    </div>
+
+    <div class="paragraph-box" id="paragraphBox"></div>
+
+    <div class="controls">
+      <button id="btnRead" onclick="toggleRead()">🔊 படிக்க </button>
+      <button id="btnRecord" onclick="toggleRecording()">🎙️ பதிவு செய்ய </button>
+    </div>
+
+    <div class="status-box" id="statusText"></div>
+    <div class="mic-meter-wrap" id="micMeterWrap"><div class="mic-meter-bar" id="micMeterBar"></div></div>
+
+    <div class="feedback-card" id="feedbackCard">
+      <h3 style="margin: 0 0 10px 0; color: #1e293b;">வாசிப்பு முடிவுகள் </h3>
+
+      <div class="score-container">
+        <div>
+          <div style="font-size: 0.85rem; color: #64748b;">துல்லியம் :</div>
+          <div class="score" id="scoreText">0%</div>
+        </div>
+
+        <div class="legend" style="margin-left: auto;">
+          <div class="legend-item">
+            <div class="legend-box" style="background: #dcfce7; border: 1px solid #86efac;"></div>
+            <span>சரி </span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-box" style="background: #fee2e2; border: 1px solid #fca5a5;"></div>
+            <span>தவறு / விடுபட்டது </span>
+          </div>
+        </div>
+      </div>
+
+      <p style="margin: 10px 0 5px 0; font-size: 0.9rem;">நீங்கள் கூறியது :</p>
+      <div class="transcript" id="spokenTranscript">-</div>
+      <p id="feedbackAdvice" style="margin-top: 12px; font-weight: 600;"></p>
+    </div>
+  </div>
+
+  <script>
+    const sampleTexts = [
+      { title: "தமிழ் மொழி", text: "தமிழ் உலகில் மிகவும் பழமையான மொழிகளில் ஒன்றாகும். இது தமிழ்நாடு, சிங்கப்பூர், இலங்கை, மலேசியா மற்றும் பல நாடுகளில் பேசப்படும் மொழியாகும்." },
+      { title: "இயற்கை அன்னையின் அழகு", text: "இயற்கை நமக்குக் கிடைத்த மிகப்பெரிய கொடையாகும். பச்சை பசேல் என்ற மரங்களும், பாடும் பறவைகளும் மனதிற்கு அமைதியைத் தருகின்றன." },
+      { title: "கல்விச் செல்வம்", text: "கல்வி ஒரு மனிதனை நல்வழிப்படுத்தும். கேடில் விழுச்செல்வம் கல்வி ஒருவற்கு மாடல்ல மற்றை யவை என்று வள்ளுவர் கூறுகிறார்." },
+      { title: "உழவுத் தொழில்", text: "உழவுத் தொழில் நாட்டின் முதுகெலும்பாகும். உழவர்கள் கடினமாக உழைத்து உலகிற்கு உணவளிக்கிறார்கள். அவர்களின் உழைப்பை நாம் போற்ற வேண்டும்." },
+      { title: "நட்பு", text: "உண்மையான நட்பு வாழ்க்கைக்கு வலிமை சேர்க்கும். துன்ப காலத்தில் கை கொடுத்து உதவுவதே சிறந்த நட்பின் அடையாளமாகும்." },
+      { title: "நேரம் பொன் போன்றது", text: "காலமும் நேரமும் யாருக்காகவும் காத்திருப்பதில்லை. கடந்து போன நேரத்தை மீண்டும் பெற முடியாது, எனவே நேரத்தை பயனுள்ளதாகச் செலவிட வேண்டும்." },
+      { title: "வாசிப்பின் நன்மைகள்", text: "புத்தகங்களை வாசிப்பது சிந்தனைத் திறனை வளர்க்கும். தினமும் ஒரு சில பக்கங்களாவது வாசிப்பது நல்ல பழக்கமாகும்." },
+      { title: "சுகாதார வாழ்வு", text: "சுவரில்லாமல் சித்திரம் வரைய முடியாது. உடற்பயிற்சியும் சத்தான உணவும் ஆரோக்கியமான வாழ்விற்கு மிகவும் அவசியமானவை ஆகும்." },
+      { title: "தமிழ் கலைகள்", text: "பரதநாட்டியம், கரகாட்டம் மற்றும் சிலம்பாட்டம் போன்றவை தமிழர்களின் பாரம்பரிய கலைகள் ஆகும். இவை நமது கலாச்சாரத்தின் பெருமையை உணர்த்துகின்றன." },
+      { title: "முயற்சியே வெற்றி", text: "தோல்வி கண்டு ஒருபோதும் பயப்படக் கூடாது. தொடர் முயற்சியும் கடின உழைப்பும் கண்டிப்பாக வாழ்க்கையில் வெற்றியைத் தரும்." },
+      { title: "திருக்குறள் - கல்வி", text: "கற்க கசடறக் கற்பவை கற்றபின் நிற்க அதற்குத் தக." },
+      { title: "திருக்குறள் - ஒழுக்கமுடைமை", text: "ஒழுக்கம் விழுப்பம் தரலான் ஒழுக்கம் உயிரினும் ஓம்பப் படும்." },
+      { title: "திருக்குறள் - செய்ந்நன்றியறிதல்", text: "செய்யாமல் செய்த உதவிக்கு வையகமும் வானகமும் ஆற்றல் அரிது." },
+      { title: "திருக்குறள் - அடக்கமுடைமை", text: "அடக்கம் அமரருள் உய்க்கும் அடங்காமை ஆர்இருள் உய்த்து விடும்." },
+      { title: "திருக்குறள் - வாய்மை", text: "பொய்ம்மையும் வாய்மை இடத்த புரைதீர்ந்த நன்மை பயக்கும் எனின்." },
+      { title: "திருக்குறள் - ஆள்வினையுடைமை", text: "முயற்சி திருவினை ஆக்கும் முயற்றின்மை இன்மை புகுத்தி விடும்." },
+      { title: "திருக்குறள் - பொறையுடைமை", text: "அகழ்வாரைத் தாங்கும் நிலம்போலத் தம்மை இகழ்வார்ப் பொறுத்தல் தலை." },
+      { title: "திருக்குறள் - தீவினை அச்சம்", text: "தீயவை தீய பயத்தலால் தீயவை தீயினும் அஞ்சப் படும்." },
+      { title: "திருக்குறள் - பெரியாரைத் துணைக்கோடல்", text: "அரியவற்றுள் எல்லாம் அரிதே பெரியாரைப் பேணித் தமராக் கொளல்." },
+      { title: "உலக அதிசயம் - சீனப் பெருஞ்சுவர்", text: "சீனப் பெருஞ்சுவர் உலகின் மிக நீண்ட மனிதனால் கட்டப்பட்ட அமைப்பாகும். இது பண்டைய காலத்தில் நாட்டின் எல்லைகளைப் பாதுகாப்பதற்காகக் கட்டப்பட்டது." },
+      { title: "உலக அதிசயம் - தாஜ் மஹால்", text: "இந்தியாவின் ஆக்ரா நகரில் உள்ள தாஜ் மஹால் வெள்ளை பளிங்குக் கற்களால் கட்டப்பட்ட அழகிய கலைப் படைப்பாகும். இது முகலாய கட்டிடக்கலைக்கு சிறந்த சான்றாகும்." },
+      { title: "உலக அதிசயம் - பெட்ரா", text: "ஜோர்டானில் அமைந்துள்ள பெட்ரா நகரம் பாறைகளைக் குடைந்து செதுக்கப்பட்ட பழங்கால வரலாற்று நகரமாகும். இது ரோஜா நிறப் பாறைகளுக்காகப் புகழ்பெற்றது." },
+      { title: "உலக அதிசயம் - கொலோசியம்", text: "இத்தாலியின் ரோம் நகரில் உள்ள கொலோசியம் பண்டைய ரோமானியர்களின் பிரம்மாண்டமான விளையாட்டரங்கமாகும்." },
+      { title: "உலக அதிசயம் - மச்சு பிச்சு", text: "பெரு நாட்டின் மலை உச்சியில் அமைந்துள்ள மச்சு பிச்சு இன்கா நாகரிகத்தின் பழங்கால கோட்டை நகரமாகும்." }
+    ];
+
+    let currentText = "";
+    let wordsArray = [];
+
+    const paragraphBox = document.getElementById('paragraphBox');
+    const statusText = document.getElementById('statusText');
+    const feedbackCard = document.getElementById('feedbackCard');
+    const scoreText = document.getElementById('scoreText');
+    const spokenTranscript = document.getElementById('spokenTranscript');
+    const feedbackAdvice = document.getElementById('feedbackAdvice');
+    const btnRead = document.getElementById('btnRead');
+    const btnRecord = document.getElementById('btnRecord');
+
+    let recognition = null;
+    let isRecording = false;
+    let userIntentToRecord = false;
+    let isReading = false;
+    let isPaused = false;
+    let currentWordIndex = 0;
+    let synth = window.speechSynthesis;
+    let fallbackTimer = null;
+    let recordedTranscript = "";
+    let restartAttempts = 0;
+    let recordingSafetyTimer = null;
+    let micStream = null;
+    let audioCtx = null;
+    let analyser = null;
+    let meterRAF = null;
+    const micMeterWrap = document.getElementById('micMeterWrap');
+    const micMeterBar = document.getElementById('micMeterBar');
+    const MAX_RESTART_ATTEMPTS = 5;
+    const MAX_RECORDING_MS = 30000; // hard cap so mic can never stay "stuck" open
+
+    const compatBanner = document.getElementById('compatBanner');
+    const ua = navigator.userAgent || '';
+    const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isAndroid = /Android/i.test(ua);
+    const isMobileDevice = isIOS || isAndroid;
+    const isSafari = /^((?!chrome|android|crios|fxios|edg).)*safari/i.test(ua);
+    const isFirefox = /firefox|fxios/i.test(ua);
+    const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    function showBanner(message, isError) {
+      compatBanner.innerText = message;
+      compatBanner.className = 'compat-banner' + (isError ? ' error' : '');
+      compatBanner.style.display = 'block';
+    }
+
+    function checkRecordingCompatibility() {
+      // Recording requires a secure context (HTTPS or localhost). Opening the
+      // file directly (file://) or over plain HTTP will silently break mic
+      // access and speech recognition on every device.
+      if (!window.isSecureContext) {
+        showBanner("⚠️ இந்தப் பக்கம் HTTPS இணைப்பில் திறக்கப்படவில்லை. மைக்ரோஃபோன் பதிவு வேலை செய்யாது. (This page must be served over HTTPS for recording to work — file:// or plain http:// will not allow microphone access on any device.)", true);
+        return;
+      }
+      if (!SpeechRecognitionCtor) {
+        if (isFirefox) {
+          showBanner("⚠️ Firefox பேச்சு அறிதலை ஆதரிக்காது. தயவுசெய்து Chrome அல்லது Edge பயன்படுத்தவும். (Firefox does not support speech recognition. Please use Chrome or Edge.)", true);
+        } else {
+          showBanner("⚠️ இந்த உலாவி பதிவு அம்சத்தை ஆதரிக்காது. Chrome, Edge பயன்படுத்தவும். (This browser does not support the recording feature. Please use Chrome or Edge.)", true);
+        }
+        return;
+      }
+      if (isIOS && isSafari) {
+        // iOS/iPadOS Safari technically exposes webkitSpeechRecognition but
+        // support is inconsistent (frequent silent drops, short listening
+        // windows). Warn users rather than let them hit a confusing failure.
+        showBanner("ℹ️ iPhone/iPad Safari-இல் பதிவு அம்சம் நிலையற்றதாக இருக்கலாம். சிறந்த முடிவுகளுக்கு Chrome பயன்படுத்தவும். (Recording can be unreliable on iPhone/iPad Safari. For best results, use Chrome on iOS.)", false);
+      }
+    }
+
+    function init() {
+      const textSelect = document.getElementById('textSelect');
+      textSelect.innerHTML = '';
+
+      sampleTexts.forEach((item, index) => {
+        const opt = document.createElement('option');
+        opt.value = index;
+        opt.textContent = item.title;
+        textSelect.appendChild(opt);
+      });
+
+      textSelect.addEventListener('change', function () {
+        changeParagraph(parseInt(this.value));
+      });
+
+      loadSelectedText(0);
+      checkRecordingCompatibility();
+    }
+
+    function loadSelectedText(index) {
+      const cleanText = sampleTexts[index].text.replace(/<[^>]*>/g, ' ');
+      currentText = cleanText;
+      wordsArray = cleanText.trim().split(/\s+/);
+      renderParagraph();
+    }
+
+    function changeParagraph(index) {
+      stopAllState();
+      loadSelectedText(index);
+      statusText.innerText = "புதிய பத்தி தேர்ந்தெடுக்கப்பட்டது";
+    }
+
+    function renderParagraph() {
+      paragraphBox.innerHTML = wordsArray.map((word, index) =>
+        `<span class="word" id="word-${index}">${word}</span>`
+      ).join(' ');
+    }
+
+    function clearHighlights() {
+      document.querySelectorAll('.word').forEach(el => {
+        el.className = 'word';
+      });
+    }
+
+    function stopAllState() {
+      if (synth && synth.speaking) {
+        synth.cancel();
+      }
+      if (fallbackTimer) clearInterval(fallbackTimer);
+      if (recordingSafetyTimer) clearTimeout(recordingSafetyTimer);
+      stopMicMeter();
+
+      userIntentToRecord = false;
+      if (recognition) {
+        try { recognition.abort(); } catch(e){}
+      }
+      isReading = false;
+      isRecording = false;
+      isPaused = false;
+      currentWordIndex = 0;
+      resetReadButtonState();
+      resetRecordButtonState();
+      clearHighlights();
+      feedbackCard.style.display = 'none';
+    }
+
+    function toggleRead() {
+      if (isReading) {
+        pauseReading();
+      } else {
+        startReading();
+      }
+    }
+
+    function startReading() {
+      if (isRecording) stopRecording();
+
+      if (!('speechSynthesis' in window)) {
+        alert('Your browser does not support Speech Synthesis.');
+        return;
+      }
+
+      if (currentWordIndex >= wordsArray.length) {
+        currentWordIndex = 0;
+        clearHighlights();
+      }
+
+      isReading = true;
+      isPaused = false;
+      btnRead.innerText = "⏹️ நிறுத்து";
+      btnRead.classList.add('btn-stop-state');
+      statusText.innerText = "படிக்கிறது...";
+      feedbackCard.style.display = 'none';
+
+      const remainingText = wordsArray.slice(currentWordIndex).join(' ');
+      const utterance = new SpeechSynthesisUtterance(remainingText);
+      utterance.lang = 'ta-IN';
+      utterance.rate = 0.8;
+
+      let boundaryFired = false;
+
+      utterance.onboundary = (event) => {
+        boundaryFired = true;
+        if (event.name === 'word' || event.charIndex !== undefined) {
+          const charIndex = event.charIndex;
+          const remainingOffsets = [];
+          let localPos = 0;
+          wordsArray.slice(currentWordIndex).forEach((w) => {
+            const start = remainingText.indexOf(w, localPos);
+            const end = start + w.length;
+            remainingOffsets.push({ start, end });
+            localPos = end;
+          });
+
+          const foundLocalIndex = remainingOffsets.findIndex(
+            w => charIndex >= w.start && charIndex < w.end
+          );
+          if (foundLocalIndex !== -1) {
+            currentWordIndex = currentWordIndex + foundLocalIndex;
+            clearHighlights();
+            const wordEl = document.getElementById(`word-${currentWordIndex}`);
+            if (wordEl) wordEl.classList.add('active-read');
+          }
+        }
+      };
+
+      let fallbackIdx = currentWordIndex;
+      const msPerWord = 650;
+
+      fallbackTimer = setInterval(() => {
+        if (!boundaryFired && synth.speaking && fallbackIdx < wordsArray.length) {
+          clearHighlights();
+          const el = document.getElementById(`word-${fallbackIdx}`);
+          if (el) el.classList.add('active-read');
+          currentWordIndex = fallbackIdx;
+          fallbackIdx++;
+        }
+      }, msPerWord);
+
+      utterance.onend = () => {
+        if (fallbackTimer) clearInterval(fallbackTimer);
+        if (!isPaused) {
+          resetReadButtonState();
+          clearHighlights();
+          currentWordIndex = 0;
+          statusText.innerText = "வாசிப்பு முடிந்தது. ";
+        }
+      };
+
+      utterance.onerror = (e) => {
+        if (fallbackTimer) clearInterval(fallbackTimer);
+        resetReadButtonState();
+        clearHighlights();
+        statusText.innerText = "பிழை ஏற்பட்டது: " + e.error;
+      };
+
+      synth.speak(utterance);
+    }
+
+    function pauseReading() {
+      isPaused = true;
+      if (synth && synth.speaking) {
+        synth.cancel();
+      }
+      if (fallbackTimer) clearInterval(fallbackTimer);
+      resetReadButtonState();
+      statusText.innerText = "வாசிப்பு இடைநிறுத்தப்பட்டது. மீண்டும் அழுத்தினால் தொடரும்.";
+    }
+
+    function resetReadButtonState() {
+      isReading = false;
+      btnRead.innerText = "🔊 படிக்க";
+      btnRead.classList.remove('btn-stop-state');
+    }
+
+    function resetRecordButtonState() {
+      isRecording = false;
+      btnRecord.classList.remove('recording-state');
+      btnRecord.innerText = "🎙️ பதிவு செய்ய";
+    }
+
+    function toggleRecording() {
+      if (userIntentToRecord) {
+        stopRecording();
+      } else {
+        startRecording();
+      }
+    }
+
+    function startMicMeter(stream) {
+      try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioCtx.createMediaStreamSource(stream);
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 512;
+        source.connect(analyser);
+        const data = new Uint8Array(analyser.frequencyBinCount);
+        micMeterWrap.style.display = 'block';
+
+        const tick = () => {
+          analyser.getByteTimeDomainData(data);
+          let sum = 0;
+          for (let i = 0; i < data.length; i++) {
+            const v = (data[i] - 128) / 128;
+            sum += v * v;
+          }
+          const rms = Math.sqrt(sum / data.length);
+          const pct = Math.min(100, Math.round(rms * 400));
+          micMeterBar.style.width = pct + '%';
+          meterRAF = requestAnimationFrame(tick);
+        };
+        tick();
+      } catch (e) {
+        console.warn("Mic meter unavailable:", e);
+      }
+    }
+
+    function stopMicMeter() {
+      if (meterRAF) cancelAnimationFrame(meterRAF);
+      meterRAF = null;
+      if (audioCtx) {
+        try { audioCtx.close(); } catch(e){}
+        audioCtx = null;
+      }
+      analyser = null;
+      if (micStream) {
+        micStream.getTracks().forEach(track => track.stop());
+        micStream = null;
+      }
+      micMeterWrap.style.display = 'none';
+      micMeterBar.style.width = '0%';
+    }
+
+    async function startRecording() {
+      if (isReading) {
+        synth.cancel();
+        if (fallbackTimer) clearInterval(fallbackTimer);
+        resetReadButtonState();
+      }
+      clearHighlights();
+
+      if (!window.isSecureContext) {
+        alert("இந்தப் பக்கம் HTTPS இணைப்பில் திறக்கப்படவில்லை, எனவே பதிவு வேலை செய்யாது. (This page needs to be served over HTTPS for recording to work.)");
+        return;
+      }
+
+      if (!SpeechRecognitionCtor) {
+        alert("உங்கள் உலாவியில் பேச்சு பதிவு செய்ய முடியாது (Chrome அல்லது Edge பயன்படுத்தவும்).");
+        return;
+      }
+
+      // On mobile (Android/iOS), holding a second getUserMedia() mic stream
+      // open at the same time SpeechRecognition tries to capture the mic
+      // causes the OS to give exclusive access to only one of them — the
+      // usual symptom is recognition "listening" forever but never getting
+      // any audio. So on mobile we skip the separate meter stream entirely
+      // and let SpeechRecognition have the mic to itself. Desktop Chrome
+      // handles both streams fine, so the meter still works there.
+      if (!isMobileDevice) {
+        try {
+          if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            startMicMeter(micStream);
+          }
+        } catch (err) {
+          if (err && err.name === 'NotFoundError') {
+            alert("மைக்ரோஃபோன் கண்டறியப்படவில்லை (No microphone was found on this device).");
+          } else if (err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')) {
+            alert("மைக்ரோஃபோன் அனுமதி மறுக்கப்பட்டது. உலாவி அமைப்புகளில் அனுமதிக்கவும். (Microphone permission was denied. Please allow it in your browser settings.)");
+          } else {
+            alert("மைக்ரோஃபோன் அனுமதி தேவை (Microphone permission required)");
+          }
+          statusText.innerText = "ஒலி வாங்கி அனுமதி மறுக்கப்பட்டது";
+          return;
+        }
+      }
+
+      recordedTranscript = '';
+      restartAttempts = 0;
+      userIntentToRecord = true;
+      setupRecognitionInstance();
+
+      try {
+        recognition.start();
+      } catch (e) {
+        console.error("Start error:", e);
+        userIntentToRecord = false;
+        resetRecordButtonState();
+        statusText.innerText = "பதிவைத் தொடங்க முடியவில்லை. மீண்டும் முயற்சிக்கவும்.";
+        return;
+      }
+
+      // Hard safety cap: on some mobile browsers 'onend'/'onerror' can fail
+      // to fire, which would otherwise leave the mic looking "stuck" on
+      // forever. Force a stop after MAX_RECORDING_MS no matter what.
+      if (recordingSafetyTimer) clearTimeout(recordingSafetyTimer);
+      recordingSafetyTimer = setTimeout(() => {
+        if (userIntentToRecord) {
+          statusText.innerText = "அதிகபட்ச பதிவு நேரம் முடிந்தது.";
+          stopRecording();
+        }
+      }, MAX_RECORDING_MS);
+    }
+
+    function setupRecognitionInstance() {
+      if (recognition) {
+        try { recognition.abort(); } catch(e){}
+      }
+
+      recognition = new SpeechRecognitionCtor();
+      recognition.lang = 'ta-IN';
+      recognition.continuous = false;
+      recognition.interimResults = true;
+
+      recognition.onstart = () => {
+        isRecording = true;
+        restartAttempts = 0;
+        btnRecord.classList.add('recording-state');
+        btnRecord.innerText = "⏹️ நிறுத்து (Stop)";
+        statusText.innerText = "பேசுங்கள், பதிவு செய்யப்படுகிறது...";
+        feedbackCard.style.display = 'none';
+      };
+
+      recognition.onresult = (event) => {
+        let interim = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            recordedTranscript += ' ' + event.results[i][0].transcript;
+          } else {
+            interim = event.results[i][0].transcript;
+          }
+        }
+        statusText.innerText = "கேட்கிறது: " + (recordedTranscript || interim);
+      };
+
+      // Errors that mean "stop trying, something is fundamentally wrong" —
+      // continuing to auto-restart on these just hangs the UI, especially
+      // on mobile where permission/hardware errors are more common.
+      const FATAL_ERRORS = ['not-allowed', 'service-not-allowed', 'audio-capture'];
+
+      recognition.onerror = (event) => {
+        console.warn("Speech recognition notice:", event.error);
+        if (FATAL_ERRORS.includes(event.error)) {
+          userIntentToRecord = false;
+          if (event.error === 'audio-capture') {
+            statusText.innerText = "மைக்ரோஃபோன் கிடைக்கவில்லை.";
+          } else {
+            statusText.innerText = "மைக்ரோஃபோன் அனுமதி தேவை.";
+          }
+        } else if (event.error === 'network') {
+          // Common on mobile with a weak/dropped connection since
+          // recognition relies on a network speech service.
+          statusText.innerText = "இணைய இணைப்பு பிரச்சனை. மீண்டும் முயற்சிக்கிறது...";
+        }
+        // 'no-speech' and 'aborted' are non-fatal; onend will decide whether
+        // to restart, bounded by MAX_RESTART_ATTEMPTS below.
+      };
+
+      recognition.onend = () => {
+        // If user hasn't explicitly clicked stop, auto-restart to prevent
+        // unexpected dropouts — but cap attempts so a persistent error
+        // (e.g. no network on mobile) can't loop forever with a mic icon
+        // stuck showing "recording".
+        if (userIntentToRecord) {
+          restartAttempts++;
+          if (restartAttempts > MAX_RESTART_ATTEMPTS) {
+            userIntentToRecord = false;
+            if (recordingSafetyTimer) clearTimeout(recordingSafetyTimer);
+            stopMicMeter();
+            resetRecordButtonState();
+            statusText.innerText = "பதிவு தொடர்ச்சியாக தோல்வியடைந்தது. மீண்டும் முயற்சிக்கவும்.";
+            evaluateReading(recordedTranscript);
+            return;
+          }
+          try {
+            recognition.start();
+          } catch(e) {
+            setupRecognitionInstance();
+            try { recognition.start(); } catch(err){}
+          }
+        } else {
+          if (recordingSafetyTimer) clearTimeout(recordingSafetyTimer);
+          stopMicMeter();
+          resetRecordButtonState();
+          evaluateReading(recordedTranscript);
+        }
+      };
+    }
+
+    function stopRecording() {
+      userIntentToRecord = false;
+      if (recordingSafetyTimer) clearTimeout(recordingSafetyTimer);
+      stopMicMeter();
+      resetRecordButtonState();
+      if (recognition) {
+        try {
+          recognition.stop();
+        } catch(e) {}
+      }
+      setTimeout(() => {
+        evaluateReading(recordedTranscript);
+      }, 200);
+    }
+
+    function cleanWord(str) {
+      return str.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()<>\/]/g, "").trim().toLowerCase();
+    }
+
+    function evaluateReading(spokenText) {
+      const textToEvaluate = spokenText.trim();
+      spokenTranscript.innerText = textToEvaluate || "(பேச்சு எதுவும் கண்டறியப்படவில்லை)";
+
+      clearHighlights();
+
+      if (!textToEvaluate) {
+        wordsArray.forEach((_, idx) => {
+          const el = document.getElementById(`word-${idx}`);
+          if (el) el.classList.add('incorrect');
+        });
+        scoreText.innerText = "0%";
+        feedbackAdvice.innerText = "சரியாகக் கேட்கவில்லை. மீண்டும் பேசவும்.";
+        feedbackAdvice.style.color = "#b91c1c";
+        feedbackCard.style.display = 'block';
+        statusText.innerText = "மதிப்பீடு முடிந்தது";
+        return;
+      }
+
+      const spokenWords = textToEvaluate.split(/\s+/).map(cleanWord);
+      const targetWords = wordsArray.map(cleanWord);
+
+      let correctCount = 0;
+      let spokenPointer = 0;
+
+      targetWords.forEach((target, idx) => {
+        const wordEl = document.getElementById(`word-${idx}`);
+        let isCorrect = false;
+
+        for (let lookAhead = 0; lookAhead <= 3; lookAhead++) {
+          const checkPos = spokenPointer + lookAhead;
+          if (checkPos < spokenWords.length) {
+            const spoken = spokenWords[checkPos];
+            if (spoken === target || (spoken.length > 3 && target.includes(spoken))) {
+              isCorrect = true;
+              spokenPointer = checkPos + 1;
+              break;
+            }
+          }
+        }
+
+        if (isCorrect) {
+          correctCount++;
+          if (wordEl) wordEl.classList.add('correct');
+        } else {
+          if (wordEl) wordEl.classList.add('incorrect');
+        }
+      });
+
+      const accuracy = Math.round((correctCount / targetWords.length) * 100);
+      scoreText.innerText = `${accuracy}%`;
+
+      if (accuracy >= 80) {
+        feedbackAdvice.innerText = "🌟 மிகச் சிறப்பு! வாசிப்பு நிறைவடைந்தது.";
+        feedbackAdvice.style.color = "#15803d";
+      } else if (accuracy >= 40) {
+        feedbackAdvice.innerText = "👍 நல்ல முயற்சி! சிவப்பு நிற சொற்கள் கவனிக்கப்பட வேண்டியவை.";
+        feedbackAdvice.style.color = "#b45309";
+      } else {
+        feedbackAdvice.innerText = "💡 மேலும் பயிற்சி செய்து மீண்டும் முயற்சிக்கவும்.";
+        feedbackAdvice.style.color = "#b91c1c";
+      }
+
+      feedbackCard.style.display = 'block';
+      statusText.innerText = "மதிப்பீடு முடிந்தது";
+    }
+
+    // Initialize DOM
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+
+</body>
+
+</html>
