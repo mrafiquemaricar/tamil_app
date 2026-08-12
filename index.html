@@ -19,6 +19,15 @@
 
   <title>தமிழ். இனிது. எளிது.</title>
 
+  <!-- Auth & Mascot CSS -->
+  <link rel="stylesheet" href="/css/auth.css?v=20260723" />
+  <link rel="stylesheet" href="/css/mascot.css?v=20260724" />
+
+  <!-- Firebase Web SDK v10 (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
   <style>
     /* ---------- Share buttons (isolated) ---------- */
     .share-buttons {
@@ -34,7 +43,6 @@
       border-radius: 6px;
       text-decoration: none;
       color: #ffffff;
-      /* font-weight: 700; */
       font-size: 14px;
       transition: background 0.18s ease, transform 0.08s ease;
       cursor: pointer;
@@ -78,7 +86,7 @@
 
     main h1 {
       color: #00f;
-      margin-bottom: 50px;
+      margin-bottom: 30px;
     }
 
     a {
@@ -96,6 +104,7 @@
       justify-content: center;
       gap: 15px;
       padding: 0 10px;
+      margin-bottom: 40px;
     }
 
     .grid a {
@@ -112,7 +121,6 @@
       word-wrap: break-word;
       transition: background 0.3s;
       color: #000;
-      /* font-weight: 700; */
     }
 
     .grid a:hover {
@@ -122,34 +130,58 @@
     }
 
     /* five-color rotation for grid boxes */
-    .grid a:nth-child(5n + 1) {
-      background-color: #ffd700 !important;
-      color: #000;
+    .grid a:nth-child(5n + 1) { background-color: #ffd700 !important; color: #000; }
+    .grid a:nth-child(5n + 2) { background-color: #90ee90 !important; color: #000; }
+    .grid a:nth-child(5n + 3) { background-color: #ff7f50 !important; color: #000; }
+    .grid a:nth-child(5n + 4) { background-color: #87cefa !important; color: #000; }
+    .grid a:nth-child(5n + 5) { background-color: #dda0dd !important; color: #000; }
+
+    /* ---------- Landing Sections (Below Grid) ---------- */
+    .landing-section {
+      max-width: 1000px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      text-align: center;
     }
 
-    .grid a:nth-child(5n + 2) {
-      background-color: #90ee90 !important;
-      color: #000;
+    .stats-container {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin: 24px 0;
     }
+    .stat-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 20px;
+      min-width: 180px;
+    }
+    .stat-number { font-size: 2.2rem; font-weight: 800; color: #4f46e5; }
+    .stat-label { font-size: 0.9rem; color: #64748b; margin-top: 4px; }
 
-    .grid a:nth-child(5n + 3) {
-      background-color: #ff7f50 !important;
-      color: #000;
+    .pricing-cards-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 24px;
     }
+    .price-card {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+      color: #ffffff;
+      border-radius: 16px;
+      padding: 24px;
+      width: 280px;
+      box-shadow: 0 8px 24px rgba(30, 27, 75, 0.2);
+    }
+    .price-amount { font-size: 1.8rem; font-weight: 800; color: #34d399; margin: 10px 0; }
 
-    .grid a:nth-child(5n + 4) {
-      background-color: #87cefa !important;
-      color: #000;
-    }
-
-    .grid a:nth-child(5n + 5) {
-      background-color: #dda0dd !important;
-      color: #000;
-    }
-
-    hr {
-      margin-top: 20px;
-    }
+    hr { margin-top: 30px; }
   </style>
 </head>
 
@@ -168,6 +200,7 @@
   <main>
     <h1>தமிழ். இனிது. எளிது.</h1>
 
+    <!-- 1. ALL MODULES GRID (AT THE TOP) -->
     <div class="grid">
       <a href="01_alphabets_with_sound.html">தமிழ் எழுத்துக்கள் - ஒலியுடன்</a>
       <a href="31_tamil_words_with_sound.html">தமிழ் வார்த்தைகள் - கணினி ஒலியுடன்</a>
@@ -213,13 +246,62 @@
       <a href="21_word_forming.html">குறுக்கெழுத்து வார்த்தைகள்</a>
       <a href="17_voice_to_text.html">குரல் → தமிழ் தட்டச்சு </a>
       <a href="19_poem_fill.html">புதுக்கவிதைகள்</a>
+    </div>
 
+    <!-- 2. FEATURES & STATISTICS SECTION (BELOW MODULES) -->
+    <div class="landing-section">
+      <h2 style="color:#1e1b4b; margin:0 0 10px 0;">🌟 தமிழ் கற்றல் சிறப்பம்சங்கள் (Learning Features)</h2>
+      <p style="color:#64748b; margin-top:0;">44க்கும் மேற்பட்ட ஊடாடும் தமிழ் விளையாட்டுகள் மற்றும் பயிற்சிகள்!</p>
+      
+      <div class="stats-container">
+        <div class="stat-card">
+          <div class="stat-number">44+</div>
+          <div class="stat-label">கற்றல் விளையாட்டுகள் (Games)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">250+</div>
+          <div class="stat-label">ஒலிக் கோப்புகள் (Audio)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">100%</div>
+          <div class="stat-label">குழந்தைகளுக்கான பாதுகாப்பு</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. PRICING & SUBSCRIPTION CARDS (BELOW MODULES) -->
+    <div class="landing-section" style="background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);">
+      <h2 style="color:#1e1b4b; margin:0 0 10px 0;">💳 தமிழ் கற்றல் சந்தா திட்டங்கள் (HitPay Sandbox)</h2>
+      <p style="color:#64748b; margin-top:0;">முதல் 4 பாடங்கள் இலவசம்! எஞ்சிய பாடங்களை இயக்க சந்தா பெறவும்.</p>
+
+      <div class="pricing-cards-container">
+        <div class="price-card">
+          <h3 style="margin:0;">📅 மாதாந்திர திட்டம்</h3>
+          <div class="price-amount">SGD $9.90</div>
+          <p style="font-size:0.85rem; opacity:0.9;">30 நாட்கள் முழு அணுகல்</p>
+          <button class="auth-submit-btn" style="margin-top:14px;" onclick="TamilAuth.openCheckoutModal()">சந்தா பெறுக</button>
+        </div>
+
+        <div class="price-card" style="border: 2px solid #34d399;">
+          <div style="background:#34d399; color:#064e3b; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:10px; display:inline-block; margin-bottom:6px;">BEST VALUE</div>
+          <h3 style="margin:0;">🌟 ஆண்டறிக்கை திட்டம்</h3>
+          <div class="price-amount">SGD $99.00</div>
+          <p style="font-size:0.85rem; opacity:0.9;">365 நாட்கள் (சேமிப்பு SGD $19.80)</p>
+          <button class="auth-submit-btn" style="margin-top:14px; background:#34d399; color:#064e3b;" onclick="TamilAuth.openCheckoutModal()">சந்தா பெறுக</button>
+        </div>
+      </div>
     </div>
 
     <hr>
     <p align="center"><a href="karuthu_padivam.html">🖊 உங்களின் கருத்துக்களையும், ஆலோசனைகளையும் அனுப்புங்கள். </a></p>
     <p align="center">Infocom Consultants, Singapore | 2025 </p>
   </main>
+
+  <script src="/js/auth.js?v=20260723"></script>
+  <script src="/js/mascot.js?v=20260724"></script>
+  <script>
+    TamilAuth.initPage();
+  </script>
 
 </body>
 
