@@ -91,6 +91,54 @@
     '20_word_search.html': 'admin'
   };
 
+  // Lesson Titles Dictionary for Duration & Attempt Logging
+  const LESSON_TITLES = {
+    '01_alphabets_with_sound.html': 'தமிழ் எழுத்துக்கள் - ஒலியுடன்',
+    '31_tamil_words_with_sound.html': 'தமிழ் வார்த்தைகள் - கணினி ஒலியுடன்',
+    '16_writing_alphabets.html': 'எழுத்துப் பயிற்சி செய்வோம்',
+    '02_mei_plus_uyir.html': 'உயிர் + மெய் = உயிர் மெய்',
+    '03_letter_joining.html': 'எழுத்துக் கூட்டி படிப் படியாகப் படிப்போம்',
+    '04_reading_words.html': 'வார்த்தைகள் படிப்போம் - கணினி ஒலியுடன்',
+    '18_dictation.html': 'சொல்வதை தட்டச்சு செய்வோம்',
+    '32_vaarthai_sakkaram.html': 'வார்த்தைச் சக்கரம்',
+    '33_vaarthai_rayil.html': 'வார்த்தை ரயில்',
+    '34_mithakkum_baloon.html': 'மிதக்கும் பலூன்',
+    '35_vinveli_vettai.html': 'விண்வெளி வேட்டை',
+    '05_english_to_tamil.html': 'தமிழ் - ஆங்கிலம் இரு புற அட்டை',
+    '06_matching_words.html': 'தமிழ் - ஆங்கில வார்த்தைகளைப் பொருத்துவோம்',
+    '07_jumbled_letters.html': 'கலைந்த வார்த்தையை சரி செய்வோம்',
+    '38_reading_practice.html': 'வாசிப்புப் பயிற்சி',
+    '39_writing_practice.html': 'சொல் எழுதிப் பழகுவோம்',
+    '22_remember_form_words.html': 'ஞாபகம் வருதே',
+    '29_catch_correct_word.html': 'சரியான வார்த்தையைப் பிடி',
+    '08_flip_match_cards.html': 'நினைவில் நிற்பவை',
+    '41_place_inside_correct_box.html': 'சரியான பெட்டியில் போடு',
+    '42_sol_ottam.html': 'சொல் ஓட்டம்',
+    '44_correct_words.html': 'வார்த்தைகளை சரி செய்வோம்',
+    '43_theme_quest.html': 'கருப்பொருள் பயணம்',
+    '30_select_unrelated_word.html': 'தொடர்பில்லா வார்த்தையை தேர்ந்தெடுப்போம்',
+    '36_common_letter.html': 'பொதுவான எழுத்தைக் கண்டுபிடி',
+    '37_jumbled_sentences.html': 'கலைந்த வாக்கியத்தையை சரி செய்வோம்',
+    '40_select_suitable_word.html': 'அவன் அவள் அவர் அவர்கள்',
+    '09_form_words.html': 'எத்தனை சரியான வார்த்தைகள் அமைக்க முடியும்?',
+    '10_fill_up_words.html': 'ஆத்திசூடி, பழமொழிகள்',
+    '23_maraputhodar.html': 'மரபுத் தொடர்',
+    '11_form_sentences.html': 'எத்தனை சரியான வாக்கியம் அமைக்க முடியும்?',
+    '12_opposite_words.html': 'எதிர்ச்சொல் என்ன?',
+    '13_singular_plural.html': 'ஒருமை - பன்மை',
+    '14_kalangal.html': 'காலங்கள்',
+    '24_inaimozhigal.html': 'இணை மொழிகள்',
+    '15_select_correct_word.html': 'பிழையில்லா வார்த்தையை தேர்ந்தெடுப்போம்',
+    '25_vetrumaigal.html': 'வேற்றுமைகள்',
+    '26_or_oru.html': 'ஓர் - ஒரு',
+    '27_kuril_nedil.html': 'குறில் - நெடில்',
+    '28_oli_verupadu.html': 'ஒலி வேறுபாட்டுச் சொற்கள்',
+    '20_word_search.html': '5 நிமிட வார்த்தை தேடல்',
+    '21_word_forming.html': 'குறுக்கெழுத்து வார்த்தைகள்',
+    '17_voice_to_text.html': 'குரல் → தமிழ் தட்டச்சு',
+    '19_poem_fill.html': 'புதுக்கவிதைகள்'
+  };
+
   // Firebase Web SDK Configuration
   const FIREBASE_CONFIG = {
     apiKey: "AIzaSyBwdV_R-Hc2y3_h3qZaUjVKc-PbAxs0fsA",
@@ -489,6 +537,8 @@
         this.buildHitPaySandboxPortalModal();
         this.checkHitPayCallback();
 
+        this.startLessonTimer();
+
         const currentFile = this.getNormalizedPath();
         if (currentFile !== 'index.html' && currentFile !== 'login.html') {
           if (!this.canAccess(currentFile)) {
@@ -498,6 +548,70 @@
           this.applyDashboardLocks();
         }
       });
+    }
+
+    /* ---------- Automatic Lesson Duration Tracking ---------- */
+    startLessonTimer() {
+      const path = window.location.pathname;
+      const file = this.getNormalizedPath(path);
+      if (!LESSON_TITLES[file]) return;
+
+      const lessonTitle = LESSON_TITLES[file];
+      const startTime = Date.now();
+      let logged = false;
+
+      const recordAttempt = () => {
+        if (logged) return;
+        logged = true;
+        const endTime = Date.now();
+        const durationSeconds = Math.round((endTime - startTime) / 1000);
+
+        if (durationSeconds < 5) return; // Skip quick accident clicks (< 5 secs)
+
+        const user = this.currentUser;
+        const email = user && user.email ? user.email.toLowerCase() : 'guest@tamil.app';
+        const mins = Math.floor(durationSeconds / 60);
+        const secs = durationSeconds % 60;
+        const formattedDuration = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+
+        const attemptObj = {
+          id: 'att_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+          userEmail: email,
+          userName: user ? user.name : 'Guest Learner',
+          lessonFile: file,
+          lessonTitle: lessonTitle,
+          timestamp: new Date().toISOString(),
+          dateFormatted: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+          durationSeconds: durationSeconds,
+          durationFormatted: formattedDuration
+        };
+
+        this.saveAttemptRecord(attemptObj);
+      };
+
+      window.addEventListener('beforeunload', recordAttempt);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') recordAttempt();
+      });
+    }
+
+    saveAttemptRecord(record) {
+      const STORAGE_KEY_ATTEMPTS = 'tamil_lesson_attempts_v1';
+      const attempts = JSON.parse(localStorage.getItem(STORAGE_KEY_ATTEMPTS) || '[]');
+      attempts.unshift(record);
+      localStorage.setItem(STORAGE_KEY_ATTEMPTS, JSON.stringify(attempts.slice(0, 500)));
+
+      if (this.db && record.userEmail !== 'guest@tamil.app') {
+        this.db.collection('users').doc(record.userEmail).collection('attempts').doc(record.id).set(record).catch(() => {});
+      }
+    }
+
+    getStudentAttempts(userEmail) {
+      const STORAGE_KEY_ATTEMPTS = 'tamil_lesson_attempts_v1';
+      const attempts = JSON.parse(localStorage.getItem(STORAGE_KEY_ATTEMPTS) || '[]');
+      if (!userEmail) return attempts;
+      const cleanEmail = userEmail.trim().toLowerCase();
+      return attempts.filter(a => a.userEmail && a.userEmail.toLowerCase() === cleanEmail);
     }
 
     /* ---------- Check HitPay Callback Params ---------- */

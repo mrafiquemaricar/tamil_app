@@ -231,6 +231,39 @@
         </div>
       </div>
 
+      <!-- Lesson Attempt History & Duration Log Card -->
+      <div class="progress-overview-card" style="margin-bottom:30px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+          <div>
+            <h3 style="margin:0 0 4px 0; color:#1e1b4b; font-size:1.25rem;">📝 எனது பாட முயற்சிகள் & செலவிட்ட நேரம் (My Lesson Attempts & Time Spent)</h3>
+            <span style="color:#64748b; font-size:0.88rem;">வெள்ளி மாலை 5:00 மணிக்கு (SGT) உங்கள் பெற்றோர்/ஆசிரியருக்கு வாராந்திர அறிக்கை அனுப்பப்படும்.</span>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <div style="background:#e0e7ff; color:#3730a3; padding:8px 14px; border-radius:10px; font-weight:800; font-size:0.9rem;">
+              📚 <span id="total-attempts-count">0</span> பாடங்கள்
+            </div>
+            <div style="background:#dcfce7; color:#166534; padding:8px 14px; border-radius:10px; font-weight:800; font-size:0.9rem;">
+              ⏱️ <span id="total-duration-mins">0</span> நிமிடங்கள்
+            </div>
+          </div>
+        </div>
+
+        <div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+          <table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.9rem;">
+            <thead>
+              <tr style="background:#f1f5f9; color:#475569; border-bottom:2px solid #e2e8f0;">
+                <th style="padding:10px 14px;">பாடத் தலைப்பு (Lesson Title)</th>
+                <th style="padding:10px 14px;">முயற்சித்த நாள் (Date & Time)</th>
+                <th style="padding:10px 14px; text-align:right;">செலவிட்ட நேரம் (Duration)</th>
+              </tr>
+            </thead>
+            <tbody id="attempts-table-body">
+              <!-- Dynamically Rendered Attempts -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Two-Column Grid: Badges & High Scores -->
       <div class="learner-grid">
         
@@ -297,6 +330,25 @@
             `).join('');
           }
         }
+      }
+
+      // Render Attempt History Table
+      const attempts = TamilAuth.getStudentAttempts(user.email);
+      document.getElementById('total-attempts-count').innerText = attempts.length;
+      const totalSecs = attempts.reduce((acc, curr) => acc + (curr.durationSeconds || 0), 0);
+      document.getElementById('total-duration-mins').innerText = Math.round(totalSecs / 60);
+
+      const tableBody = document.getElementById('attempts-table-body');
+      if (attempts.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="3" style="padding:16px; text-align:center; color:#94a3b8;">இன்னும் பாட பயிற்சிகள் செய்யப்படவில்லை (No lesson attempts logged yet). பாடங்களைத் தொடங்கி பயிற்சி செய்யுங்கள்!</td></tr>`;
+      } else {
+        tableBody.innerHTML = attempts.slice(0, 15).map((a, idx) => `
+          <tr style="border-bottom:1px solid #f1f5f9; background:${idx % 2 === 0 ? '#ffffff' : '#f8fafc'};">
+            <td style="padding:10px 14px; font-weight:600; color:#1e1b4b;">📖 ${a.lessonTitle || a.lessonFile}</td>
+            <td style="padding:10px 14px; color:#64748b;">📅 ${a.dateFormatted || a.timestamp.split('T')[0]}</td>
+            <td style="padding:10px 14px; text-align:right; font-weight:700; color:#10b981;">⏱️ ${a.durationFormatted}</td>
+          </tr>
+        `).join('');
       }
 
       const totalMods = 36;
