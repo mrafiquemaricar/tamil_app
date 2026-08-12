@@ -541,13 +541,12 @@
 
     /* ---------- Page Guard Initializer ---------- */
     initPage(options = {}) {
-      document.addEventListener('DOMContentLoaded', () => {
+      const runInit = () => {
         this.renderHeader();
         this.buildAuthModal();
         this.buildCheckoutModal();
         this.buildHitPaySandboxPortalModal();
         this.checkHitPayCallback();
-
         this.startLessonTimer();
 
         const currentFile = this.getNormalizedPath();
@@ -558,7 +557,13 @@
         } else if (currentFile === 'index.html') {
           this.applyDashboardLocks();
         }
-      });
+      };
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', runInit);
+      } else {
+        runInit();
+      }
     }
 
     /* ---------- Automatic Lesson Duration Tracking ---------- */
@@ -668,24 +673,47 @@
       }
     }
 
-    /* ---------- Apply Lock Icons on index.html Grid ---------- */
+    /* ---------- Apply Lock Icons & Intercept Locked Modules on index.html Grid ---------- */
     applyDashboardLocks() {
       const userLevel = this.getRoleLevel(this.currentUser.role);
       const links = document.querySelectorAll('.grid a');
+      if (!links || links.length === 0) return;
 
       links.forEach(link => {
-        const href = link.getAttribute('href');
+        const href = link.getAttribute('data-original-href') || link.getAttribute('href');
         if (!href) return;
-        const requiredRole = MODULE_ROLES[this.getNormalizedPath(href)] || 'guest';
+
+        const normPath = this.getNormalizedPath(href);
+        const requiredRole = MODULE_ROLES[normPath] || 'guest';
         const requiredLevel = this.getRoleLevel(requiredRole);
 
         if (userLevel < requiredLevel) {
           link.classList.add('locked-module');
-
-          link.addEventListener('click', (e) => {
-            e.preventDefault();
+          link.setAttribute('data-original-href', href);
+          link.setAttribute('href', 'javascript:void(0);');
+          link.onclick = (e) => {
+            if (e) {
+              e.preventDefault();
+              e.stopPropagation();
+            }
             this.openCheckoutModal();
-          });
+            return false;
+          };
+
+          if (!link.querySelector('.lock-badge-overlay')) {
+            const lockSpan = document.createElement('span');
+            lockSpan.className = 'lock-badge-overlay';
+            lockSpan.innerHTML = '🔒';
+            link.appendChild(lockSpan);
+          }
+        } else {
+          link.classList.remove('locked-module');
+          if (link.getAttribute('data-original-href')) {
+            link.setAttribute('href', link.getAttribute('data-original-href'));
+          }
+          link.onclick = null;
+          const existingBadge = link.querySelector('.lock-badge-overlay');
+          if (existingBadge) existingBadge.remove();
         }
       });
     }
