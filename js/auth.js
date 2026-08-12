@@ -163,8 +163,20 @@
     { email: 'student@tamil.app', name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, isMinor: true, parentName: 'சுந்தரம் (Sundaram)', parentEmail: 'parent@gmail.com', joinedAt: '2026-07-15' },
     { email: 'student@tamilapp.com', name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, isMinor: true, parentName: 'சுந்தரம் (Sundaram)', parentEmail: 'parent@gmail.com', joinedAt: '2026-07-15' },
     { email: 'user1@example.com', name: 'கார்த்திக் (Karthik)', password: 'user123', role: ROLES.LEARNER, subscriptionStatus: 'active', planType: 'monthly', subscribedAt: now.toISOString(), expiryDate: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(), isMinor: true, parentName: 'சுந்தரம் (Sundaram)', parentEmail: 'parent@gmail.com', joinedAt: '2026-07-18' },
-    { email: 'user2@example.com', name: 'பிரியா (Priya)', password: 'user123', role: ROLES.GUEST, subscriptionStatus: 'inactive', planType: 'none', isMinor: true, parentName: 'சுந்தரம் (Sundaram)', parentEmail: 'parent@gmail.com', joinedAt: '2026-07-20' }
+    { email: 'user2@example.com', name: 'பிரியா (Priya)', password: 'user123', role: ROLES.GUEST, subscriptionStatus: 'inactive', planType: 'none', expiryDate: '', isMinor: true, parentName: 'சுந்தரம் (Sundaram)', parentEmail: 'parent@gmail.com', joinedAt: '2026-07-20' }
   ];
+
+  // Sanitize data objects for Firestore to prevent undefined field errors
+  function sanitizeForFirestore(obj) {
+    if (!obj || typeof obj !== 'object') return {};
+    const clean = {};
+    Object.keys(obj).forEach(key => {
+      if (obj[key] !== undefined) {
+        clean[key] = obj[key];
+      }
+    });
+    return clean;
+  }
 
   // Comprehensive Localization Dictionary
   const I18N = {
@@ -302,7 +314,10 @@
 
       if (this.db) {
         users.forEach(u => {
-          this.db.collection('users').doc(u.email.toLowerCase()).set(u, { merge: true }).catch(() => {});
+          try {
+            const cleanUser = sanitizeForFirestore(u);
+            this.db.collection('users').doc(u.email.toLowerCase()).set(cleanUser, { merge: true }).catch(() => {});
+          } catch (e) {}
         });
       }
     }
@@ -400,7 +415,10 @@
         this.verifySubscriptionExpiry();
 
         if (this.db) {
-          this.db.collection('users').doc(cleanEmail).set(found, { merge: true }).catch(() => {});
+          try {
+            const cleanUser = sanitizeForFirestore(found);
+            this.db.collection('users').doc(cleanEmail).set(cleanUser, { merge: true }).catch(() => {});
+          } catch (e) {}
         }
         return { success: true, user: this.currentUser };
       }
@@ -430,7 +448,10 @@
       localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
 
       if (this.db) {
-        this.db.collection('users').doc(email.toLowerCase()).set(newUser).catch(() => {});
+        try {
+          const cleanUser = sanitizeForFirestore(newUser);
+          this.db.collection('users').doc(email.toLowerCase()).set(cleanUser).catch(() => {});
+        } catch (e) {}
       }
       return { success: true, message: this.t('registerSuccess') };
     }
