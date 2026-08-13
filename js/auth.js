@@ -634,11 +634,37 @@
 
     canAccess(modulePath) {
       this.verifySubscriptionExpiry();
+      const user = this.currentUser;
+      const isLoggedIn = user && user.email && user.email !== 'guest@tamil.app';
       const filename = this.getNormalizedPath(modulePath);
-      const requiredRole = MODULE_ROLES[filename] || 'guest';
-      const userLevel = this.getRoleLevel(this.currentUser.role);
-      const requiredLevel = this.getRoleLevel(requiredRole);
-      return userLevel >= requiredLevel;
+
+      if (filename === 'index.html' || filename === 'login.html') return true;
+      
+      // If user is completely logged out, they CANNOT access any lesson module (1 to 44)
+      if (!isLoggedIn) {
+        return false;
+      }
+
+      // Paid Subscribers (isLoggedIn = true, active paid subscription)
+      const isPaidSubscriber = user.subscriptionStatus === 'active' || user.role === ROLES.LEARNER || user.role === ROLES.TEACHER || user.role === ROLES.ADMIN;
+      
+      if (isPaidSubscriber) {
+        return true;
+      }
+
+      // Free Account User can only access first 4 lessons
+      const FREE_MODULES = [
+        '01_alphabets_with_sound.html',
+        '31_tamil_words_with_sound.html',
+        '16_writing_alphabets.html',
+        '02_mei_plus_uyir.html'
+      ];
+
+      if (FREE_MODULES.includes(filename) || filename === 'learner-dashboard.html' || filename === 'karuthu_padivam.html') {
+        return true;
+      }
+
+      return false;
     }
 
     /* ---------- Header Navigation UI Render ---------- */
@@ -848,7 +874,17 @@
 
     /* ---------- Apply Lock Icons & Intercept Locked Modules on index.html Grid ---------- */
     applyDashboardLocks() {
-      const userLevel = this.getRoleLevel(this.currentUser.role);
+      const user = this.currentUser;
+      const isLoggedIn = user && user.email && user.email !== 'guest@tamil.app';
+      const isPaidSubscriber = isLoggedIn && (user.subscriptionStatus === 'active' || user.role === ROLES.LEARNER || user.role === ROLES.TEACHER || user.role === ROLES.ADMIN);
+
+      const FREE_MODULES = [
+        '01_alphabets_with_sound.html',
+        '31_tamil_words_with_sound.html',
+        '16_writing_alphabets.html',
+        '02_mei_plus_uyir.html'
+      ];
+
       const links = document.querySelectorAll('.grid a');
       if (!links || links.length === 0) return;
 
@@ -857,10 +893,22 @@
         if (!href) return;
 
         const normPath = this.getNormalizedPath(href);
-        const requiredRole = MODULE_ROLES[normPath] || 'guest';
-        const requiredLevel = this.getRoleLevel(requiredRole);
+        let isLocked = false;
+        let lockReason = 'login'; // 'login' or 'subscribe'
 
-        if (userLevel < requiredLevel) {
+        if (!isLoggedIn) {
+          // Logged out guest: ALL modules are locked, requiring account creation/login
+          isLocked = true;
+          lockReason = 'login';
+        } else if (!isPaidSubscriber) {
+          // Logged in free user: Only modules outside FREE_MODULES are locked, requiring subscription
+          if (!FREE_MODULES.includes(normPath)) {
+            isLocked = true;
+            lockReason = 'subscribe';
+          }
+        }
+
+        if (isLocked) {
           link.classList.add('locked-module');
           link.setAttribute('data-original-href', href);
           link.setAttribute('href', 'javascript:void(0);');
@@ -869,7 +917,17 @@
               e.preventDefault();
               e.stopPropagation();
             }
-            this.openCheckoutModal();
+            if (lockReason === 'login') {
+              this.openModal('auth');
+              this.showAlert(
+                this.lang === 'en'
+                  ? '🔑 Please sign in or create an account to start learning!'
+                  : '🔑 பாடங்களைப் பயில தயவுசெய்து கணக்கு ஒன்றை உருவாக்கி உள்நுழையவும்.',
+                'info'
+              );
+            } else {
+              this.openCheckoutModal();
+            }
             return false;
           };
 
@@ -893,21 +951,39 @@
 
     /* ---------- Render Access Denied View ---------- */
     renderAccessDenied(currentFile) {
+      const user = this.currentUser;
+      const isLoggedIn = user && user.email && user.email !== 'guest@tamil.app';
       const main = document.querySelector('main') || document.body;
-      main.innerHTML = `
-        <div class="access-denied-container">
-          <div class="access-denied-icon">🔒</div>
-          <h2 class="access-denied-title">${this.t('accessDeniedTitle')}</h2>
-          <p class="access-denied-desc">
-            "${currentFile}" ${this.t('accessDeniedMsg')}
-          </p>
-          <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-            <button class="header-btn header-btn-upgrade" onclick="TamilAuth.openCheckoutModal()">💳 ${this.t('subscribeNow')}</button>
-            <a href="login.html" class="header-btn" style="background:#4f46e5; color:#fff;">🔑 ${this.t('login')}</a>
-            <a href="index.html" class="header-btn header-btn-secondary" style="background:#f3f4f6; color:#374151;">🏠 Home</a>
+
+      if (!isLoggedIn) {
+        main.innerHTML = `
+          <div class="access-denied-container">
+            <div class="access-denied-icon">🔒</div>
+            <h2 class="access-denied-title">கணக்கு உள்நுழைவு தேவை 🔑</h2>
+            <p class="access-denied-desc">
+              "${currentFile}" பாடத்தைப் பயில தயவுசெய்து கணக்கு ஒன்றை உருவாக்கி உள்நுழையவும்.
+            </p>
+            <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+              <button class="header-btn" style="background:#4f46e5; color:#fff;" onclick="TamilAuth.openModal('auth')">🔑 கணக்கு உருவாக்கு / உள்நுழை (Sign Up / Sign In)</button>
+              <a href="index.html" class="header-btn header-btn-secondary" style="background:#f3f4f6; color:#374151;">🏠 Home</a>
+            </div>
           </div>
-        </div>
-      `;
+        `;
+      } else {
+        main.innerHTML = `
+          <div class="access-denied-container">
+            <div class="access-denied-icon">🔒</div>
+            <h2 class="access-denied-title">${this.t('accessDeniedTitle')}</h2>
+            <p class="access-denied-desc">
+              "${currentFile}" ${this.t('accessDeniedMsg')}
+            </p>
+            <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+              <button class="header-btn header-btn-upgrade" onclick="TamilAuth.openCheckoutModal()">💳 ${this.t('subscribeNow')}</button>
+              <a href="index.html" class="header-btn header-btn-secondary" style="background:#f3f4f6; color:#374151;">🏠 Home</a>
+            </div>
+          </div>
+        `;
+      }
     }
 
     /* ---------- Auth Modal Component Builder (With Parent-Child & Under 16 Fields) ---------- */
