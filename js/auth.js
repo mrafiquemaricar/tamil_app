@@ -510,9 +510,87 @@
       return { success: true, message: 'உங்கள் கருத்துக்கள் மற்றும் மதிப்பீடுகள் வெற்றிகரமாகச் சமர்ப்பிக்கப்பட்டன! மிக்க நன்றி! (Feedback submitted successfully!)' };
     }
 
-    getFeedbacks() {
-      const LOCAL_FEEDBACK_KEY = 'tamil_app_feedbacks';
-      return JSON.parse(localStorage.getItem(LOCAL_FEEDBACK_KEY) || '[]');
+    /* ---------- File Manager & Module Publisher API ---------- */
+    async saveUploadedFile(fileData) {
+      const STORAGE_FILES_KEY = 'tamil_app_uploaded_files';
+      const files = JSON.parse(localStorage.getItem(STORAGE_FILES_KEY) || '[]');
+      
+      const existingIdx = files.findIndex(f => f.filename === fileData.filename);
+      if (existingIdx !== -1) {
+        files[existingIdx] = fileData;
+      } else {
+        files.push(fileData);
+      }
+      localStorage.setItem(STORAGE_FILES_KEY, JSON.stringify(files));
+
+      if (this.db) {
+        try {
+          await this.db.collection('uploaded_files').doc(fileData.filename).set(this.sanitizeForFirestore(fileData));
+        } catch (e) {
+          console.warn('Firestore file sync warning:', e);
+        }
+      }
+
+      if (fileData.isGameModule) {
+        this.registerCustomModule({
+          filename: fileData.filename,
+          title: fileData.title || fileData.filename,
+          isFree: !!fileData.isFree,
+          dateAdded: new Date().toISOString()
+        });
+      }
+
+      return { success: true, message: `கோப்பு ${fileData.filename} வெற்றிகரமாகப் பதிவேற்றப்பட்டது!` };
+    }
+
+    getUploadedFiles() {
+      const STORAGE_FILES_KEY = 'tamil_app_uploaded_files';
+      return JSON.parse(localStorage.getItem(STORAGE_FILES_KEY) || '[]');
+    }
+
+    deleteUploadedFile(filename) {
+      const STORAGE_FILES_KEY = 'tamil_app_uploaded_files';
+      let files = JSON.parse(localStorage.getItem(STORAGE_FILES_KEY) || '[]');
+      files = files.filter(f => f.filename !== filename);
+      localStorage.setItem(STORAGE_FILES_KEY, JSON.stringify(files));
+
+      this.deleteCustomModule(filename);
+
+      if (this.db) {
+        this.db.collection('uploaded_files').doc(filename).delete().catch(() => {});
+      }
+    }
+
+    registerCustomModule(moduleData) {
+      const STORAGE_MODULES_KEY = 'tamil_app_custom_modules';
+      const modules = JSON.parse(localStorage.getItem(STORAGE_MODULES_KEY) || '[]');
+      const existingIdx = modules.findIndex(m => m.filename === moduleData.filename);
+      if (existingIdx !== -1) {
+        modules[existingIdx] = moduleData;
+      } else {
+        modules.push(moduleData);
+      }
+      localStorage.setItem(STORAGE_MODULES_KEY, JSON.stringify(modules));
+
+      if (this.db) {
+        this.db.collection('custom_modules').doc(moduleData.filename).set(this.sanitizeForFirestore(moduleData)).catch(() => {});
+      }
+    }
+
+    getCustomModules() {
+      const STORAGE_MODULES_KEY = 'tamil_app_custom_modules';
+      return JSON.parse(localStorage.getItem(STORAGE_MODULES_KEY) || '[]');
+    }
+
+    deleteCustomModule(filename) {
+      const STORAGE_MODULES_KEY = 'tamil_app_custom_modules';
+      let modules = JSON.parse(localStorage.getItem(STORAGE_MODULES_KEY) || '[]');
+      modules = modules.filter(m => m.filename !== filename);
+      localStorage.setItem(STORAGE_MODULES_KEY, JSON.stringify(modules));
+
+      if (this.db) {
+        this.db.collection('custom_modules').doc(filename).delete().catch(() => {});
+      }
     }
 
     /* ---------- Parent-Child Multi-Child Helper ---------- */
@@ -705,6 +783,16 @@
 
       if (FREE_MODULES.includes(filename) || filename === 'learner-dashboard.html' || filename === 'profile.html' || filename === 'karuthu_padivam.html') {
         return true;
+      }
+
+      // Check custom uploaded modules
+      const customModules = this.getCustomModules();
+      const customMod = customModules.find(m => m.filename === filename);
+      if (customMod) {
+        if (customMod.isFree || isPaidSubscriber) {
+          return true;
+        }
+        return false;
       }
 
       return false;

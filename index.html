@@ -301,6 +301,22 @@
   <script src="/js/mascot.js?v=20260724"></script>
   <script>
     TamilAuth.initPage();
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const customModules = TamilAuth.getCustomModules();
+      const grid = document.querySelector('.grid');
+      if (grid && customModules && customModules.length > 0) {
+        customModules.forEach(mod => {
+          if (!grid.querySelector(`a[href="${mod.filename}"]`)) {
+            const link = document.createElement('a');
+            link.setAttribute('href', mod.filename);
+            link.innerText = mod.title || mod.filename;
+            grid.appendChild(link);
+          }
+        });
+        TamilAuth.applyDashboardLocks();
+      }
+    });
   </script>
 
 </body>

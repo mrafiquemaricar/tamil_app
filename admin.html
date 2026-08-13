@@ -141,6 +141,85 @@
 
       </div>
 
+      <!-- Admin File Manager & Game Module Publisher Panel -->
+      <div class="admin-panel" style="margin-top:24px; border-left: 5px solid #7c3aed;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+          <div>
+            <h3 style="margin:0 0 4px 0; font-size:1.2rem; color:#1e1b4b;">📂 கோப்பு மேலாளர் & புதிய விளையாட்டு பதிவேற்றம் (File Manager & Game Publisher)</h3>
+            <span style="color:#64748b; font-size:0.88rem;">HTML விளையாட்டுகள், word_list.csv, audio.mp3 மற்றும் இதர கோப்புகளை இங்கே பதிவேற்றி நிர்வகிக்கலாம்.</span>
+          </div>
+        </div>
+
+        <!-- File Upload Form Card -->
+        <div style="background:#f8fafc; border:2px dashed #cbd5e1; border-radius:14px; padding:20px; margin-bottom:20px;">
+          <form id="file-upload-form" onsubmit="handleFileUploadSubmit(event)">
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:14px; margin-bottom:14px;">
+              
+              <div>
+                <label style="display:block; font-weight:700; font-size:0.85rem; color:#334155; margin-bottom:4px;">1. கோப்பைத் தேர்ந்தெடுக்கவும் (Select File)</label>
+                <input type="file" id="upload-file-input" class="auth-form-input" style="padding:6px; background:#fff;" onchange="onFilePicked(this)" required />
+              </div>
+
+              <div>
+                <label style="display:block; font-weight:700; font-size:0.85rem; color:#334155; margin-bottom:4px;">2. கோப்பு பெயர் (File Name)</label>
+                <input type="text" id="upload-file-name" class="auth-form-input" placeholder="e.g. 37_new_game.html, word_list.csv, audio.mp3" required />
+              </div>
+
+              <div>
+                <label style="display:block; font-weight:700; font-size:0.85rem; color:#334155; margin-bottom:4px;">3. கோப்பு வகை (File Type)</label>
+                <select id="upload-file-type" class="auth-form-input" onchange="toggleModuleFields(this.value)">
+                  <option value="game_html">🎮 HTML விளையாட்டு பாடம் (Game Module)</option>
+                  <option value="csv_data">📊 CSV சொல் பட்டியல் (word_list.csv)</option>
+                  <option value="audio_mp3">🎵 ஒலி கோப்பு (audio.mp3 / wav)</option>
+                  <option value="asset_other">🖼️ இதர கோப்புகள் (Image/JSON/CSS/JS)</option>
+                </select>
+              </div>
+
+            </div>
+
+            <!-- Dynamic Module Title & Permissions for HTML Games -->
+            <div id="module-extra-fields" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:14px; margin-bottom:14px;">
+              <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:14px;">
+                <div>
+                  <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e1b4b; margin-bottom:4px;">விளையாட்டுத் தலைப்பு (Game Display Title)</label>
+                  <input type="text" id="upload-module-title" class="auth-form-input" placeholder="e.g. தமிழ் சொல் விளையாட்டு 37" />
+                </div>
+                <div>
+                  <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e1b4b; margin-bottom:4px;">அணுகல் அனுமதி (Access Permission)</label>
+                  <select id="upload-module-access" class="auth-form-input">
+                    <option value="subscriber">🔒 கட்டணச் சந்தாதாரர் மட்டும் (Subscribers Only)</option>
+                    <option value="free">🆓 இலவசக் கணக்கு (Free Account Unlocked)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="auth-submit-btn" style="background:linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);">
+              📤 கோப்பை பதிவேற்றி வெளியிடுக (Upload & Publish File)
+            </button>
+          </form>
+        </div>
+
+        <!-- Files List Table -->
+        <h4 style="margin:0 0 10px 0; color:#1e1b4b;">📂 பதிவேற்றப்பட்ட கோப்புகள் (Uploaded Files Explorer)</h4>
+        <div class="admin-table-wrapper">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>கோப்பு பெயர் (File Name)</th>
+                <th>வகை (Type)</th>
+                <th>அணுகல் (Access)</th>
+                <th>அளவு (Size)</th>
+                <th>செயல்கள் (Actions)</th>
+              </tr>
+            </thead>
+            <tbody id="files-table-body">
+              <!-- Dynamically Rendered -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- User Feedbacks & Star Ratings Panel -->
       <div class="admin-panel" style="margin-top:24px;">
         <h3 style="margin:0 0 16px 0; font-size:1.15rem; color:#1e1b4b;">💬 பயனர் கருத்துக்கள் & மதிப்பீடுகள் (User Feedback & Star Ratings)</h3>
@@ -248,6 +327,120 @@
             `;
           }).join('');
         }
+      }
+
+      renderFilesTable();
+    }
+
+    function onFilePicked(input) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        document.getElementById('upload-file-name').value = file.name;
+        
+        const ext = file.name.split('.').pop().toLowerCase();
+        const typeSelect = document.getElementById('upload-file-type');
+        if (ext === 'html' || ext === 'htm') {
+          typeSelect.value = 'game_html';
+        } else if (ext === 'csv') {
+          typeSelect.value = 'csv_data';
+        } else if (ext === 'mp3' || ext === 'wav' || ext === 'ogg') {
+          typeSelect.value = 'audio_mp3';
+        } else {
+          typeSelect.value = 'asset_other';
+        }
+        toggleModuleFields(typeSelect.value);
+      }
+    }
+
+    function toggleModuleFields(val) {
+      const extra = document.getElementById('module-extra-fields');
+      if (extra) {
+        extra.style.display = (val === 'game_html') ? 'block' : 'none';
+      }
+    }
+
+    async function handleFileUploadSubmit(e) {
+      e.preventDefault();
+      const input = document.getElementById('upload-file-input');
+      const fileName = document.getElementById('upload-file-name').value.trim();
+      const fileType = document.getElementById('upload-file-type').value;
+      const isGame = fileType === 'game_html';
+      const title = document.getElementById('upload-module-title').value.trim() || fileName;
+      const accessPerm = document.getElementById('upload-module-access').value;
+
+      if (!fileName) return;
+
+      let fileDataStr = '';
+      let fileSize = '0 KB';
+
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        fileSize = (file.size / 1024).toFixed(1) + ' KB';
+        
+        fileDataStr = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (evt) => resolve(evt.target.result);
+          if (fileType === 'audio_mp3' || fileType === 'asset_other') {
+            reader.readAsDataURL(file);
+          } else {
+            reader.readAsText(file);
+          }
+        });
+      }
+
+      const res = await TamilAuth.saveUploadedFile({
+        filename: fileName,
+        type: fileType,
+        isGameModule: isGame,
+        title: title,
+        isFree: accessPerm === 'free',
+        content: fileDataStr,
+        size: fileSize,
+        uploadedAt: new Date().toISOString()
+      });
+
+      alert(res.message);
+      document.getElementById('file-upload-form').reset();
+      toggleModuleFields('game_html');
+      renderDashboard();
+    }
+
+    function renderFilesTable() {
+      const files = TamilAuth.getUploadedFiles();
+      const tbody = document.getElementById('files-table-body');
+      if (!tbody) return;
+
+      if (files.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:16px;">இன்னும் கோப்புகள் பதிவேற்றப்படவில்லை (No files uploaded yet).</td></tr>';
+      } else {
+        tbody.innerHTML = files.map(f => {
+          let typeLabel = '🖼️ Asset';
+          if (f.type === 'game_html') typeLabel = '🎮 HTML Game';
+          else if (f.type === 'csv_data') typeLabel = '📊 CSV Data';
+          else if (f.type === 'audio_mp3') typeLabel = '🎵 Audio MP3';
+
+          const accessText = f.isGameModule ? (f.isFree ? '🆓 Free Access' : '🔒 Subscriber Only') : '📂 Supporting Asset';
+
+          return `
+            <tr>
+              <td><strong>${f.filename}</strong> ${f.title && f.title !== f.filename ? `<br><span style="font-size:0.75rem; color:#64748b;">${f.title}</span>` : ''}</td>
+              <td><span style="background:#f1f5f9; padding:2px 8px; border-radius:8px; font-weight:700; font-size:0.8rem;">${typeLabel}</span></td>
+              <td><span style="font-size:0.8rem; font-weight:700; color:${f.isFree ? '#10b981' : '#6366f1'};">${accessText}</span></td>
+              <td><span style="font-size:0.8rem; color:#64748b;">${f.size || 'N/A'}</span></td>
+              <td>
+                ${f.isGameModule ? `<a href="${f.filename}" target="_blank" class="action-btn" style="padding:4px 8px; font-size:0.75rem; background:#10b981; text-decoration:none; display:inline-block;">👁️ Test Game</a>` : ''}
+                <button class="action-btn" style="padding:4px 8px; font-size:0.75rem; background:#fee2e2; color:#991b1b;" onclick="handleDeleteFile('${f.filename}')">🗑️ Delete</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
+
+    function handleDeleteFile(filename) {
+      if (confirm(`கோப்பு ${filename} நீக்கப்பட வேண்டுமா? (Delete file ${filename}?)`)) {
+        TamilAuth.deleteUploadedFile(filename);
+        renderDashboard();
       }
     }
 
