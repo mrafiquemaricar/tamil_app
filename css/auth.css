@@ -140,6 +140,15 @@
   transform: translateY(-1px);
 }
 
+@media (max-width: 640px) {
+  .google-auth-btn-hdr {
+    padding: 6px 10px;
+  }
+  .google-auth-btn-hdr .google-btn-text {
+    display: none !important;
+  }
+}
+
 .header-btn-secondary {
   background: rgba(255, 255, 255, 0.15);
   color: #ffffff;
