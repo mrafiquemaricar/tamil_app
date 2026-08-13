@@ -329,12 +329,22 @@
 
     /* ---------- Secret Share Key & Shared Summaries Engine (Max 3 Limit) ---------- */
     generateShareKey() {
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-      let result = 'KEY-';
-      for (let i = 0; i < 8; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      const array = new Uint32Array(16);
+      if (window.crypto && window.crypto.getRandomValues) {
+        window.crypto.getRandomValues(array);
+      } else {
+        for (let i = 0; i < 16; i++) {
+          array[i] = Math.floor(Math.random() * 4294967296);
+        }
       }
-      return result;
+
+      let rawStr = '';
+      for (let i = 0; i < 16; i++) {
+        rawStr += chars.charAt(array[i] % chars.length);
+      }
+
+      return `SK-${rawStr.substring(0, 4)}-${rawStr.substring(4, 8)}-${rawStr.substring(8, 12)}-${rawStr.substring(12, 16)}`;
     }
 
     regenerateShareKey() {
