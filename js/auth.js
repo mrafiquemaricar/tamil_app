@@ -798,6 +798,17 @@
       return false;
     }
 
+    toggleMobileMenu() {
+      const nav = document.querySelector('.header-user-nav');
+      const btn = document.querySelector('.mobile-hamburger-btn');
+      if (nav) {
+        nav.classList.toggle('active');
+        if (btn) {
+          btn.innerText = nav.classList.contains('active') ? '✕' : '☰';
+        }
+      }
+    }
+
     /* ---------- Header Navigation UI Render ---------- */
     renderHeader(container) {
       this.verifySubscriptionExpiry();
@@ -813,6 +824,7 @@
           <a href="index.html" class="header-brand">
             <span style="font-size: 1.35rem; font-weight: 800; color: #ffffff;">${this.t('appName')}</span>
           </a>
+          <button type="button" class="mobile-hamburger-btn" onclick="TamilAuth.toggleMobileMenu()" aria-label="Toggle Navigation Menu">☰</button>
           <div class="header-user-nav">
             ${
               isLoggedIn
