@@ -681,8 +681,7 @@
       const headerHTML = `
         <header class="tamil-app-header">
           <a href="index.html" class="header-brand">
-            <span class="header-brand-logo">த</span>
-            <span>${this.t('appName')}</span>
+            <span style="font-size: 1.35rem; font-weight: 800; color: #ffffff;">${this.t('appName')}</span>
           </a>
           <div class="header-user-nav">
             ${
