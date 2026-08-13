@@ -2,202 +2,410 @@
 <html lang="ta">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>கருத்து படிவம்</title>
-    <style>
-        body {
-            font-family: Arial;
-            text-align: center;
-            padding: 20px;
-            max-width: 700px;
-            margin: auto;
-        }
-
-        h1 {
-            color: #00f;
-            /* font-size: 1.5rem; */
-            margin-bottom: 1rem;
-        }
-
-        .question {
-            /* question area */
-            text-align: center;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            font-size: 1.5rem;
-            line-height: 2.5rem;
-            margin: 2rem 0;
-            white-space: pre-line;
-            /* 👈 ensures \n is shown as line break */
-        }
-
-        .blank {
-            display: inline-flex;
-            justify-content: center;
-            /* center horizontally */
-            align-items: center;
-            /* center vertically */
-            min-width: 6rem;
-            max-width: 100%;
-            height: 2rem;
-            border: 1px solid #555;
-            padding: 0.1rem 0.3rem;
-            text-align: center;
-            cursor: pointer;
-            word-break: break-word;
-        }
-
-
-        .blank.selected {
-            border-color: blue;
-            background: #d0e8ff;
-        }
-
-        .blank.correct {
-            border-color: green;
-            background: #d4edda;
-        }
-
-        .blank.incorrect {
-            border-color: red;
-            background: #f8d7da;
-        }
-
-        .words {
-            margin: 1rem;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 0.3rem;
-        }
-
-        .word-chunk {
-            background: #15ff00;
-            padding: 0.3rem 0.6rem;
-            border-radius: 6px;
-            cursor: pointer;
-            user-select: none;
-            font-size: 1.1rem;
-        }
-
-        .word-chunk.used {
-            background: #a3c8ff;
-            cursor: default;
-        }
-
-        button {
-            margin: 1rem 0.3rem;
-            /* font-size: 1.2rem; */
-            padding: 0.5rem 1rem;
-        }
-
-        .controls {
-            margin: 20px 0;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .controls button {
-            padding: 10px 15px;
-            font-size: 4em;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            background: #0000ff;
-            color: white;
-            transition: background 0.3s;
-        }
-
-        .controls button:hover {
-            background: #ffa500;
-        }
-
-        #home {
-            text-decoration: none;
-            background-color: #0000ff;
-            color: #ffffff;
-            padding: 10px;
-            border-radius: 15px;
-        }
-
-        /* 🔹 feedback form specific styles (new, doesn't touch anything above) */
-        .form-field {
-            text-align: left;
-            margin: 1.2rem 0;
-        }
-
-        .form-field label {
-            display: block;
-            font-size: 1.1rem;
-            margin-bottom: 0.4rem;
-            color: #333;
-        }
-
-        .form-field input[type="text"],
-        .form-field textarea {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 0.6rem;
-            font-size: 1.05rem;
-            border: 1px solid #555;
-            border-radius: 6px;
-            font-family: Arial;
-        }
-
-        .form-field textarea {
-            min-height: 8rem;
-            resize: vertical;
-        }
-
-        #sendBtn {
-            font-size: 1.3rem;
-            padding: 0.7rem 2rem;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            background: #0000ff;
-            color: white;
-            transition: background 0.3s;
-        }
-
-        #sendBtn:hover {
-            background: #ffa500;
-        }
-
-        #thankyou {
-            font-size: 1.4rem;
-            color: green;
-            margin-top: 2rem;
-        }
-
-        .hidden {
-            display: none;
-        }
-    </style>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>கருத்துப் படிவம் (Feedback & Rating) - சொற்கள்</title>
   <link rel="stylesheet" href="/css/auth.css?v=20260723" />
   <link rel="stylesheet" href="/css/mascot.css?v=20260724" />
+  <!-- Firebase Web SDK v10 (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f8fafc;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      color: #1e293b;
+    }
+
+    .feedback-container {
+      max-width: 680px;
+      margin: 32px auto;
+      padding: 0 16px 48px 16px;
+    }
+
+    .feedback-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+      border: 1px solid #e2e8f0;
+    }
+
+    .feedback-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .feedback-header h2 {
+      margin: 0 0 6px 0;
+      color: #0f172a;
+      font-size: 1.6rem;
+    }
+
+    .feedback-header p {
+      margin: 0;
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+
+    .user-info-banner {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 14px;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 22px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #1e1b4b;
+      margin-bottom: 8px;
+    }
+
+    /* Category Option Chips */
+    .type-chips {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .chip-opt {
+      flex: 1;
+      min-width: 140px;
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 10px 14px;
+      text-align: center;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #475569;
+      transition: all 0.2s ease;
+    }
+
+    .chip-opt:hover {
+      border-color: #8b5cf6;
+      background: #f5f3ff;
+    }
+
+    .chip-opt.selected {
+      border-color: #7c3aed;
+      background: #8b5cf6;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+
+    /* Interactive Star Rating Widget */
+    .star-rating-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #faf5ff;
+      border: 1px dashed #d8b4fe;
+      border-radius: 16px;
+      padding: 18px;
+    }
+
+    .stars-row {
+      display: flex;
+      gap: 12px;
+      font-size: 2.2rem;
+      cursor: pointer;
+    }
+
+    .star-item {
+      color: #cbd5e1;
+      transition: transform 0.15s ease, color 0.15s ease;
+    }
+
+    .star-item.active, .star-item.hovered {
+      color: #f59e0b;
+      transform: scale(1.15);
+    }
+
+    .rating-label {
+      font-weight: 800;
+      font-size: 1rem;
+      color: #6b21a8;
+      margin-top: 10px;
+    }
+
+    .feedback-textarea {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 14px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      min-height: 120px;
+      resize: vertical;
+      color: #0f172a;
+      transition: border-color 0.2s ease;
+    }
+
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: #8b5cf6;
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+    }
+
+    .btn-submit-feedback {
+      width: 100%;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: #ffffff;
+      border: none;
+      padding: 14px;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(124, 58, 237, 0.35);
+      transition: all 0.2s ease;
+    }
+
+    .btn-submit-feedback:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 22px rgba(124, 58, 237, 0.45);
+    }
+
+    /* Success Message Box */
+    .success-box {
+      background: #dcfce7;
+      border: 1px solid #86efac;
+      color: #166534;
+      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+      display: none;
+    }
+
+    @media (max-width: 640px) {
+      .feedback-card {
+        padding: 20px;
+      }
+      .chip-opt {
+        min-width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="header-mount"></div>
+
+  <main class="feedback-container">
+    
+    <div class="feedback-card">
+      <div class="feedback-header">
+        <h2>💬 கருத்து & மதிப்பீட்டுப் படிவம்</h2>
+        <p>சொற்கள் செயலியை மேம்படுத்த உங்கள் பிழை அறிக்கைகள், கருத்துக்கள் மற்றும் ஆலோசனைகளைப் பகிருங்கள்.</p>
+      </div>
+
+      <!-- User Banner -->
+      <div class="user-info-banner">
+        <div>
+          <span style="font-weight:700; color:#0f172a;" id="fb-user-name">👤 பயனர் பெயர்</span>
+          <span style="color:#64748b; font-size:0.85rem; margin-left:8px;" id="fb-user-email">email@example.com</span>
+        </div>
+        <span class="role-badge role-subscriber" id="fb-user-badge">கணக்கு</span>
+      </div>
+
+      <!-- Form View -->
+      <form id="feedback-form" onsubmit="handleFeedbackSubmit(event)">
+        
+        <!-- Category Selector -->
+        <div class="form-group">
+          <label>கருத்து வகை (Feedback Type)</label>
+          <div class="type-chips">
+            <div class="chip-opt selected" data-type="bug" onclick="selectType('bug', this)">
+              🐛 பிழை / குறைபாடு
+            </div>
+            <div class="chip-opt" data-type="improvement" onclick="selectType('improvement', this)">
+              💡 மேம்பாடுகள்
+            </div>
+            <div class="chip-opt" data-type="general" onclick="selectType('general', this)">
+              🌟 பொதுவான கருத்துக்கள்
+            </div>
+          </div>
+        </div>
+
+        <!-- Star Rating Widget -->
+        <div class="form-group">
+          <label>செயலியின் மதிப்பீடு (Star Rating)</label>
+          <div class="star-rating-container">
+            <div class="stars-row" id="stars-wrapper">
+              <span class="star-item active" data-val="1" onclick="setRating(1)">★</span>
+              <span class="star-item active" data-val="2" onclick="setRating(2)">★</span>
+              <span class="star-item active" data-val="3" onclick="setRating(3)">★</span>
+              <span class="star-item active" data-val="4" onclick="setRating(4)">★</span>
+              <span class="star-item active" data-val="5" onclick="setRating(5)">★</span>
+            </div>
+            <div class="rating-label" id="rating-text-label">🌟 5 Stars - அற்புதம் / மிகச் சிறந்தது!</div>
+          </div>
+        </div>
+
+        <!-- Comments Textarea -->
+        <div class="form-group">
+          <label>உங்கள் கருத்துக்கள் & ஆலோசனைகள் (Comments / Description)</label>
+          <textarea id="fb-comment" class="feedback-textarea" placeholder="பயன்பாட்டில் உங்களுக்கு ஏற்பட்ட பிரச்சனைகள், மேம்படுத்த வேண்டிய கருத்துக்கள் அல்லது ஆலோசனைகளை இங்கே பதிவிடுங்கள்..." required></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit-feedback" id="btn-submit">
+          🚀 கருத்துக்களை சமர்ப்பிக்கவும் (Submit Feedback)
+        </button>
+      </form>
+
+      <!-- Success Screen View -->
+      <div class="success-box" id="feedback-success-box">
+        <div style="font-size:3rem; margin-bottom:8px;">🎉</div>
+        <h3 style="margin:0 0 8px 0; color:#14532d;">உங்கள் கருத்துக்கள் சமர்ப்பிக்கப்பட்டன!</h3>
+        <p style="margin:0 0 16px 0; font-size:0.92rem;" id="success-msg-text">மிக்க நன்றி! உங்கள் கருத்துக்கள் எங்கள் குழுவால் பரிசீலிக்கப்படும்.</p>
+        <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+          <button type="button" class="btn-profile-nav btn-profile-secondary" onclick="resetForm()" style="background:#ffffff; color:#14532d; border-color:#86efac; min-width:auto;">📝 மற்றொரு கருத்து</button>
+          <a href="index.html" class="btn-profile-nav btn-profile-primary" style="background:#166534; min-width:auto;">🏠 முகப்புப் பக்கம் (Home)</a>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
   <script src="/js/auth.js?v=20260723"></script>
   <script src="/js/mascot.js?v=20260724"></script>
   <script>
-    TamilAuth.initPage();
+    let selectedFeedbackType = 'bug';
+    let selectedStarRating = 5;
+
+    const RATING_TEXTS = {
+      1: '🙁 1 Star - மோசமானது (Needs Work)',
+      2: '😐 2 Stars - பரவாயில்லை (Fair)',
+      3: '🙂 3 Stars - நன்று (Good)',
+      4: '😀 4 Stars - மிகவும் நன்று (Very Good)',
+      5: '🌟 5 Stars - அற்புதம் / மிகச் சிறந்தது! (Excellent!)'
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Guard page: allow all logged-in users (subscribers & free accounts)
+      if (!TamilAuth.canAccess('karuthu_padivam.html')) {
+        TamilAuth.renderAccessDenied('karuthu_padivam.html');
+        return;
+      }
+
+      initFeedbackForm();
+    });
+
+    function initFeedbackForm() {
+      const user = TamilAuth.getCurrentUser();
+      if (!user || !user.email || user.email === 'guest@tamil.app') {
+        TamilAuth.openModal('auth');
+        return;
+      }
+
+      // Render top header
+      TamilAuth.renderHeader(document.getElementById('header-mount'));
+
+      // Populate user info banner
+      document.getElementById('fb-user-name').innerText = `👤 ${user.name || 'மாணவர்'}`;
+      document.getElementById('fb-user-email').innerText = `📧 ${user.email}`;
+
+      const badge = document.getElementById('fb-user-badge');
+      if (user.subscriptionStatus === 'active' || user.role === 'admin' || user.role === 'learner' || user.role === 'teacher') {
+        badge.className = 'role-badge role-subscriber';
+        badge.innerText = '✨ சந்தாதாரர்';
+      } else {
+        badge.className = 'role-badge role-guest';
+        badge.innerText = '🆓 இலவச கணக்கு';
+      }
+
+      initStarHover();
+      setRating(5);
+    }
+
+    function selectType(type, el) {
+      selectedFeedbackType = type;
+      document.querySelectorAll('.chip-opt').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    function setRating(val) {
+      selectedStarRating = val;
+      const stars = document.querySelectorAll('.star-item');
+      stars.forEach((s, idx) => {
+        if (idx < val) s.classList.add('active');
+        else s.classList.remove('active');
+      });
+      document.getElementById('rating-text-label').innerText = RATING_TEXTS[val] || '';
+    }
+
+    function initStarHover() {
+      const stars = document.querySelectorAll('.star-item');
+      stars.forEach(s => {
+        s.addEventListener('mouseenter', () => {
+          const val = Number(s.getAttribute('data-val'));
+          stars.forEach((item, idx) => {
+            if (idx < val) item.classList.add('hovered');
+            else item.classList.remove('hovered');
+          });
+        });
+
+        s.addEventListener('mouseleave', () => {
+          stars.forEach(item => item.classList.remove('hovered'));
+        });
+      });
+    }
+
+    async function handleFeedbackSubmit(e) {
+      e.preventDefault();
+      const comment = document.getElementById('fb-comment').value.trim();
+      if (!comment) return;
+
+      const submitBtn = document.getElementById('btn-submit');
+      submitBtn.disabled = true;
+      submitBtn.innerText = '⏳ சமர்ப்பிக்கப்படுகிறது (Submitting...)...';
+
+      const res = await TamilAuth.submitFeedback({
+        type: selectedFeedbackType,
+        rating: selectedStarRating,
+        comment: comment
+      });
+
+      submitBtn.disabled = false;
+      submitBtn.innerText = '🚀 கருத்துக்களை சமர்ப்பிக்கவும் (Submit Feedback)';
+
+      if (res.success) {
+        document.getElementById('feedback-form').style.display = 'none';
+        const successBox = document.getElementById('feedback-success-box');
+        successBox.style.display = 'block';
+        document.getElementById('success-msg-text').innerText = res.message;
+      } else {
+        alert(res.message);
+      }
+    }
+
+    function resetForm() {
+      document.getElementById('fb-comment').value = '';
+      document.getElementById('feedback-form').style.display = 'block';
+      document.getElementById('feedback-success-box').style.display = 'none';
+      setRating(5);
+    }
   </script>
-
-</head>
-
-
-<body>
-    <a id="home" href="index.html"> ◀ முகப்பு</a>
-    <h1>கருத்து படிவம்</h1>
-    <hr>
-
-    <p align = center>
-    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfape94Fq2txYNlE8lpXztR_qQ7apqiu4fKraymIS-alFvHhw/viewform?embedded=true" width=100% height="800" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
-    </p>
-    
 </body>
 
 </html>

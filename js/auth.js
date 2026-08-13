@@ -473,6 +473,48 @@
       return results;
     }
 
+    /* ---------- Feedback Submission Handler ---------- */
+    async submitFeedback(feedbackData) {
+      const user = this.currentUser;
+      if (!user || !user.email || user.email === 'guest@tamil.app') {
+        return { success: false, message: 'கருத்துத் தெரிவிக்க தயவுசெய்து கணக்கு ஒன்றை உருவாக்கி உள்நுழையவும்.' };
+      }
+
+      const payload = {
+        userId: user.email.toLowerCase(),
+        userName: user.name || 'Account User',
+        userEmail: user.email,
+        subscriptionStatus: user.subscriptionStatus || 'inactive',
+        feedbackType: feedbackData.type || 'general',
+        rating: Number(feedbackData.rating) || 5,
+        comment: feedbackData.comment || '',
+        createdAt: new Date().toISOString(),
+        timestamp: Date.now()
+      };
+
+      // Save to localStorage DB
+      const LOCAL_FEEDBACK_KEY = 'tamil_app_feedbacks';
+      const existingFeedbacks = JSON.parse(localStorage.getItem(LOCAL_FEEDBACK_KEY) || '[]');
+      existingFeedbacks.push(payload);
+      localStorage.setItem(LOCAL_FEEDBACK_KEY, JSON.stringify(existingFeedbacks));
+
+      // Sync to Firestore
+      if (this.db) {
+        try {
+          await this.db.collection('feedback').add(payload);
+        } catch (err) {
+          console.warn('Firestore feedback sync fallback:', err);
+        }
+      }
+
+      return { success: true, message: 'உங்கள் கருத்துக்கள் மற்றும் மதிப்பீடுகள் வெற்றிகரமாகச் சமர்ப்பிக்கப்பட்டன! மிக்க நன்றி! (Feedback submitted successfully!)' };
+    }
+
+    getFeedbacks() {
+      const LOCAL_FEEDBACK_KEY = 'tamil_app_feedbacks';
+      return JSON.parse(localStorage.getItem(LOCAL_FEEDBACK_KEY) || '[]');
+    }
+
     /* ---------- Parent-Child Multi-Child Helper ---------- */
     getChildrenByParentEmail(parentEmail) {
       if (!parentEmail) return [];
@@ -693,6 +735,7 @@
                   </a>
                   <a href="profile.html" class="header-btn" style="background:#4f46e5; color:#fff;">👤 ${this.t('profile') || 'சுயவிவரம்'}</a>
                   <a href="learner-dashboard.html" class="header-btn" style="background:#10b981; color:#fff;">🎓 எனது பலகை</a>
+                  <a href="karuthu_padivam.html" class="header-btn" style="background:#8b5cf6; color:#fff;">💬 கருத்துப் படிவம்</a>
                   ${
                     !isSubscriber
                       ? `<button class="header-btn header-btn-upgrade" onclick="TamilAuth.openCheckoutModal()">💳 ${this.t('subscribeNow')}</button>`

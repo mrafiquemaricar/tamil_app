@@ -141,6 +141,27 @@
 
       </div>
 
+      <!-- User Feedbacks & Star Ratings Panel -->
+      <div class="admin-panel" style="margin-top:24px;">
+        <h3 style="margin:0 0 16px 0; font-size:1.15rem; color:#1e1b4b;">💬 பயனர் கருத்துக்கள் & மதிப்பீடுகள் (User Feedback & Star Ratings)</h3>
+        <div class="admin-table-wrapper">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>பயனர் (User)</th>
+                <th>வகை (Type)</th>
+                <th>மதிப்பீடு (Rating)</th>
+                <th>கருத்துக்கள் (Comments)</th>
+                <th>தேதி (Date)</th>
+              </tr>
+            </thead>
+            <tbody id="feedback-table-body">
+              <!-- Dynamically Rendered -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   </main>
 
@@ -201,6 +222,33 @@
           </tr>
         `;
       }).join('');
+
+      // Render Feedback Submissions
+      const feedbacks = TamilAuth.getFeedbacks();
+      const fbTbody = document.getElementById('feedback-table-body');
+      if (fbTbody) {
+        if (feedbacks.length === 0) {
+          fbTbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:16px;">இன்னும் கருத்துக்கள் பெறப்படவில்லை (No feedback submitted yet).</td></tr>';
+        } else {
+          fbTbody.innerHTML = feedbacks.map(fb => {
+            const stars = '⭐'.repeat(fb.rating || 5);
+            const dateStr = new Date(fb.createdAt || fb.timestamp || Date.now()).toLocaleDateString('ta-IN', { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+            let typeBadge = '🌟 General';
+            if (fb.feedbackType === 'bug') typeBadge = '🐛 Bug';
+            else if (fb.feedbackType === 'improvement') typeBadge = '💡 Improvement';
+
+            return `
+              <tr>
+                <td><strong>${fb.userName || 'User'}</strong><br><span style="font-size:0.75rem; color:#64748b;">${fb.userEmail}</span></td>
+                <td><span style="background:#f1f5f9; padding:2px 8px; border-radius:8px; font-weight:700; font-size:0.8rem;">${typeBadge}</span></td>
+                <td><span style="color:#f59e0b; font-weight:800;">${stars} (${fb.rating}/5)</span></td>
+                <td style="max-width:280px; word-wrap:break-word;">${fb.comment}</td>
+                <td><span style="font-size:0.75rem; color:#64748b;">${dateStr}</span></td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
     }
 
     function handleExtendSub(email) {
