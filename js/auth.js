@@ -156,14 +156,14 @@
 
   // Default Initial Users
   const INITIAL_USERS = [
-    { email: 'admin@tamil.app', name: 'ஆசிரியர் (Admin)', password: 'admin123', role: ROLES.ADMIN, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, joinedAt: '2026-07-01' },
-    { email: 'admin@tamilapp.com', name: 'ஆசிரியர் (Admin)', password: 'admin123', role: ROLES.ADMIN, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, joinedAt: '2026-07-01' },
-    { email: 'teacher@tamil.app', name: 'ஆசிரியர் (Teacher)', password: 'teacher123', role: ROLES.TEACHER, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, joinedAt: '2026-07-05' },
-    { email: 'teacher@tamilapp.com', name: 'ஆசிரியர் (Teacher)', password: 'teacher123', role: ROLES.TEACHER, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, joinedAt: '2026-07-05' },
-    { email: 'student@tamil.app', name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, isMinor: true, parentName: 'சுந்தரம் (Sundaram)', parentEmail: 'parent@gmail.com', joinedAt: '2026-07-15' },
-    { email: 'student@tamilapp.com', name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, isMinor: true, parentName: 'சுந்தரம் (Sundaram)', parentEmail: 'parent@gmail.com', joinedAt: '2026-07-15' },
-    { email: 'user1@example.com', name: 'கார்த்திக் (Karthik)', password: 'user123', role: ROLES.LEARNER, subscriptionStatus: 'active', planType: 'monthly', subscribedAt: now.toISOString(), expiryDate: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(), isMinor: true, parentName: 'சுந்தரம் (Sundaram)', parentEmail: 'parent@gmail.com', joinedAt: '2026-07-18' },
-    { email: 'user2@example.com', name: 'பிரியா (Priya)', password: 'user123', role: ROLES.GUEST, subscriptionStatus: 'inactive', planType: 'none', expiryDate: '', isMinor: true, parentName: 'சுந்தரம் (Sundaram)', parentEmail: 'parent@gmail.com', joinedAt: '2026-07-20' }
+    { email: 'admin@tamil.app', name: 'ஆசிரியர் (Admin)', password: 'admin123', role: ROLES.ADMIN, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, joinedAt: '2026-07-01', shareKey: 'KEY-ADM12345' },
+    { email: 'admin@tamilapp.com', name: 'ஆசிரியர் (Admin)', password: 'admin123', role: ROLES.ADMIN, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, joinedAt: '2026-07-01', shareKey: 'KEY-ADM54321' },
+    { email: 'teacher@tamil.app', name: 'ஆசிரியர் (Teacher)', password: 'teacher123', role: ROLES.TEACHER, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, joinedAt: '2026-07-05', shareKey: 'KEY-TCH12345' },
+    { email: 'teacher@tamilapp.com', name: 'ஆசிரியர் (Teacher)', password: 'teacher123', role: ROLES.TEACHER, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, joinedAt: '2026-07-05', shareKey: 'KEY-TCH54321' },
+    { email: 'student@tamil.app', name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, isMinor: true, parentName: 'சுந்தரம் (Sundaram)', parentEmail: 'parent@gmail.com', joinedAt: '2026-07-15', shareKey: 'KEY-STU12345' },
+    { email: 'student@tamilapp.com', name: 'மாணவர் (Student)', password: 'student123', role: ROLES.LEARNER, subscriptionStatus: 'active', planType: 'annual', subscribedAt: now.toISOString(), expiryDate: oneYearLater, isMinor: true, parentName: 'சுந்தரம் (Sundaram)', parentEmail: 'parent@gmail.com', joinedAt: '2026-07-15', shareKey: 'KEY-STU54321' },
+    { email: 'user1@example.com', name: 'கார்த்திக் (Karthik)', password: 'user123', role: ROLES.LEARNER, subscriptionStatus: 'active', planType: 'monthly', subscribedAt: now.toISOString(), expiryDate: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(), isMinor: true, parentName: 'சுந்தரம் (Sundaram)', parentEmail: 'parent@gmail.com', joinedAt: '2026-07-18', shareKey: 'KEY-USR12345' },
+    { email: 'user2@example.com', name: 'பிரியா (Priya)', password: 'user123', role: ROLES.GUEST, subscriptionStatus: 'inactive', planType: 'none', expiryDate: '', isMinor: true, parentName: 'சுந்தரம் (Sundaram)', parentEmail: 'parent@gmail.com', joinedAt: '2026-07-20', shareKey: '' }
   ];
 
   // Sanitize data objects for Firestore to prevent undefined field errors
@@ -326,6 +326,152 @@
       return JSON.parse(localStorage.getItem(STORAGE_KEY_USERS_DB) || '[]');
     }
 
+    /* ---------- Secret Share Key & Shared Summaries Engine (Max 3 Limit) ---------- */
+    generateShareKey() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let result = 'KEY-';
+      for (let i = 0; i < 8; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    }
+
+    regenerateShareKey() {
+      const user = this.currentUser;
+      if (!user || user.role === ROLES.GUEST) {
+        return { success: false, message: 'Only registered account users can generate share keys.' };
+      }
+
+      const newKey = this.generateShareKey();
+      user.shareKey = newKey;
+      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
+
+      const users = this.getUsersDB();
+      const idx = users.findIndex(u => u.email.toLowerCase() === user.email.toLowerCase());
+      if (idx !== -1) {
+        users[idx].shareKey = newKey;
+        localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
+      }
+
+      if (this.db) {
+        try {
+          this.db.collection('users').doc(user.email.toLowerCase()).update({ shareKey: newKey }).catch(() => {});
+        } catch (e) {}
+      }
+
+      return { success: true, shareKey: newKey, message: 'Secret Key regenerated successfully!' };
+    }
+
+    linkSharedKey(rawKey) {
+      const user = this.currentUser;
+      if (!user || user.email === 'guest@tamil.app') {
+        return { success: false, message: 'Please sign in to link subscriber learning summaries.' };
+      }
+
+      const cleanKey = (rawKey || '').trim().toUpperCase();
+      if (!cleanKey) {
+        return { success: false, message: 'Please enter a valid Secret Share Key.' };
+      }
+
+      const linkedKeys = user.linkedShareKeys || [];
+      if (linkedKeys.length >= 3) {
+        return { success: false, message: 'Maximum 3 shared subscriber learning summaries allowed per account.' };
+      }
+
+      if (linkedKeys.some(k => (typeof k === 'string' ? k.toUpperCase() : k.key.toUpperCase()) === cleanKey)) {
+        return { success: false, message: 'This Secret Key is already linked to your profile.' };
+      }
+
+      const users = this.getUsersDB();
+      const targetUser = users.find(u => u.shareKey && u.shareKey.toUpperCase() === cleanKey);
+
+      if (!targetUser) {
+        return { success: false, message: 'Invalid Secret Key! Key not found or expired.' };
+      }
+
+      const newEntry = {
+        key: cleanKey,
+        email: targetUser.email,
+        name: targetUser.name,
+        linkedAt: new Date().toISOString()
+      };
+
+      linkedKeys.push(newEntry);
+      user.linkedShareKeys = linkedKeys;
+      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
+
+      const idx = users.findIndex(u => u.email.toLowerCase() === user.email.toLowerCase());
+      if (idx !== -1) {
+        users[idx].linkedShareKeys = linkedKeys;
+        localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
+      }
+
+      if (this.db) {
+        try {
+          this.db.collection('users').doc(user.email.toLowerCase()).update({ linkedShareKeys: linkedKeys }).catch(() => {});
+        } catch (e) {}
+      }
+
+      return { success: true, message: `Successfully linked ${targetUser.name}'s learning summary!` };
+    }
+
+    unlinkSharedKey(cleanKey) {
+      const user = this.currentUser;
+      if (!user || !user.linkedShareKeys) return false;
+
+      const target = cleanKey.trim().toUpperCase();
+      user.linkedShareKeys = user.linkedShareKeys.filter(k => (typeof k === 'string' ? k.toUpperCase() : k.key.toUpperCase()) !== target);
+      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
+
+      const users = this.getUsersDB();
+      const idx = users.findIndex(u => u.email.toLowerCase() === user.email.toLowerCase());
+      if (idx !== -1) {
+        users[idx].linkedShareKeys = user.linkedShareKeys;
+        localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(users));
+      }
+
+      if (this.db) {
+        try {
+          this.db.collection('users').doc(user.email.toLowerCase()).update({ linkedShareKeys: user.linkedShareKeys }).catch(() => {});
+        } catch (e) {}
+      }
+      return true;
+    }
+
+    getLinkedSubscriberSummaries() {
+      const user = this.currentUser;
+      if (!user || !user.linkedShareKeys || user.linkedShareKeys.length === 0) {
+        return [];
+      }
+
+      const users = this.getUsersDB();
+      const results = [];
+
+      user.linkedShareKeys.forEach(entry => {
+        const key = typeof entry === 'string' ? entry : entry.key;
+        const target = users.find(u => u.shareKey && u.shareKey.toUpperCase() === key.toUpperCase());
+
+        if (target) {
+          const attempts = this.getStudentAttempts(target.email);
+          const totalSecs = attempts.reduce((acc, a) => acc + (a.durationSeconds || 0), 0);
+          const mins = Math.floor(totalSecs / 60);
+
+          results.push({
+            key: key,
+            name: target.name,
+            email: target.email,
+            subscriptionStatus: target.subscriptionStatus || 'active',
+            planType: target.planType || 'monthly',
+            totalLessons: attempts.length,
+            totalTimeFormatted: mins > 0 ? `${mins} mins` : `${totalSecs} secs`,
+            attempts: attempts
+          });
+        }
+      });
+
+      return results;
+    }
+
     /* ---------- Parent-Child Multi-Child Helper ---------- */
     getChildrenByParentEmail(parentEmail) {
       if (!parentEmail) return [];
@@ -439,6 +585,8 @@
         role, 
         subscriptionStatus: 'inactive', 
         planType: 'none', 
+        shareKey: this.generateShareKey(),
+        emailVerified: false,
         notifyProgress: parentInfo.notifyProgress || false,
         parentName: parentInfo.parentName || '',
         parentEmail: parentInfo.parentEmail || '',

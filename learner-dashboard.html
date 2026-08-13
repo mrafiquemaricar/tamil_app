@@ -264,6 +264,53 @@
         </div>
       </div>
 
+      <!-- Secret Share Key Management Card (For Profile / Subscribers) -->
+      <div class="progress-overview-card" id="secret-key-card" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color:#ffffff; border-radius:16px; margin-bottom:30px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+          <div>
+            <div style="font-size:1.1rem; font-weight:800; color:#38bdf8; margin-bottom:4px;">🔑 எனது ரகசியப் பகிர்வு சாவி (My Secret Share Key)</div>
+            <div style="font-size:0.88rem; color:#94a3b8;">இந்த ரகசியச் சாவியைப் பகிர்ந்து உங்கள் கற்றல் சுருக்கத்தைப் பெற்றோர்/ஆசிரியர் பார்க்க வைக்கலாம்.</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <span id="my-secret-key-display" style="background:#0284c7; color:#ffffff; font-family:monospace; font-size:1.1rem; font-weight:800; padding:6px 14px; border-radius:10px; letter-spacing:1px;">
+              KEY-XXXXXX
+            </span>
+            <button type="button" class="header-btn" onclick="copySecretKey()" style="background:#ffffff; color:#0f172a; padding:6px 12px; font-weight:700;">
+              📋 நகலெடு (Copy)
+            </button>
+            <button type="button" class="header-btn" onclick="regenSecretKey()" style="background:#f59e0b; color:#ffffff; padding:6px 12px; font-weight:700;">
+              🔄 புதிய சாவி (Regenerate Key)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- View Shared Learning Summaries Section (Max 3 Limit) -->
+      <div class="progress-overview-card" style="margin-bottom:30px; border-left:5px solid #8b5cf6;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+          <div>
+            <h3 style="margin:0 0 4px 0; color:#1e1b4b; font-size:1.25rem;">🔗 இணைக்கப்பட்ட கற்றல் சுருக்கங்கள் (View Shared Learning Summaries)</h3>
+            <span style="color:#64748b; font-size:0.88rem;">மற்ற சந்தாதாரர்களின் ரகசியச் சாவியை உள்ளிட்டு அவர்களின் கற்றல் நிலையைப் பார்க்கலாம் (அதிகபட்சம் 3 பேருக்கு மட்டும்).</span>
+          </div>
+          <div style="background:#f3e8ff; color:#6b21a8; padding:6px 14px; border-radius:20px; font-weight:800; font-size:0.85rem;">
+            இணைக்கப்பட்டவை: <span id="linked-summaries-count">0</span> / 3 (Max 3)
+          </div>
+        </div>
+
+        <!-- Key Input Form -->
+        <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+          <input type="text" id="input-share-key" placeholder="ரகசியச் சாவியை உள்ளிடவும் (e.g. KEY-STU12345)" style="flex:1; min-width:260px; padding:10px 14px; border:2px solid #cbd5e1; border-radius:10px; font-family:monospace; font-size:1rem; text-transform:uppercase;" />
+          <button type="button" onclick="handleLinkShareKey()" class="btn-continue-learning" style="background:#8b5cf6; box-shadow: 0 4px 14px rgba(139, 92, 246, 0.3); padding:10px 20px;">
+            🔗 இணைக்கவும் (Link Key)
+          </button>
+        </div>
+
+        <!-- Container for Linked Summaries -->
+        <div id="linked-summaries-list">
+          <!-- Dynamically Rendered Linked Summaries -->
+        </div>
+      </div>
+
       <!-- Two-Column Grid: Badges & High Scores -->
       <div class="learner-grid">
         
@@ -368,6 +415,79 @@
         </div>
       `).join('');
 
+      // Render Secret Share Key
+      if (!user.shareKey) {
+        TamilAuth.regenerateShareKey();
+      }
+      const updatedUser = TamilAuth.getCurrentUser();
+      const keyDisp = document.getElementById('my-secret-key-display');
+      if (keyDisp) {
+        keyDisp.innerText = updatedUser.shareKey || 'KEY-NONE';
+      }
+
+      // Render Linked Subscriber Summaries (Max 3 Limit)
+      const linkedSummaries = TamilAuth.getLinkedSubscriberSummaries();
+      const linkedCountEl = document.getElementById('linked-summaries-count');
+      if (linkedCountEl) {
+        linkedCountEl.innerText = linkedSummaries.length;
+      }
+
+      const linkedListEl = document.getElementById('linked-summaries-list');
+      if (linkedListEl) {
+        if (linkedSummaries.length === 0) {
+          linkedListEl.innerHTML = `
+            <div style="background:#f8fafc; border:2px dashed #cbd5e1; border-radius:12px; padding:20px; text-align:center; color:#64748b;">
+              இன்னும் எந்த சந்தாதாரரின் சாவியும் இணைக்கப்படவில்லை. மேலே உள்ள பெட்டியில் ரகசியச் சாவியை உள்ளிட்டு இணைக்கவும். (No shared subscriber keys linked yet).
+            </div>
+          `;
+        } else {
+          linkedListEl.innerHTML = linkedSummaries.map(sub => `
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:16px; margin-bottom:14px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+                <div>
+                  <span style="font-weight:800; font-size:1.1rem; color:#1e1b4b;">👤 ${sub.name}</span>
+                  <span style="color:#64748b; font-size:0.85rem; margin-left:8px;">(${sub.email})</span>
+                  <span style="background:#0284c7; color:#fff; font-family:monospace; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:6px; margin-left:8px;">${sub.key}</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="background:#dcfce7; color:#166534; padding:4px 10px; border-radius:12px; font-weight:800; font-size:0.8rem;">
+                    📚 ${sub.totalLessons} பாடங்கள் • ⏱️ ${sub.totalTimeFormatted}
+                  </span>
+                  <button type="button" onclick="handleUnlinkShareKey('${sub.key}')" style="background:#ef4444; color:#ffffff; border:none; padding:4px 10px; border-radius:8px; font-size:0.8rem; font-weight:700; cursor:pointer;">
+                    🗑️ நீக்கு (Unlink)
+                  </button>
+                </div>
+              </div>
+
+              <!-- Attempt Log Snippet for this subscriber -->
+              <div style="background:#f8fafc; border-radius:8px; padding:10px; max-height:160px; overflow-y:auto;">
+                <table style="width:100%; border-collapse:collapse; font-size:0.82rem;">
+                  <thead>
+                    <tr style="text-align:left; color:#64748b; border-bottom:1px solid #e2e8f0;">
+                      <th style="padding:4px 8px;">பாடத் தலைப்பு</th>
+                      <th style="padding:4px 8px;">நாள் & நேரம்</th>
+                      <th style="padding:4px 8px; text-align:right;">செலவிட்ட நேரம்</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${sub.attempts.length === 0 
+                      ? `<tr><td colspan="3" style="padding:6px; text-align:center; color:#94a3b8;">பாடப் பயிற்சிகள் இல்லை</td></tr>` 
+                      : sub.attempts.slice(0, 5).map(att => `
+                          <tr style="border-bottom:1px solid #f1f5f9;">
+                            <td style="padding:4px 8px; font-weight:600; color:#334155;">📖 ${att.lessonTitle || att.lessonFile}</td>
+                            <td style="padding:4px 8px; color:#64748b;">📅 ${att.dateFormatted}</td>
+                            <td style="padding:4px 8px; text-align:right; font-weight:700; color:#10b981;">⏱️ ${att.durationFormatted}</td>
+                          </tr>
+                        `).join('')
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
       // Render Scores
       const scoresUl = document.getElementById('scores-container');
       scoresUl.innerHTML = progressData.highScores.map(s => `
@@ -379,6 +499,46 @@
           <span class="scores-value">${s.score}</span>
         </li>
       `).join('');
+    }
+
+    function copySecretKey() {
+      const user = TamilAuth.getCurrentUser();
+      if (!user.shareKey) {
+        TamilAuth.regenerateShareKey();
+      }
+      const key = TamilAuth.getCurrentUser().shareKey;
+      navigator.clipboard.writeText(key);
+      alert(`📋 ரகசியச் சாவி நகலெடுக்கப்பட்டது: ${key}`);
+    }
+
+    function regenSecretKey() {
+      if (confirm("புதிய ரகசியச் சாவியை உருவாக்க விரும்புகிறீர்களா? பழைய சாவி ரத்தாகும்.")) {
+        const res = TamilAuth.regenerateShareKey();
+        if (res.success) {
+          document.getElementById('my-secret-key-display').innerText = res.shareKey;
+          alert(`✅ புதிய ரகசியச் சாவி உருவாக்கப்பட்டது: ${res.shareKey}`);
+        }
+      }
+    }
+
+    function handleLinkShareKey() {
+      const keyInput = document.getElementById('input-share-key');
+      const val = keyInput.value;
+      const res = TamilAuth.linkSharedKey(val);
+      if (res.success) {
+        keyInput.value = '';
+        alert(res.message);
+        renderLearnerDashboard();
+      } else {
+        alert(res.message);
+      }
+    }
+
+    function handleUnlinkShareKey(key) {
+      if (confirm(`சாவி ${key} இணைப்பை நீக்க விரும்புகிறீர்களா?`)) {
+        TamilAuth.unlinkSharedKey(key);
+        renderLearnerDashboard();
+      }
     }
   </script>
 </body>
