@@ -206,10 +206,8 @@
         alertBox.className = 'auth-alert show auth-alert-success';
         alertBox.innerText = TamilAuth.t('loginSuccess');
         setTimeout(() => {
-          if (res.user.role === 'teacher') window.location.href = 'teacher-dashboard.html';
-          else if (res.user.role === 'learner') window.location.href = 'learner-dashboard.html';
-          else if (res.user.role === 'admin') window.location.href = 'admin.html';
-          else window.location.href = 'index.html';
+          if (res.user.role === 'admin') window.location.href = 'admin.html';
+          else window.location.href = 'learner-dashboard.html';
         }, 600);
       } else {
         alertBox.className = 'auth-alert show auth-alert-error';

@@ -673,14 +673,9 @@
       const user = this.currentUser;
       const isLoggedIn = user && user.email && user.email !== 'guest@tamil.app';
       const isAdmin = user.role === ROLES.ADMIN;
-      const isTeacher = user.role === ROLES.TEACHER;
-      const isLearner = user.role === ROLES.LEARNER;
-      const isSubscriber = isLearner || isTeacher || isAdmin;
+      const isSubscriber = isLoggedIn && (user.subscriptionStatus === 'active' || isAdmin || user.role === ROLES.LEARNER || user.role === ROLES.TEACHER);
       
-      let roleLabel = 'விருந்தினர் (Guest)';
-      if (user.role === ROLES.ADMIN) roleLabel = this.t('admin');
-      else if (user.role === ROLES.TEACHER) roleLabel = this.t('teacher');
-      else if (isSubscriber) roleLabel = this.t('activeSubscriber');
+      const roleLabel = isAdmin ? this.t('admin') : (isSubscriber ? 'சந்தாதாரர் (Subscriber)' : 'கணக்கு (Free Account)');
 
       const headerHTML = `
         <header class="tamil-app-header">
@@ -694,16 +689,13 @@
                 ? `
                   <div class="header-user-badge">
                     <span>👤 ${user.name}</span>
-                    <span class="role-badge role-${isAdmin || isTeacher ? 'admin' : (isSubscriber ? 'subscriber' : 'guest')}">${roleLabel}</span>
+                    <span class="role-badge role-${isSubscriber ? 'subscriber' : 'guest'}">${roleLabel}</span>
                   </div>
+                  <a href="learner-dashboard.html" class="header-btn" style="background:#10b981; color:#fff;">🎓 எனது பலகை (My Profile)</a>
                   ${
-                    isAdmin
-                      ? `<a href="admin.html" class="header-btn" style="background:#f59e0b; color:#fff;">📊 ${this.t('adminDashboard')}</a>`
-                      : (isTeacher
-                        ? `<a href="teacher-dashboard.html" class="header-btn" style="background:#3b82f6; color:#fff;">📘 ${this.t('teacherDashboard')}</a>`
-                        : (isLearner
-                          ? `<a href="learner-dashboard.html" class="header-btn" style="background:#10b981; color:#fff;">🎓 ${this.t('learnerDashboard')}</a>`
-                          : `<button class="header-btn header-btn-upgrade" onclick="TamilAuth.openCheckoutModal()">💳 ${this.t('subscribeNow')}</button>`))
+                    !isSubscriber
+                      ? `<button class="header-btn header-btn-upgrade" onclick="TamilAuth.openCheckoutModal()">💳 ${this.t('subscribeNow')}</button>`
+                      : ''
                   }
                   <button class="header-btn header-btn-secondary" onclick="TamilAuth.logout()">🚪 ${this.t('logout')}</button>
                 `
@@ -1320,14 +1312,10 @@
         this.showAlert(this.t('loginSuccess'), 'success');
         setTimeout(() => {
           this.closeModal('auth');
-          if (res.user.role === ROLES.TEACHER) {
-            window.location.href = 'teacher-dashboard.html';
-          } else if (res.user.role === ROLES.LEARNER) {
-            window.location.href = 'learner-dashboard.html';
-          } else if (res.user.role === ROLES.ADMIN) {
+          if (res.user.role === ROLES.ADMIN) {
             window.location.href = 'admin.html';
           } else {
-            window.location.reload();
+            window.location.href = 'learner-dashboard.html';
           }
         }, 600);
       } else {
