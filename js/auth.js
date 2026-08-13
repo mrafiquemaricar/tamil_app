@@ -181,7 +181,7 @@
   // Comprehensive Localization Dictionary
   const I18N = {
     ta: {
-      appName: 'தமிழ். இனிது. எளிது.',
+      appName: 'சொற்கள்',
       heroTagline: 'தமிழ் கற்றல் இப்போது மிக எளிது!',
       heroSub: '36 ஊடாடும் விளையாட்டுகள், குரல்வழி தட்டச்சு, சொல் அகராதி & உச்சரிப்புப் பயிற்சிகளுடன் தமிழைக் கற்றுக்கொள்ளுங்கள்.',
       getStarted: 'இலவசமாகத் தொடங்குங்கள்',
@@ -212,7 +212,7 @@
       switchLangBtn: '🇬🇧 English'
     },
     en: {
-      appName: 'Learn Tamil. Easy & Fun.',
+      appName: 'Sorkal (சொற்கள்)',
       heroTagline: 'Mastering Tamil Language Made Effortless!',
       heroSub: 'Learn Tamil with 36 interactive games, voice typing, word search dictionary, and pronunciation modules.',
       getStarted: 'Get Started Free',
