@@ -781,7 +781,12 @@
         '02_mei_plus_uyir.html'
       ];
 
-      if (FREE_MODULES.includes(filename) || filename === 'learner-dashboard.html' || filename === 'profile.html' || filename === 'karuthu_padivam.html') {
+      if (filename === 'profile.html') {
+        window.location.href = 'learner-dashboard.html';
+        return true;
+      }
+
+      if (FREE_MODULES.includes(filename) || filename === 'learner-dashboard.html' || filename === 'karuthu_padivam.html') {
         return true;
       }
 
@@ -829,11 +834,10 @@
             ${
               isLoggedIn
                 ? `
-                  <a href="profile.html" class="header-user-badge" style="text-decoration:none;" title="View Profile">
+                  <a href="learner-dashboard.html" class="header-user-badge" style="text-decoration:none;" title="View Dashboard">
                     <span>👤 ${user.name}</span>
                     <span class="role-badge role-${isSubscriber ? 'subscriber' : 'guest'}">${roleLabel}</span>
                   </a>
-                  <a href="profile.html" class="header-btn" style="background:#4f46e5; color:#fff;">👤 ${this.t('profile') || 'சுயவிவரம்'}</a>
                   <a href="learner-dashboard.html" class="header-btn" style="background:#10b981; color:#fff;">🎓 எனது பலகை</a>
                   <a href="karuthu_padivam.html" class="header-btn" style="background:#8b5cf6; color:#fff;">💬 கருத்துப் படிவம்</a>
                   ${
