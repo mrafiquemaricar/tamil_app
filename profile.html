@@ -264,21 +264,10 @@
         </div>
       </div>
 
-      <!-- Secret Share Key Section -->
+      <!-- Secret Share Key Section (Unlocked for all registered account holders) -->
       <div class="secret-key-box" id="prof-key-section">
-        
-        <!-- Greyed Out Light Overlay for Unsubscribed Users -->
-        <div class="secret-key-overlay" id="prof-key-overlay" style="display:none;">
-          <div style="font-size:2rem; margin-bottom:4px;">🔒</div>
-          <div style="font-weight:800; font-size:1.05rem; color:#1e1b4b; margin-bottom:4px;">கற்றல் பகிர்வுச் சாவி (Secret Share Key)</div>
-          <div style="font-size:0.88rem; color:#475569; margin-bottom:14px; max-width:380px; line-height:1.4;">
-            உங்கள் பெற்றோர்/ஆசிரியர்களுக்கு உங்கள் கற்றல் அறிக்கையைப் பகிர கட்டணச் சந்தா தேவை (Paid Subscription Required).
-          </div>
-          <button type="button" class="btn-profile-nav btn-profile-primary" onclick="TamilAuth.openCheckoutModal()" style="max-width:240px; padding:10px 20px; font-size:0.9rem;">💳 சந்தா பெறுக (Subscribe Now)</button>
-        </div>
-
         <div class="secret-key-header">
-          <span style="font-weight:700; font-size:1.05rem;">🔑 கற்றல் பகிர்வுச் சாவி (Secret Share Key)</span>
+          <span style="font-weight:700; font-size:1.05rem;">🔑 எனது ரகசியப் பகிர்வு சாவி (My Secret Share Key)</span>
           <button type="button" class="btn-key-action" onclick="handleRegenerateKey()">🔄 புதிய சாவி (Regenerate)</button>
         </div>
         <div class="secret-key-value">
@@ -304,7 +293,6 @@
   <script src="/js/mascot.js?v=20260724"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Guard profile page for logged in users
       if (!TamilAuth.canAccess('profile.html')) {
         TamilAuth.renderAccessDenied('profile.html');
         return;
@@ -337,33 +325,25 @@
       const accessLevel = document.getElementById('prof-access-level');
       const expiryDate = document.getElementById('prof-expiry-date');
       const keySection = document.getElementById('prof-key-section');
-      const keyOverlay = document.getElementById('prof-key-overlay');
       const upgradeBtn = document.getElementById('btn-upgrade-prof');
+
+      // Populate Secret Share Key for ALL registered account holders
+      keySection.style.display = 'block';
+      keySection.style.opacity = '1';
+      const shareKey = user.shareKey || TamilAuth.generateShareKey(user.email);
+      document.getElementById('prof-share-key-display').innerText = shareKey;
 
       if (isSubscriber) {
         statusPill.className = 'status-badge-pill status-badge-active';
         statusPill.innerHTML = '✨ கட்டண சந்தாதாரர் (Active Subscriber)';
         accessLevel.innerText = 'அனைத்து 44 பாடப் பகுதிகள் (Full Access)';
         expiryDate.innerText = user.expiryDate ? user.expiryDate : 'வரம்பற்ற அணுகல்';
-        
-        keySection.style.display = 'block';
-        keySection.style.opacity = '1';
-        if (keyOverlay) keyOverlay.style.display = 'none';
-
-        const shareKey = user.shareKey || TamilAuth.generateShareKey(user.email);
-        document.getElementById('prof-share-key-display').innerText = shareKey;
         if (upgradeBtn) upgradeBtn.innerText = '💳 சந்தா மேலாண்மை (Manage Subscription)';
       } else {
         statusPill.className = 'status-badge-pill status-badge-free';
         statusPill.innerHTML = '🆓 இலவச கணக்கு (Free Account User)';
         accessLevel.innerText = 'முதல் 4 இலவச பாடங்கள் (First 4 Free Lessons)';
         expiryDate.innerText = 'சந்தா தேவை (Upgrade Required)';
-        
-        keySection.style.display = 'block';
-        keySection.style.opacity = '0.75';
-        if (keyOverlay) keyOverlay.style.display = 'flex';
-        document.getElementById('prof-share-key-display').innerText = 'KEY-LOCKED';
-
         if (upgradeBtn) upgradeBtn.innerText = '💳 கட்டண சந்தாவிற்கு மாறுக (Upgrade Now - SGD $9.90)';
       }
     }
