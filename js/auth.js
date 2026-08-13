@@ -197,6 +197,7 @@
       adminDashboard: 'நிர்வாக பலகை',
       teacherDashboard: 'ஆசிரியர் பலகை',
       learnerDashboard: 'எனது கற்றல் பலகை',
+      profile: 'சுயவிவரம்',
       emailLabel: 'மின்னஞ்சல் முகவரி',
       passwordLabel: 'கடவுச்சொல்',
       nameLabel: 'பெயர்',
@@ -660,7 +661,7 @@
         '02_mei_plus_uyir.html'
       ];
 
-      if (FREE_MODULES.includes(filename) || filename === 'learner-dashboard.html' || filename === 'karuthu_padivam.html') {
+      if (FREE_MODULES.includes(filename) || filename === 'learner-dashboard.html' || filename === 'profile.html' || filename === 'karuthu_padivam.html') {
         return true;
       }
 
@@ -687,11 +688,12 @@
             ${
               isLoggedIn
                 ? `
-                  <div class="header-user-badge">
+                  <a href="profile.html" class="header-user-badge" style="text-decoration:none;" title="View Profile">
                     <span>👤 ${user.name}</span>
                     <span class="role-badge role-${isSubscriber ? 'subscriber' : 'guest'}">${roleLabel}</span>
-                  </div>
-                  <a href="learner-dashboard.html" class="header-btn" style="background:#10b981; color:#fff;">🎓 எனது பலகை (My Profile)</a>
+                  </a>
+                  <a href="profile.html" class="header-btn" style="background:#4f46e5; color:#fff;">👤 ${this.t('profile') || 'சுயவிவரம்'}</a>
+                  <a href="learner-dashboard.html" class="header-btn" style="background:#10b981; color:#fff;">🎓 எனது பலகை</a>
                   ${
                     !isSubscriber
                       ? `<button class="header-btn header-btn-upgrade" onclick="TamilAuth.openCheckoutModal()">💳 ${this.t('subscribeNow')}</button>`
