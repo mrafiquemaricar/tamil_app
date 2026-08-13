@@ -3,15 +3,7 @@
    ========================================================================== */
 
 #sam-mascot-root, #kavin-mascot-root {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 9990;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  pointer-events: none;
+  display: none !important;
 }
 
 #sam-mascot-root *, #kavin-mascot-root * {

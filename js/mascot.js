@@ -7,6 +7,9 @@
 (function (window) {
   'use strict';
 
+  // Feature flag to enable/disable mascot companion
+  const IS_MASCOT_ENABLED = false;
+
   // Speech Bubble Messages Map per Page/Module
   const MASCOT_MESSAGES = {
     'index.html': {
@@ -110,7 +113,9 @@
   class SamMascot {
     constructor() {
       this.isCollapsed = false;
-      this.init();
+      if (IS_MASCOT_ENABLED) {
+        this.init();
+      }
     }
 
     init() {
