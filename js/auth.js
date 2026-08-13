@@ -1031,33 +1031,6 @@
                 <input type="password" id="reg-password" class="auth-form-input" placeholder="••••••••" required />
               </div>
 
-              <!-- Progress Notification Checkbox & Parent/Teacher Info Accordion -->
-              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px; margin-bottom:14px;">
-                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; font-size:0.88rem; color:#1e1b4b; line-height:1.3;">
-                  <input type="checkbox" id="reg-notify-progress" onchange="TamilAuth.toggleParentFields(this.checked)" />
-                  📣 ${isEn ? 'I want my parent/teacher to know my progress' : 'என் பெற்றோர்/ஆசிரியர் எனது கற்றல் முன்னேற்றத்தை அறிய விரும்புகிறேன்'}
-                </label>
-
-                <div id="reg-parent-fields" style="display:none; margin-top:12px; border-top:1px dashed #cbd5e1; padding-top:10px;">
-                  <div class="auth-form-group" style="margin-bottom:8px;">
-                    <label style="font-size:0.8rem; color:#475569;">👨‍👩‍👧 ${isEn ? 'Parent Name' : 'பெற்றோர் பெயர்'}</label>
-                    <input type="text" id="reg-parent-name" class="auth-form-input" placeholder="e.g. Sundaram" />
-                  </div>
-                  <div class="auth-form-group" style="margin-bottom:8px;">
-                    <label style="font-size:0.8rem; color:#475569;">📧 ${isEn ? 'Parent Email Address' : 'பெற்றோர் மின்னஞ்சல் முகவரி'}</label>
-                    <input type="email" id="reg-parent-email" class="auth-form-input" placeholder="parent@gmail.com" />
-                  </div>
-                  <div class="auth-form-group" style="margin-bottom:8px;">
-                    <label style="font-size:0.8rem; color:#475569;">📘 ${isEn ? 'Teacher Name' : 'ஆசிரியர் பெயர்'}</label>
-                    <input type="text" id="reg-teacher-name" class="auth-form-input" placeholder="e.g. Mrs. Lakshmi" />
-                  </div>
-                  <div class="auth-form-group" style="margin-bottom:4px;">
-                    <label style="font-size:0.8rem; color:#475569;">✉️ ${isEn ? 'Teacher Email Address' : 'ஆசிரியர் மின்னஞ்சல் முகவரி'}</label>
-                    <input type="email" id="reg-teacher-email" class="auth-form-input" placeholder="teacher@school.com" />
-                  </div>
-                </div>
-              </div>
-
               <button type="submit" class="auth-submit-btn">${this.t('register')}</button>
             </form>
 
@@ -1367,14 +1340,8 @@
       const name = document.getElementById('reg-name').value;
       const email = document.getElementById('reg-email').value;
       const pass = document.getElementById('reg-password').value;
-      
-      const notifyProgress = document.getElementById('reg-notify-progress') ? document.getElementById('reg-notify-progress').checked : false;
-      const parentName = notifyProgress && document.getElementById('reg-parent-name') ? document.getElementById('reg-parent-name').value : '';
-      const parentEmail = notifyProgress && document.getElementById('reg-parent-email') ? document.getElementById('reg-parent-email').value : '';
-      const teacherName = notifyProgress && document.getElementById('reg-teacher-name') ? document.getElementById('reg-teacher-name').value : '';
-      const teacherEmail = notifyProgress && document.getElementById('reg-teacher-email') ? document.getElementById('reg-teacher-email').value : '';
 
-      const res = this.register(name, email, pass, ROLES.GUEST, { notifyProgress, parentName, parentEmail, teacherName, teacherEmail });
+      const res = this.register(name, email, pass, ROLES.GUEST);
 
       if (res.success) {
         this.login(email, pass);
